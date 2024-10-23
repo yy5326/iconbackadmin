@@ -1,0 +1,779 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="golfReceipt">
+
+	<sql id="whereList">
+	     WHERE USE_YN = 'Y'
+
+		<if test="type2 == 0 ">
+	  		AND GOLF_NAME LIKE '%${searchWord}%'
+		</if>
+		<if test="type2 == 1 ">
+		  	AND PIC_OFFICE1 LIKE '%${searchWord}%'
+		</if>
+		<if test="type2 == 2 ">
+			AND GOLF_ADDR1 LIKE '%${searchWord}%' OR GOLF_ADDR2 LIKE '%${searchWord}%'
+		</if>
+	</sql>
+
+	<!-- 골프택배 접수  -->
+	<insert id="insertReceiptMst" parameterType="com.golf.service.model.GolfReceiptMstVO" >
+		<selectKey keyProperty="rcpSeq" resultType="int" order="BEFORE" statementType="PREPARED">
+	    	SELECT NEXT VALUE FOR RCP_SEQ
+	  	</selectKey>
+
+		INSERT INTO GOLF_RECEIPT_MST
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="rcpSeq != null">
+				rcp_seq,
+			</if>
+			<if test="golfSeq != null">
+				golf_seq,
+			</if>
+			<!-- <if test="rcpStat != null">
+				rcp_stat,
+			</if> -->
+			<if test="delKind != null">
+				del_kind,
+			</if>
+			<if test="fareType != null">
+				fare_type,
+			</if>
+			<if test="gameDt != null">
+				game_dt,
+			</if>
+			<if test="regUser != null">
+				reg_user,
+			</if>
+			<if test="gameEndDt != null">
+				game_end_dt
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="rcpSeq != null">
+				#{rcpSeq,jdbcType=INTEGER},
+			</if>
+			<if test="golfSeq != null">
+				#{golfSeq,jdbcType=NUMERIC},
+			</if>
+			<!-- <if test="rcpStat != null">
+				#{rcpStat,jdbcType=VARCHAR},
+			</if> -->
+			<if test="delKind != null">
+				#{delKind,jdbcType=VARCHAR},
+			</if>
+			<if test="fareType != null">
+				#{fareType,jdbcType=VARCHAR},
+			</if>
+			<if test="gameDt != null">
+				#{gameDt,jdbcType=VARCHAR},
+			</if>
+			<if test="regUser != null">
+				#{regUser,jdbcType=VARCHAR},
+			</if>
+			<if test="gameEndDt != null">
+				#{gameEndDt,jdbcType=VARCHAR}
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 골프택배 발송정보 접수  -->
+	<insert id="insertReceiptInf" parameterType="com.golf.service.model.GolfReceiptInfVO">
+		<selectKey keyProperty="rcpInfSeq,rcpSeq,rcpNumber" resultType="com.golf.service.model.GolfReceiptInfVO" order="BEFORE" statementType="PREPARED">
+			<if test="rcpInfSeq == null or rcpInfSeq == 0">
+				SELECT NEXT VALUE FOR RCP_INF_SEQ as rcpInfSeq, PREVIOUS VALUE FOR RCP_SEQ AS rcpSeq, CONCAT('GF', DATE_FORMAT(NOW(), '%Y%m%d'), PREVIOUS VALUE FOR RCP_INF_SEQ) as rcpNumber
+			</if>
+		</selectKey>
+
+		INSERT INTO GOLF_RECEIPT_INF
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+				rcp_number,
+			<if test="rcpInfSeq != null">
+				rcp_inf_seq,
+			</if>
+			<if test="rcpSeq != null">
+				rcp_seq,
+			</if>
+			<if test="rcpInfStat != null">
+				rcp_inf_stat,
+			</if>
+			<if test="PRD_TYPE != null">
+				prd_type,
+			</if>
+			<if test="sendGolfSeq != null and sendGolfSeq > 0">
+				send_golf_seq,
+			</if>
+			<if test="srType != null">
+				sr_type,
+			</if>
+			<if test="cusSendNm != null">
+				cus_send_nm,
+			</if>
+			<if test="cusSendTelnum != null">
+				cus_send_telnum,
+			</if>
+			<if test="cusSendTelnum2 != null">
+				cus_send_telnum2,
+			</if>
+			<if test="cusSendZip != null">
+				cus_send_zip,
+			</if>
+			<if test="cusSendAddr1 != null">
+				cus_send_addr1,
+			</if>
+			<if test="cusSendAddr2 != null">
+				cus_send_addr2,
+			</if>
+			<if test="sendIslYn != null">
+				send_isl_yn,
+			</if>
+			<if test="brStrNm != null">
+				br_str_nm,
+			</if>
+			<if test="brStrCode != null">
+				br_str_code,
+			</if>
+			<if test="cusReNm != null">
+				cus_re_nm,
+			</if>
+			<if test="cusReTelnum != null">
+				cus_re_telnum,
+			</if>
+			<if test="cusReTelnum2 != null">
+				cus_re_telnum2,
+			</if>
+			<if test="cusReZip != null">
+				cus_re_zip,
+			</if>
+			<if test="cusReAddr1 != null">
+				cus_re_addr1,
+			</if>
+			<if test="cusReAddr2 != null">
+				cus_re_addr2,
+			</if>
+			<if test="recvGolfSeq != null and recvGolfSeq > 0">
+				recv_golf_seq,
+			</if>
+			<if test="recvIslYn != null">
+				recv_isl_yn,
+			</if>
+			<if test="brEndNm != null">
+				br_end_nm,
+			</if>
+			<if test="brEndCode != null">
+				br_end_code,
+			</if>
+			<if test="picReqDt != null">
+				pic_req_dt,
+			</if>
+			<if test="pdNm != null">
+				pd_nm,
+			</if>
+			<if test="pdPack != null">
+				pd_pack,
+			</if>
+			<if test="pdGolfCnt != null">
+				pd_golf_cnt,
+			</if>
+			<if test="pdIndivPrice != null">
+				pd_indiv_price,
+			</if>
+			<if test="pdCnt != null and pdCnt > 0">
+				pd_cnt,
+			</if>
+			<if test="bostonCnt != null and bostonCnt > 0">
+				boston_Cnt,
+			</if>
+			<if test="pdEtcPay != null and pdEtcPay > 0">
+				pd_etc_pay,
+			</if>
+			<if test="payType != null">
+				pay_type,
+			</if>
+			<if test="pdDosunPay != null and pdDosunPay > 0">
+				pd_dosun_pay,
+			</if>
+			<if test="pdDeliPay != null and pdDeliPay > 0">
+				pd_deli_pay,
+			</if>
+			<if test="pdPay != null and pdPay > 0">
+				pd_pay,
+			</if>
+			<if test="pdMemo != null">
+				pd_memo,
+			</if>
+			<if test="extComp != null">
+				ext_comp,
+			</if>
+			<if test="extCompTelnum != null">
+				ext_comp_telnum,
+			</if>
+			<if test="rcpKind != null">
+				rcp_kind,
+			</if>
+			<if test="cusReceiptNm != null">
+				cus_receipt_nm,
+			</if>
+			<if test="cusReceiptTelNum != null">
+				cus_receipt_telnum,
+			</if>
+			<if test="userId != null">
+				user_id,
+			</if>
+			<if test="iconFee != null">
+				icon_fee,
+			</if>
+			<if test="changeDeltypeYn != null">
+				change_deltype_yn,
+			</if>
+			<if test="BOX_CNT != null">
+				box_cnt,
+			</if>
+			<if test="BOX_SIZE != null">
+				box_size
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+				#{rcpNumber,jdbcType=VARCHAR},
+			<if test="rcpInfSeq != null">
+				#{rcpInfSeq,jdbcType=INTEGER},
+			</if>
+			<if test="rcpSeq != null">
+				#{rcpSeq,jdbcType=INTEGER},
+			</if>
+			<if test="rcpInfStat != null">
+				#{rcpInfStat,jdbcType=VARCHAR},
+			</if>
+			<if test="prdType != null">
+				#{prdType, jdbcType=INTEGER},
+			</if>
+			<if test="sendGolfSeq != null and sendGolfSeq > 0">
+				#{sendGolfSeq,jdbcType=VARCHAR},
+			</if>
+			<if test="srType != null">
+				#{srType,jdbcType=VARCHAR},
+			</if>
+			<if test="cusSendNm != null">
+				#{cusSendNm,jdbcType=VARCHAR},
+			</if>
+			<if test="cusSendTelnum != null">
+				#{cusSendTelnum,jdbcType=VARCHAR},
+			</if>
+			<if test="cusSendTelnum2 != null">
+				#{cusSendTelnum2,jdbcType=VARCHAR},
+			</if>
+			<if test="cusSendZip != null">
+				#{cusSendZip,jdbcType=VARCHAR},
+			</if>
+			<if test="cusSendAddr1 != null">
+				#{cusSendAddr1,jdbcType=VARCHAR},
+			</if>
+			<if test="cusSendAddr2 != null">
+				#{cusSendAddr2,jdbcType=VARCHAR},
+			</if>
+			<if test="sendIslYn != null">
+				#{sendIslYn,jdbcType=VARCHAR},
+			</if>
+			<if test="brStrNm != null">
+				#{brStrNm,jdbcType=VARCHAR},
+			</if>
+			<if test="brStrCode != null">
+				#{brStrCode,jdbcType=VARCHAR},
+			</if>
+			<if test="cusReNm != null">
+				#{cusReNm,jdbcType=VARCHAR},
+			</if>
+			<if test="cusReTelnum != null">
+				#{cusReTelnum,jdbcType=VARCHAR},
+			</if>
+			<if test="cusReTelnum2 != null">
+				#{cusReTelnum2,jdbcType=VARCHAR},
+			</if>
+			<if test="cusReZip != null">
+				#{cusReZip,jdbcType=VARCHAR},
+			</if>
+			<if test="cusReAddr1 != null">
+				#{cusReAddr1,jdbcType=VARCHAR},
+			</if>
+			<if test="cusReAddr2 != null">
+				#{cusReAddr2,jdbcType=VARCHAR},
+			</if>
+			<if test="recvGolfSeq != null and recvGolfSeq > 0">
+				#{recvGolfSeq,jdbcType=VARCHAR},
+			</if>
+			<if test="recvIslYn != null">
+				#{recvIslYn,jdbcType=VARCHAR},
+			</if>
+			<if test="brEndNm != null">
+				#{brEndNm,jdbcType=VARCHAR},
+			</if>
+			<if test="brEndCode != null">
+				#{brEndCode,jdbcType=VARCHAR},
+			</if>
+			<if test="picReqDt != null">
+				#{picReqDt,jdbcType=VARCHAR},
+			</if>
+			<if test="pdNm != null">
+				#{pdNm,jdbcType=VARCHAR},
+			</if>
+			<if test="pdPack != null">
+				#{pdPack,jdbcType=VARCHAR},
+			</if>
+			<if test="pdGolfCnt != null">
+				#{pdGolfCnt,jdbcType=VARCHAR},
+			</if>
+			<if test="pdIndivPrice != null">
+				#{pdIndivPrice,jdbcType=VARCHAR},
+			</if>
+			<if test="pdCnt != null and pdCnt > 0">
+				#{pdCnt,jdbcType=INTEGER},
+			</if>
+			<if test="bostonCnt != null and bostonCnt > 0">
+				#{bostonCnt,jdbcType=INTEGER},
+			</if>			
+			<if test="pdEtcPay != null and pdEtcPay > 0">
+				#{pdEtcPay,jdbcType=INTEGER},
+			</if>
+			<if test="payType != null">
+				#{payType,jdbcType=VARCHAR},
+			</if>
+			<if test="pdDosunPay != null and pdDosunPay > 0">
+				#{pdDosunPay,jdbcType=INTEGER},
+			</if>
+			<if test="pdDeliPay != null and pdDeliPay > 0">
+				#{pdDeliPay,jdbcType=INTEGER},
+			</if>
+			<if test="pdPay != null and pdPay > 0">
+				#{pdPay,jdbcType=INTEGER},
+			</if>
+			<if test="pdMemo != null">
+				#{pdMemo,jdbcType=VARCHAR},
+			</if>
+			<if test="extComp != null">
+				#{extComp,jdbcType=VARCHAR},
+			</if>
+			<if test="extCompTelnum != null">
+				#{extCompTelnum,jdbcType=VARCHAR},
+			</if>
+			<if test="rcpKind != null">
+				#{rcpKind,jdbcType=VARCHAR},				
+			</if>
+			<if test="cusReceiptNm != null">
+				#{cusReceiptNm,jdbcType=VARCHAR},				
+			</if>
+			<if test="cusReceiptTelNum != null">
+				#{cusReceiptTelNum,jdbcType=VARCHAR},				
+			</if>
+			<if test="userId != null">
+				#{userId,jdbcType=VARCHAR},				
+			</if>
+			<if test="iconFee != null">
+				#{iconFee,jdbcType=INTEGER},			
+			</if>
+			<if test="changeDeltypeYn != null">
+				#{changeDeltypeYn,jdbcType=VARCHAR}	,			
+			</if>
+			<if test="boxCnt != null">
+				#{boxCnt,jdbcType=INTEGER},			
+			</if>
+			<if test="boxSize != null">
+				#{boxSize,jdbcType=VARCHAR}		
+			</if>
+			
+		</trim>
+	</insert>
+
+	<select id="selectGolfInf" parameterType="search" resultType="com.golf.service.model.GolfInfVO">
+		SELECT
+			GOLF_SEQ, GOLF_NAME, GOLF_TELNUM, GOLF_TELNUM2,
+			ZIP_CODE, CITY, GOLF_ADDR1, GOLF_ADDR2, ISL_YN,
+			PIC_OFFICE1, PIC_OFFICE2, PIC_OFFICE3, PIC_OFFICE_CODE1,
+			PIC_OFFICE_CODE2, PIC_OFFICE_CODE3, GOLF_TYPE_CD, FEE1, FEE2, FEE3, FEE4, FEE5, FEE6, FEE7, FEE8, FEE9, FEE10, FEE11, FEE12
+		FROM GOLF_INF
+		<include refid="whereList" />
+		ORDER BY GOLF_SEQ
+		<include refid="paging.bottom" />
+	</select>
+
+	<select id="selectGolfInfCount" parameterType="search" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM GOLF_INF
+		<include refid="whereList" />
+	</select>
+
+	<update id="updateGolfInf" parameterType="com.golf.service.model.GolfReceiptInfVO">
+		UPDATE GOLF_RECEIPT_INF
+		<set>
+		    MOD_DATE = NOW(),
+			<if test="rtNumber != null">
+				RT_NUMBER = #{rtNumber,jdbcType=VARCHAR},
+			</if>
+			<if test="rcpInfStat != null">
+		    	RCP_INF_STAT = #{rcpInfStat,jdbcType=VARCHAR},
+		    </if>
+		    <if test="canReason != null">
+		    	CAN_REASON = #{canReason,jdbcType=VARCHAR},
+		    </if>
+		    <if test="pdRecDt != null">
+		    	PD_REC_DT = #{pdRecDt,jdbcType=VARCHAR},
+		    </if>
+		    <if test="pdPay != null and iconFee > 0">
+		    	PD_PAY = #{pdPay,jdbcType=INTEGER},
+		    </if>
+		    <if test="pdDeliPay != null and iconFee > 0">
+		    	PD_DELI_PAY = #{pdDeliPay,jdbcType=INTEGER},
+		    </if>
+		    <if test="iconFee != null and iconFee > 0">
+		    	ICON_FEE = #{iconFee,jdbcType=INTEGER},
+		    </if>
+		</set>
+		WHERE RCP_INF_SEQ = #{rcpInfSeq,jdbcType=INTEGER}
+	</update>
+
+
+	<!-- 스마트스코어 관리자에서 취소하는 경우 전체취소 -->
+	<update id="cancelSmartGolfInf" parameterType="com.golf.service.model.GolfReceiptInfVO">
+		UPDATE GOLF_RECEIPT_INF
+		<set>
+			<if test="canReason != null">
+		    	CAN_REASON = #{canReason,jdbcType=VARCHAR},
+		    </if>
+		    MOD_DATE = NOW(),			
+		    RCP_INF_STAT = #{rcpInfStat,jdbcType=VARCHAR}
+		</set>
+		WHERE RCP_SEQ = #{rcpSeq,jdbcType=INTEGER}
+	</update>
+	
+	<!-- 왕복1차 배송완료시엔 왕복2차만 접수취소 -->
+	<update id="cancelSmartGolfInfComplete" parameterType="com.golf.service.model.GolfReceiptInfVO">
+		UPDATE GOLF_RECEIPT_INF
+		<set>
+			<if test="canReason != null">
+		    	CAN_REASON = #{canReason,jdbcType=VARCHAR},
+		    </if>
+		    MOD_DATE = NOW(),			
+		    RCP_INF_STAT = #{rcpInfStat,jdbcType=VARCHAR}
+		</set>
+		WHERE RCP_NUMBER = #{rcpNumber,jdbcType=INTEGER}
+	</update>
+	
+		
+	<select id="selectReceiptKey" parameterType="com.golf.service.model.GolfReceiptInfVO" resultType="com.golf.service.model.GolfReceiptInfVO">
+		SELECT
+			IFNULL((SELECT
+					  RCP_INF_SEQ
+			  	    FROM GOLF_RECEIPT_INF
+           		    WHERE RT_NUMBER = #{rtNumber,jdbcType=VARCHAR}), 0) RCP_INF_SEQ
+	</select>
+
+	<update id="updateGolfInfScTime" parameterType="com.golf.service.model.GolfReceiptInfVO">
+		UPDATE GOLF_RECEIPT_INF
+	 	   SET SC_TIME = #{scTime,jdbcType=VARCHAR}
+		 	 , MOD_DATE = NOW()
+		  	 , RCP_INF_STAT = #{rcpInfStat,jdbcType=VARCHAR}
+		 WHERE RCP_INF_SEQ = #{rcpInfSeq,jdbcType=INTEGER}
+	</update>
+	
+	<!-- 골프택배 발송정보 접수시 키값리턴 - 키값이 auto increment가 아니여서 어쩔 수 없음  -->
+	<select id="selectMaxReceiptKey" parameterType="com.golf.service.model.GolfReceiptMstVO" resultType="com.golf.service.model.GolfReceiptMstVO">
+		SELECT
+			MAX(RCP_SEQ) RCP_SEQ
+		FROM
+			GOLF_RECEIPT_MST
+	</select>
+	
+	<!-- 골프택배 발송정보 접수 - 챗봇용  -->
+	<insert id="insertReceiptInfChat" parameterType="com.golf.service.model.GolfReceiptInfVO">
+		<selectKey keyProperty="rcpInfSeq,rcpNumber" resultType="com.golf.service.model.GolfReceiptInfVO" order="BEFORE" statementType="PREPARED">
+			<if test="rcpInfSeq == null or rcpInfSeq == 0">
+				SELECT NEXT VALUE FOR RCP_INF_SEQ as rcpInfSeq, CONCAT('GF', DATE_FORMAT(NOW(), '%Y%m%d'), PREVIOUS VALUE FOR RCP_INF_SEQ) as rcpNumber
+			</if>
+		</selectKey>
+
+		INSERT INTO GOLF_RECEIPT_INF
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+				rcp_number,
+			<if test="rcpInfSeq != null">
+				rcp_inf_seq,
+			</if>
+			<if test="rcpSeq != null">
+				rcp_seq,
+			</if>
+			<if test="rcpInfStat != null">
+				rcp_inf_stat,
+			</if>
+			<if test="prdType != null">
+				prd_type,
+			</if>
+			<if test="sendGolfSeq != null and sendGolfSeq > 0">
+				send_golf_seq,
+			</if>
+			<if test="srType != null">
+				sr_type,
+			</if>
+			<if test="cusSendNm != null">
+				cus_send_nm,
+			</if>
+			<if test="cusSendTelnum != null">
+				cus_send_telnum,
+			</if>
+			<if test="cusSendTelnum2 != null">
+				cus_send_telnum2,
+			</if>
+			<if test="cusSendZip != null">
+				cus_send_zip,
+			</if>
+			<if test="cusSendAddr1 != null">
+				cus_send_addr1,
+			</if>
+			<if test="cusSendAddr2 != null">
+				cus_send_addr2,
+			</if>
+			<if test="sendIslYn != null">
+				send_isl_yn,
+			</if>
+			<if test="brStrNm != null">
+				br_str_nm,
+			</if>
+			<if test="brStrCode != null">
+				br_str_code,
+			</if>
+			<if test="cusReNm != null">
+				cus_re_nm,
+			</if>
+			<if test="cusReTelnum != null">
+				cus_re_telnum,
+			</if>
+			<if test="cusReTelnum2 != null">
+				cus_re_telnum2,
+			</if>
+			<if test="cusReZip != null">
+				cus_re_zip,
+			</if>
+			<if test="cusReAddr1 != null">
+				cus_re_addr1,
+			</if>
+			<if test="cusReAddr2 != null">
+				cus_re_addr2,
+			</if>
+			<if test="recvGolfSeq != null and recvGolfSeq > 0">
+				recv_golf_seq,
+			</if>
+			<if test="recvIslYn != null">
+				recv_isl_yn,
+			</if>
+			<if test="brEndNm != null">
+				br_end_nm,
+			</if>
+			<if test="brEndCode != null">
+				br_end_code,
+			</if>
+			<if test="picReqDt != null">
+				pic_req_dt,
+			</if>
+			<if test="pdNm != null">
+				pd_nm,
+			</if>
+			<if test="pdPack != null">
+				pd_pack,
+			</if>
+			<if test="pdGolfCnt != null">
+				pd_golf_cnt,
+			</if>
+			<if test="pdIndivPrice != null">
+				pd_indiv_price,
+			</if>
+			<if test="pdCnt != null and pdCnt > 0">
+				pd_cnt,
+			</if>
+			<if test="bostonCnt != null and bostonCnt > 0">
+				boston_Cnt,
+			</if>
+			<if test="pdEtcPay != null and pdEtcPay > 0">
+				pd_etc_pay,
+			</if>
+			<if test="payType != null">
+				pay_type,
+			</if>
+			<if test="pdDosunPay != null and pdDosunPay > 0">
+				pd_dosun_pay,
+			</if>
+			<if test="pdDeliPay != null and pdDeliPay > 0">
+				pd_deli_pay,
+			</if>
+			<if test="pdPay != null and pdPay > 0">
+				pd_pay,
+			</if>
+			<if test="pdMemo != null">
+				pd_memo,
+			</if>
+			<if test="extComp != null">
+				ext_comp,
+			</if>
+			<if test="extCompTelnum != null">
+				ext_comp_telnum,
+			</if>
+			<if test="rcpKind != null">
+				rcp_kind,
+			</if>
+			<if test="cusReceiptNm != null">
+				cus_receipt_nm,
+			</if>
+			<if test="cusReceiptTelNum != null">
+				cus_receipt_telnum,
+			</if>
+			<if test="userId != null">
+				user_id,
+			</if>
+			<if test="iconFee != null">
+				icon_fee,
+			</if>
+			<if test="changeDeltypeYn != null">
+				change_deltype_yn
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+				#{rcpNumber,jdbcType=VARCHAR},
+			<if test="rcpInfSeq != null">
+				#{rcpInfSeq,jdbcType=INTEGER},
+			</if>
+			<if test="rcpSeq != null">
+				#{rcpSeq,jdbcType=INTEGER},
+			</if>
+			<if test="rcpInfStat != null">
+				#{rcpInfStat,jdbcType=VARCHAR},
+			</if>
+			<if test="prdType != null">
+				#{prdType,jdbcType=INTEGER},
+			</if>
+			<if test="sendGolfSeq != null and sendGolfSeq > 0">
+				#{sendGolfSeq,jdbcType=VARCHAR},
+			</if>
+			<if test="srType != null">
+				#{srType,jdbcType=VARCHAR},
+			</if>
+			<if test="cusSendNm != null">
+				#{cusSendNm,jdbcType=VARCHAR},
+			</if>
+			<if test="cusSendTelnum != null">
+				#{cusSendTelnum,jdbcType=VARCHAR},
+			</if>
+			<if test="cusSendTelnum2 != null">
+				#{cusSendTelnum2,jdbcType=VARCHAR},
+			</if>
+			<if test="cusSendZip != null">
+				#{cusSendZip,jdbcType=VARCHAR},
+			</if>
+			<if test="cusSendAddr1 != null">
+				#{cusSendAddr1,jdbcType=VARCHAR},
+			</if>
+			<if test="cusSendAddr2 != null">
+				#{cusSendAddr2,jdbcType=VARCHAR},
+			</if>
+			<if test="sendIslYn != null">
+				#{sendIslYn,jdbcType=VARCHAR},
+			</if>
+			<if test="brStrNm != null">
+				#{brStrNm,jdbcType=VARCHAR},
+			</if>
+			<if test="brStrCode != null">
+				#{brStrCode,jdbcType=VARCHAR},
+			</if>
+			<if test="cusReNm != null">
+				#{cusReNm,jdbcType=VARCHAR},
+			</if>
+			<if test="cusReTelnum != null">
+				#{cusReTelnum,jdbcType=VARCHAR},
+			</if>
+			<if test="cusReTelnum2 != null">
+				#{cusReTelnum2,jdbcType=VARCHAR},
+			</if>
+			<if test="cusReZip != null">
+				#{cusReZip,jdbcType=VARCHAR},
+			</if>
+			<if test="cusReAddr1 != null">
+				#{cusReAddr1,jdbcType=VARCHAR},
+			</if>
+			<if test="cusReAddr2 != null">
+				#{cusReAddr2,jdbcType=VARCHAR},
+			</if>
+			<if test="recvGolfSeq != null and recvGolfSeq > 0">
+				#{recvGolfSeq,jdbcType=VARCHAR},
+			</if>
+			<if test="recvIslYn != null">
+				#{recvIslYn,jdbcType=VARCHAR},
+			</if>
+			<if test="brEndNm != null">
+				#{brEndNm,jdbcType=VARCHAR},
+			</if>
+			<if test="brEndCode != null">
+				#{brEndCode,jdbcType=VARCHAR},
+			</if>
+			<if test="picReqDt != null">
+				#{picReqDt,jdbcType=VARCHAR},
+			</if>
+			<if test="pdNm != null">
+				#{pdNm,jdbcType=VARCHAR},
+			</if>
+			<if test="pdPack != null">
+				#{pdPack,jdbcType=VARCHAR},
+			</if>
+			<if test="pdGolfCnt != null">
+				#{pdGolfCnt,jdbcType=VARCHAR},
+			</if>
+			<if test="pdIndivPrice != null">
+				#{pdIndivPrice,jdbcType=VARCHAR},
+			</if>
+			<if test="pdCnt != null and pdCnt > 0">
+				#{pdCnt,jdbcType=INTEGER},
+			</if>
+			<if test="bostonCnt != null and bostonCnt > 0">
+				#{bostonCnt,jdbcType=INTEGER},
+			</if>
+			
+			<if test="pdEtcPay != null and pdEtcPay > 0">
+				#{pdEtcPay,jdbcType=INTEGER},
+			</if>
+			<if test="payType != null">
+				#{payType,jdbcType=VARCHAR},
+			</if>
+			<if test="pdDosunPay != null and pdDosunPay > 0">
+				#{pdDosunPay,jdbcType=INTEGER},
+			</if>
+			<if test="pdDeliPay != null and pdDeliPay > 0">
+				#{pdDeliPay,jdbcType=INTEGER},
+			</if>
+			<if test="pdPay != null and pdPay > 0">
+				#{pdPay,jdbcType=INTEGER},
+			</if>
+			<if test="pdMemo != null">
+				#{pdMemo,jdbcType=VARCHAR},
+			</if>
+			<if test="extComp != null">
+				#{extComp,jdbcType=VARCHAR},
+			</if>
+			<if test="extCompTelnum != null">
+				#{extCompTelnum,jdbcType=VARCHAR},
+			</if>
+			<if test="rcpKind != null">
+				#{rcpKind,jdbcType=VARCHAR},				
+			</if>
+			<if test="cusReceiptNm != null">
+				#{cusReceiptNm,jdbcType=VARCHAR},				
+			</if>
+			<if test="cusReceiptTelNum != null">
+				#{cusReceiptTelNum,jdbcType=VARCHAR},				
+			</if>
+			<if test="userId != null">
+				#{userId,jdbcType=VARCHAR},				
+			</if>
+			<if test="iconFee != null">
+				#{iconFee,jdbcType=INTEGER},			
+			</if>
+			<if test="changeDeltypeYn != null">
+				#{changeDeltypeYn,jdbcType=VARCHAR}				
+			</if>
+		</trim>
+	</insert>
+</mapper>

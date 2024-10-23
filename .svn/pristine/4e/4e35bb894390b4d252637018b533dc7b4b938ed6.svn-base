@@ -1,0 +1,135 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head> <!-- 택배접수 -->
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link rel="stylesheet" href="../common/css/common.css" />
+	<link rel="stylesheet" href="../common/css/reset.css" />
+	<link rel="stylesheet" href="../common/css/base.css" />
+	<link rel="stylesheet" href="../common/css/style.css" />
+	<script type="text/javascript" src="/common/js/jquery/jquery-1.11.0.min.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/jquery-migrate-1.4.1.min.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/jquery-ui-1.10.3.custom.min.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/jquery.easing.1.3.min.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/jquery.bxslider.min.js"></script>	
+<title>골프택배</title>
+</head>
+<body>
+	<div id="wrap">
+		<div class="header clearfix">
+			<div class="header_acen">
+				<h1><a href="#">로고</a></h1>
+				<div class="gnb">
+					<ul class="clearfix">
+						<li><a href="#">택배접수</a></li>
+						<li><a href="#">택배조회</a></li>
+						<li><a href="#">정산</a></li>
+						<li><a href="#">골프장관리</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="menu">
+			<a href="#" class="home">홈</a>
+			<a href="#" class="">택배조회</a>
+		</div>
+		<div class="contents inqueryCont">
+			<h2 class="acen">택배조회</h2>
+			
+			<form action="">
+				<table class="inquiry">
+					<colgroup>
+						<col width="2%">
+						<col width="3%">
+						<col width="5.5%">
+						<col width="8%">
+						<col width="8%">
+						<col width="6%">
+						<col width="6%">
+						<col width="8%">
+						<col width="*%">
+						<col width="7%">
+						<col width="7%">
+						<col width="5%">
+						<col width="5%">
+						<col width="8%">
+						<col width="3%">
+						<col width="5%">
+						<col width="5%">
+					</colgroup>
+					<thead>
+						<tr>
+							<th></th>
+							<th>No</th>
+							<th>상태</th>
+							<th>픽업요청일</th>
+							<th>픽업예약번호</th>
+							<th>결제상태</th>
+							<th>택배접수일</th>
+							<th>운송장번호</th>
+							<th>인수완료시간</th>
+							<th>발송지</th>
+							<th>도착지</th>
+							<th>보내는 분</th>
+							<th>받는 분</th>
+							<th>도착골프장</th>
+							<th>수량</th>
+							<th>품목명</th>
+							<th>운임</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><input type="checkbox" /></td>
+							<td>1</td>
+							<td>픽업예약</td>
+							<td>2020-02-21</td>
+							<td>20021754167</td>
+							<td>결제완료</td>
+							<td>2020-02-21</td>
+							<td>20021754167</td>
+							<td>2020-02-21 1:00</td>
+							<td>서울송파거여B</td>
+							<td>서울송파거여B</td>
+							<td>최정아</td>
+							<td>이주연</td>
+							<td>글로벌골프투어</td>
+							<td>1</td>
+							<td>골프용품</td>
+							<td>000,000</td>
+						</tr>
+						
+					</tbody>
+				</table>
+			</form>
+			
+		
+		</div>
+	
+	</div>
+</body>
+
+<script type="text/javascript">
+	
+	
+	$(document).ready(function(){
+		var uploadFile = $('.fileBox .uploadBtn');
+		uploadFile.on('change', function(){
+			if(window.FileReader){
+				var filename = $(this)[0].files[0].name;
+			} else {
+				var filename = $(this).val().split('/').pop().split('\\').pop();
+			}
+			$(this).siblings('.fileName').val(filename);
+		});
+	
+		
+	});
+
+
+</script>
+
+
+
+</html>

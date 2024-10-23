@@ -1,0 +1,170 @@
+#-----------------------------------------------------------------------
+#
+#   globals.properties : \uc2dc\uc2a4\ud15c
+#
+#-----------------------------------------------------------------------
+#   0. Property Editor plugin \uc124\uce58 - \ud544\uc218
+#   1.  key = value \uad6c\uc870\uc785\ub2c8\ub2e4.
+#   2.  key\uac12\uc740 \uacf5\ubc31\ubb38\uc790\ub97c \ud3ec\ud568\ubd88\uac00, value\uac12\uc740 \uacf5\ubc31\ubb38\uc790\ub97c \uac00\ub2a5
+#   3.  key\uac12\uc73c\ub85c \ud55c\uae00\uc744 \uc0ac\uc6a9\ubd88\uac00,   value\uac12\uc740 \ud55c\uae00\uc0ac\uc6a9\uc774 \uac00\ub2a5
+#   4.  \uc904\uc744 \ubc14\uafc0 \ud544\uc694\uac00 \uc788\uc73c\uba74 '\'\ub97c \ub77c\uc778\uc758 \ub05d\uc5d0 \ucd94\uac00(\ub9cc\uc57d  '\'\ubb38\uc790\ub97c \uc0ac\uc6a9\ud574\uc57c \ud558\ub294 \uacbd\uc6b0\ub294 '\\'\ub97c \uc0ac\uc6a9)
+#   5.  Windows\uc5d0\uc11c\uc758 \ub514\ub809\ud1a0\ub9ac \ud45c\uc2dc : '\\' or '/'  ('\' \uc0ac\uc6a9\ud558\uba74 \uc548\ub428)
+#   6.  Unix\uc5d0\uc11c\uc758 \ub514\ub809\ud1a0\ub9ac \ud45c\uc2dc : '/'
+#   7.  \uc8fc\uc11d\ubb38 \ucc98\ub9ac\ub294  #\uc0ac\uc6a9
+#   8.  value\uac12 \ub4a4\uc5d0 \uc2a4\ud398\uc774\uc2a4\uac00 \uc874\uc7ac\ud558\ub294 \uacbd\uc6b0 \uc11c\ube14\ub9bf\uc5d0\uc11c \ucc38\uc870\ud560\ub54c\ub294 \uc5d0\ub7ec\ubc1c\uc0dd\ud560 \uc218 \uc788\uc73c\ubbc0\ub85c trim()\ud558\uac70\ub098 \ub9c8\uc9c0\ub9c9 \uacf5\ubc31\uc5c6\uc774 properties \uac12\uc744 \uc124\uc815\ud560\uac83
+#   9.  ConfigBean \uc758 \ub0b4\uc6a9\ub3c4 \uc774 \ud30c\uc77c\uacfc \ub3d9\uc77c\ud558\uac8c \ub9de\ucdb0\uc57c \ud568.
+#-----------------------------------------------------------------------
+
+################################################## \uc2dc\uc791 ######################################################
+## \uc0ac\uc774\ud2b8 \uc131\uaca9  - local, dev, op
+globals.web.mode = dev
+
+#\uae30\ubcf8 \uc81c\ubaa9 - message.common \ucc38\uc870
+site.baseTitle = [TEST]\uACE8\uD504\uD0DD\uBC30
+
+#\ud398\uc774\uc9c0\ubcc4 \uc81c\ubaa9 : \ucee8\ud2b8\ub864\ub7ec \ubaa8\ub378 attribute \uc774\ub984 (\uc6f9 \uc811\uadfc\uc131 \uc694\uad6c\uc2dc \ud544\uc694) - \ucee8\ud2b8\ub864\ub7ec\uc5d0\uc11c \uc218\ub3d9 \uc785\ub825 \ud544\uc694
+site.pageTitle = pageTitle
+ 
+
+
+#\uad00\ub9ac\uc790 \uc138\uc158 \uc774\ub984
+session.name.admin = golf_session_admin
+
+#\uacc4\uc815 \uad8c\ud55c \uc138\uc158 \uc774\ub984 - \uc778\ud130\uc149\ud130 \ucc38\uc870
+session.name.auth = golf_session_auth
+
+
+#\uc0ac\uc6a9\uc790 \uc138\uc158 \uc774\ub984
+session.name.user = golf_session_user
+#\uc0ac\uc774\ud2b8 \uc815\ubcf4 \uc138\uc158 \uc774\ub984
+session.name.site = golf_session_site
+
+
+#\ud31d\uc5c5\uc6a9 \ucfe0\ud0a4 \uc811\ub450\uc0ac
+cookie.popup.prefix = cookie_for_base_popup
+
+# \uc0ac\uc6a9\ud560 \uc218 \uc5c6\ub294 \uc544\uc774\ub514 : \ube48 \uacf5\uac04 \uc5c6\uc774 \uc27c\ud45c\ub85c \uad6c\ubd84
+cannot.using.id = admin,base
+
+
+# base host
+url.host.local = http://localhost:2020
+url.host.dev = https://test.icexp.co.kr
+url.host.stable = http://sta.kdeim.co.kr
+url.host.op = https://kdhd.icexp.co.kr
+
+
+#CDN : http://base2.cafe24com:8080
+url.cdn.local =
+url.cdn.dev = 
+url.cdn.op = 
+
+
+#\uad00\ub9ac\uc790 \ub8e8\ud2b8
+url.admin.root = /
+url.admin.login = /login/login.do
+url.admin.main = /receipt/receiptList.do
+
+
+#\uc0ac\uc6a9\uc790 - \uacbd\ub3d9\uc5d0\uc11c\ub294 \uc0ac\uc6a9 \uc548\ud568
+url.front.login = /login/login.do
+url.front.main = /index.do
+
+
+#\uc2a4\ud504\ub9c1 \ucee8\ud2b8\ub864\ub7ec \uacb0\uacfc \ucd9c\ub825\uc6a9 \ubdf0 \ud30c\uc77c
+view.alert = /common/alertPage
+view.error = /common/error
+
+################################################## \ub05d ######################################################
+
+#\uae30\ubcf8 \uc5c5\ub85c\ub4dc \uacbd\ub85c - physical path
+#\uac1c\ubc1c\uc11c\ubc84, \uc6b4\uc601\uc11c\ubc84\ub294 mount point\ub294 \ub2e4\ub984(\uc2ec\ubcfc\ub9ad\ub9c1\ud06c \uc0dd\uc131\uc2dc \uc8fc\uc758)
+upload.path.physical.local = Z:/workspace/Golf/src/main/uploads
+upload.path.physical.dev = /upload/golf
+upload.path.physical.stable = /upload/golf
+upload.path.physical.op = /upload/golf
+
+
+## \uc5c5\ub85c\ub4dc \uac00\uc0c1 \ub514\ub809\ud1a0\ub9ac (\ub8e8\ud2b8) - WAS \uac00\uc0c1\ub514\ub809\ud1a0\ub9ac context \uc124\uc815 \ud544\uc694 
+## \ubaa8\ubc14\uc77c\uacfc \uacf5\ud1b5\uc73c\ub85c \uc0ac\uc6a9\ud560 \uc218 \uc788\ub3c4\ub85d \uc124\uc815\ud560 \uac83
+upload.path.virtual = /upload
+
+
+## \uc5c5\ub85c\ub4dc \ud558\uc704 \ub514\ub809\ud1a0\ub9ac
+#\uc77c\ubc18 \ud30c\uc77c - \uc0ac\uc6a9\ud558\uc9c0 \ub9d0\uac83
+upload.path.common = /com
+#\uc77c\ubc18 \ud30c\uc77c
+upload.path.files = /files
+#\ud14c\uc2a4\ud2b8\uc6a9
+upload.path.test = /test
+#\uc5d0\ub514\ud130\uc6a9
+upload.path.editor = /editor
+#\uc774\ubbf8\uc9c0
+upload.path.image = /image
+#\uce74\uce74\uc624\ud1a1 \uc774\ubbf8\uc9c0 - \uc0ac\uc6a9\ud558\uc9c0\ub9d0\uac83
+upload.path.kakao = /kakao
+#\uc784\uc2dc
+upload.path.temp = /temp
+
+
+#\uc5c5\ub85c\ub4dc \uac00\ub2a5 \ud655\uc7a5\uc790  : \ube48 \uacf5\uac04 \uc5c6\uc774 \uc27c\ud45c\ub85c \uad6c\ubd84
+upload.ext = jpg,gif,bmp,png,xls,xlsx,ppt,pptx,doc,docx,txt,zip,7z,pdf,jpeg,JPEG
+
+#CMS \ud38c\ubc45\ud0b9 \uc804\uc1a1, \uc218\uc2e0 \ub370\uc774\ud130 \uae30\ubcf8 \ub514\ub809\ud1a0\ub9ac
+cms.firmCli.data = /www/golf/golf_firmCli/data
+
+#CMS \ud38c\ubc45\ud0b9 - CMS\ub3d9\uc758\uc11c \ucca8\ubd80\ud30c\uc77c \uae30\ubcf8 \ub514\ub809\ud1a0\ub9ac
+cms.cmsEdi.data = /www/golf/golf_cmsEdi/data
+
+#\uc608\uce58\uae08 \ubc31\uc21c\ud638 \uacc4\uc88c
+deposit.bank.account = 301-0127-1558-71
+deposit.reg.num = 740228-1019226
+
+# administrator informations
+admin.email = mailer@kdexp.com
+admin.name = \uacbd\ub3d9\ud0dd\ubc30
+admin.address = \uacbd\ub3d9\ud0dd\ubc30 
+# \ub300\ud45c \uc804\ud654\ubc88\ud638
+admin.keynumber = 1899-5368
+
+# SMTP Server
+# 211.110.229.165 : base cmc server - linux sendmail
+mail.host = 211.110.229.165
+mail.port = 25
+
+
+#\ud398\uc774\uc2a4\ubd81 api key - \uac1c\ubc1c\uc6a9 - 
+sns.fb.api =
+#\uce74\uce74\uc624 api key - \uac1c\ubc1c\uc6a9 - 
+sns.kakao.api = 
+#\ub124\uc774\ubc84 api key - \uac1c\ubc1c\uc6a9 - 
+sns.naver.api = 
+#\ub2e4\uc74c\uc9c0\ub3c4 api key - \uac1c\ubc1c\uc6a9 -
+map.daum.api = 5ac147e37d0527e5fcd2b0361aa7950e
+
+
+
+# default date format : searchVO \uc124\uc815\ub3c4 \ub3d9\uc77c\ud558\uac8c \ucc98\ub9ac
+common.date.type = yyyy-MM-dd
+common.time.type = HH:mm
+# default email domain list
+common.emails = chol.com, daum.net, dreamwiz.com, empal.com, freechal.com, gmail.com, hanafos.com, hanmail.net, hanmir.com, hotmail.com, korea.com, nate.com, naver.com, netian.com, paran.com, sayclub.com, yahoo.co.kr, yahoo.com
+
+
+
+#\uacbd\ub3d9 - \uc0ac\uc6a9 \uc548\ud568
+# email template (with absolute path)
+# \uc778\uc99d\ubc88\ud638 \ubc1c\uc1a1 - email auth number
+email.auth = /mail/emailAuth.jsp
+# \ud68c\uc6d0\uac00\uc785  - member join
+email.join = /mail/join.jsp
+# \uc77c\ubc18 \uba54\uc77c - general template - do not use 
+email.general = /mail/general.jsp
+# \ube44\ubc00\ubc88\ud638 \ubcc0\uacbd - change password
+email.password = /mail/password.jsp
+# \ud68c\uc6d0 \ud0c8\ud1f4 - withdrawal
+email.withdrawal = /mail/withdrawal.jsp
+# \ubb38\uc758 \ud615\uc2dd - question template
+email.question = /mail/question.jsp
+
+api.key=7835B9C25709472D8060887876450F61

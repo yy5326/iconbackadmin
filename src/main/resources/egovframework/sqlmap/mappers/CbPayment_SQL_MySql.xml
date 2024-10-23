@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cbPayment">
+	<resultMap id="BaseResultMap" type="com.golf.service.model.GolfReceiptPayVO">    
+		<result column="PAY_SEQ" jdbcType="INTEGER" property="paySeq" />
+    	<result column="ORDER_ID" jdbcType="VARCHAR" property="orderId" />
+		<result column="RCP_INF_SEQ" jdbcType="INTEGER" property="rcpInfSeq" />
+		<result column="PAY_MEANS" jdbcType="VARCHAR" property="payMeans" />
+		<result column="PAY_AMT" jdbcType="INTEGER" property="payAmt" />
+		<result column="PAY_STAT" jdbcType="VARCHAR" property="payStat" />
+    	<result column="PD_NAME" jdbcType="VARCHAR" property="pdName" />
+		<result column="TID" jdbcType="VARCHAR" property="tid" />
+		<result column="AID" jdbcType="VARCHAR" property="aid" />
+    	<result column="RCP_INF_STAT" jdbcType="VARCHAR" property="rcpInfStat" />
+    	<result column="PD_CNT" jdbcType="VARCHAR" property="pdCnt" />
+    	<result column="BOSTON_CNT" jdbcType="VARCHAR" property="bostonCnt" />
+		<result column="KAKAO_PAY_STAT" jdbcType="VARCHAR" property="kakaoPayMStat" />
+		<result column="KAKAO_PAY_MESSAGE" jdbcType="VARCHAR" property="kakaoPayMessage" />
+		<result column="USE_YN" jdbcType="VARCHAR" property="useYn" />
+		<result column="PAY_CAN_AMT" jdbcType="VARCHAR" property="payCanAmt" />
+  </resultMap>
+  
+  <select id="selectBySearch" parameterType="search" resultType="com.golf.service.model.GolfReceiptPayVO">
+	   SELECT A.USER_ID
+		    , A.ORDER_ID
+			, CONCAT('골프백(', A.ORDER_ID,')') AS PD_NAME
+			, SUM(B.PD_PAY) AS PAY_AMT
+			, SUM(B.PD_CNT) AS PD_CNT 
+			, SUM(B.BOSTON_CNT) AS BOSTON_CNT 
+			, CASE WHEN IFNULL(B.SR_TYPE,'S') !='R' THEN CB_RCPINFSTAT_CODE(B.RCP_INF_STAT) ELSE '' END RCP_INF_STAT 
+			, A.PAY_STAT
+		    , A.TID
+		    , A.KAKAO_PAY_STAT
+		    , A.KAKAO_PAY_MESSAGE
+       		, CASE WHEN B.RCP_INF_STAT = '1' || B.RCP_INF_STAT = '2' || B.RCP_INF_STAT = '3' THEN 0 ELSE SUM(B.PD_PAY) END PAY_CAN_AMT
+		 FROM GOLF_RECEIPT_PAY A
+		 JOIN GOLF_RECEIPT_INF B ON B.RCP_INF_SEQ = A.RCP_INF_SEQ
+	    WHERE A.ORDER_ID = #{orderId,jdbcType=VARCHAR}
+	      AND A.USE_YN = 'Y'
+  </select>
+  
+  <select id="selectByCnt" parameterType="search" resultType="Integer">
+	  SELECT COUNT(*)
+	    FROM GOLF_RECEIPT_PAY
+	   WHERE ORDER_ID = #{orderId,jdbcType=VARCHAR}
+	   	 AND USER_ID = #{userId,jdbcType=VARCHAR}
+      	 <if test="payStat != '' and payStat != null">
+      	 AND PAY_STAT = #{payStat,jdbcType=VARCHAR}
+      	 </if>
+      	 <if test="tid != '' and tid != null">
+      	 AND TID = #{tid,jdbcType=VARCHAR}
+      	 </if>
+  </select>
+  
+   <insert id="insertKakaoCbPayMentLog" parameterType="com.golf.service.model.GolfReceiptPayVO">
+    INSERT INTO GOLF_HISTORY_PAY
+    <trim prefix="(" suffix=")" suffixOverrides=",">      
+        HIS_PAY_SEQ,
+      <if test="orderId != null">
+        ORDER_ID,
+      </if>
+      <if test="userId != null">
+        USER_ID,
+      </if>
+      <if test="createdDate != null">
+        CREATED_DATE,
+      </if>
+      <if test="approvedDate != null">
+        APPROVED_DATE,
+      </if>
+      <if test="cancelDate != null">
+        CANCEL_DATE,
+      </if>
+      <if test="payAmt != null">
+        PAY_AMT,
+      </if>
+      <if test="taxFree != null">
+        TAX_FREE,
+      </if>
+      <if test="vat != null">
+        VAT,
+      </if>
+      <if test="point != null">
+        POINT,
+      </if>
+      <if test="discount != null">
+        DISCOUNT,
+      </if>
+      <if test="purchaseCorp != null">
+        PURCHASE_CORP,
+      </if>
+      <if test="purchaseCorpCode != null">
+        PURCHASE_CORP_CODE,
+      </if>
+      <if test="issuerCorp != null">
+        ISSUER_CORP,
+      </if>
+      <if test="issuerCorpCode != null">
+        ISSUER_CORP_CODE,
+      </if>
+      <if test="kpPurchaseCorp != null">
+        KP_PURCHASE_CORP,
+      </if>
+      <if test="kpPurchaseCorpCode != null">
+        KP_PURCHASE_CORP_CODE,
+      </if>
+      <if test="kpIssuerCorp != null">
+        KP_ISSUER_CORP,
+      </if>
+      <if test="kpIssuerCorpCode != null">
+        KP_ISSUER_CORP_CODE,
+      </if>
+      <if test="bin != null">
+        BIN,
+      </if>
+      <if test="cardType != null">
+        CARD_TYPE,
+      </if>
+      <if test="installMonth != null">
+        INSTALL_MONTH,
+      </if>
+      <if test="approvedId != null">
+        APPROVED_ID,
+      </if>
+      <if test="cardMid != null">
+        CARD_MID,
+      </if>
+      <if test="intersetFreeInstall != null">
+        INTERSET_FREE_INSTALL,
+      </if>
+      <if test="cardCode != null">
+        CARD_CODE,
+      </if>
+      <if test="failCode != null">
+        FAIL_CODE,
+      </if>
+      <if test="failMessage != null">
+        FAIL_MESSAGE,
+      </if>
+      <if test="failDetailCode != null">
+        FAIL_DETAIL_CODE,
+      </if>
+      <if test="failDetailMessage != null">
+        FAIL_DETAIL_MESSAGE,
+      </if>
+        REG_DATE
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+        (SELECT NEXTVAL(HIS_PAY_SEQ)),
+      <if test="orderId != null">
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null">
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="createdDate != null">
+        #{createdDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="approvedDate != null">
+        #{approvedDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="cancelDate != null">
+        #{cancelDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="payAmt != null">
+        #{payAmt,jdbcType=INTEGER},
+      </if>
+      <if test="taxFree != null">
+        #{taxFree,jdbcType=INTEGER},
+      </if>
+      <if test="vat != null">
+        #{vat,jdbcType=INTEGER},
+      </if>
+      <if test="point != null">
+        #{point,jdbcType=INTEGER},
+      </if>
+      <if test="discount != null">
+        #{discount,jdbcType=INTEGER},
+      </if>
+      <if test="purchaseCorp != null">
+        #{purchaseCorp,jdbcType=VARCHAR},
+      </if>
+      <if test="purchaseCorpCode != null">
+        #{purchaseCorpCode,jdbcType=VARCHAR},
+      </if>
+      <if test="issuerCorp != null">
+        #{issuerCorp,jdbcType=VARCHAR},
+      </if>
+      <if test="issuerCorpCode != null">
+        #{issuerCorpCode,jdbcType=VARCHAR},
+      </if>
+      <if test="kpPurchaseCorp != null">
+        #{kpPurchaseCorp,jdbcType=VARCHAR},
+      </if>
+      <if test="kpPurchaseCorpCode != null">
+        #{kpPurchaseCorpCode,jdbcType=VARCHAR},
+      </if>
+      <if test="kpIssuerCorp != null">
+        #{kpIssuerCorp,jdbcType=VARCHAR},
+      </if>
+      <if test="kpIssuerCorpCode != null">
+        #{kpIssuerCorpCode,jdbcType=VARCHAR},
+      </if>
+      <if test="bin != null">
+        #{bin,jdbcType=VARCHAR},
+      </if>
+      <if test="cardType != null">
+        #{cardType,jdbcType=VARCHAR},
+      </if>
+      <if test="installMonth != null">
+        #{installMonth,jdbcType=VARCHAR},
+      </if>
+      <if test="approvedId != null">
+        #{approvedId,jdbcType=VARCHAR},
+      </if>
+      <if test="cardMid != null">
+        #{cardMid,jdbcType=VARCHAR},
+      </if>
+      <if test="intersetFreeInstall != null">
+        #{intersetFreeInstall,jdbcType=VARCHAR},
+      </if>
+      <if test="cardCode != null">
+        #{cardCode,jdbcType=VARCHAR},
+      </if>
+      <if test="failCode != null">
+        #{failCode,jdbcType=VARCHAR},
+      </if>
+      <if test="failMessage != null">
+        #{failMessage,jdbcType=VARCHAR},
+      </if>
+      <if test="failDetailCode != null">
+        #{failDetailCode,jdbcType=VARCHAR},
+      </if>
+      <if test="failDetailMessage != null">
+        #{failDetailMessage,jdbcType=VARCHAR},
+      </if>
+		NOW()
+    </trim>
+  </insert>
+  
+  <update id="updateKakaoCbPayMent" parameterType="com.golf.service.model.GolfReceiptPayVO">
+  		UPDATE GOLF_RECEIPT_PAY
+  		<set>
+		      <if test="userId != null">
+		        USER_ID = #{userId,jdbcType=VARCHAR},
+		      </if>
+		      <if test="tid != null">
+		        TID = #{tid,jdbcType=VARCHAR},
+		      </if>
+		      <if test="payStat != null">
+		        PAY_STAT = #{payStat,jdbcType=VARCHAR},
+		      </if>
+		      <if test="payMeans != null">
+		        PAY_MEANS = #{payMeans,jdbcType=VARCHAR},
+		      </if>
+			  <if test="aid != null">
+				AID = #{aid,jdbcType=VARCHAR},
+			  </if>
+			  <if test="kakaoPayStat != null">
+				KAKAO_PAY_STAT = #{kakaoPayStat,jdbcType=VARCHAR},
+			  </if>
+			  <if test="kakaoPayMessage != null">
+				KAKAO_PAY_MESSAGE = #{kakaoPayMessage,jdbcType=VARCHAR},
+			  </if>
+			  <if test="payGubun != null">
+				PAY_GUBUN = #{payGubun,jdbcType=VARCHAR},
+			  </if>
+	    </set>
+	    WHERE ORDER_ID = #{orderId,jdbcType=INTEGER}
+  </update>
+  
+</mapper>

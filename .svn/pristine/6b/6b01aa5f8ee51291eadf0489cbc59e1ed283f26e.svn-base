@@ -1,0 +1,14 @@
+<%@ page language="java" contentType="text/html;" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" 		uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt"		uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" 		uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="form" 	uri="http://www.springframework.org/tags/form" %>
+<%@	taglib prefix="s" 		uri="http://www.springframework.org/tags"%>
+<%@ taglib prefix="tt" 		uri="http://dev.tagoplus.co.kr/taglib/tt"%>
+<%@ taglib prefix="tiles"	uri="http://tiles.apache.org/tags-tiles" %>
+
+<c:set var="DATE_FORMAT"><s:eval expression="@globals['common.date.type']" /></c:set>
+<c:set var="TIME_FORMAT"><s:eval expression="@globals['common.time.type']" /></c:set>
+<c:set var="DATE_TIME_FORMAT"><s:eval expression="@globals['common.date.type'] + ' ' + @globals['common.time.type']" /></c:set>
+<c:set var="UPLOAD_ROOT"><s:eval expression="@globals['upload.path.virtual']" /></c:set>
+<c:set var="SERVER_MODE"><s:eval expression="@globals['globals.web.mode']" /></c:set>

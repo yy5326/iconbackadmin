@@ -1,0 +1,90 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="EUC-KR"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link rel="stylesheet" href="../common/css/common.css" />
+	<link rel="stylesheet" href="../common/css/reset.css" />
+	<link rel="stylesheet" href="../common/css/base.css" />
+	<link rel="stylesheet" href="../common/css/style.css" />
+	<script type="text/javascript" src="/common/js/jquery/jquery-1.11.0.min.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/jquery-migrate-1.4.1.min.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/jquery-ui-1.10.3.custom.min.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/jquery.easing.1.3.min.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/jquery.bxslider.min.js"></script>	
+<title>골프택배</title>
+</head>
+<body>
+	<div id="wrap">
+		<div class="header clearfix">
+			<div class="header_acen">
+				<h1><a href="#">로고</a></h1>
+				<div class="gnb">
+					<ul class="clearfix">
+						<li><a href="#">택배접수</a></li>
+						<li><a href="#">택배조회</a></li>
+						<li><a href="#">정산</a></li>
+						<li><a href="#">골프장관리</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="menu">
+			<a href="#" class="home">홈</a>
+			<a href="#" class="">로그인</a>
+		</div>
+		<div class="contents login_cont">
+			<h2 class="acen">로그인</h2>
+			<span class="acen">로그인 하시면 회원 서비스를 이용할 수 있습니다</span>
+			<div class="login">
+				<input type="text" class="id login" placeholder="아이디" />
+				<input type="password" class="pwd login" placeholder="비밀번호" />
+				<a href="#" class="btn acen">로그인</a>
+			</div>
+			
+		</div>
+		<div class="footer">
+			<div class="footer_list">
+				<ul class="clearfix">
+					<li><a href="#">이용약관</a></li>
+					<li><a href="#">개인정보취급방침</a></li>
+					<li><a href="#">이메일주소 무단수집거부</a></li>
+					<li><a href="#">택배표준약관</a></li>
+					<li><a href="#">기업고객</a></li>
+				</ul>
+			</div>
+				<div class="info">
+					<address>(주)경동택배 경기도 김포시 고촌읍 아라육로 57번길(전호리 745)</address>
+					<span>대표 백영길 사업자 등록번호 135-81-29340</span>
+					<p>CopyrightⓒKYOUNGDONG R&D ALL RIGHTS RESERVED</p>
+				</div>
+			
+		</div>	
+	
+	</div>
+</body>
+
+<script type="text/javascript">
+	
+	
+	$(document).ready(function(){
+		var uploadFile = $('.fileBox .uploadBtn');
+		uploadFile.on('change', function(){
+			if(window.FileReader){
+				var filename = $(this)[0].files[0].name;
+			} else {
+				var filename = $(this).val().split('/').pop().split('\\').pop();
+			}
+			$(this).siblings('.fileName').val(filename);
+		});
+	
+		
+	});
+
+
+</script>
+
+
+
+</html>

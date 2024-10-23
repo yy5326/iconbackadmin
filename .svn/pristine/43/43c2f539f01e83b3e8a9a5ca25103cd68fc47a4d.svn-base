@@ -1,0 +1,289 @@
+package com.golf.service.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.golf.model.GeneralModel;
+import com.golf.model.common.PhoneVO;
+
+import lombok.Data;
+
+public @Data class GolfReceiptInfVO implements GeneralModel {
+
+	private static final long serialVersionUID = 5835188151523792726L;
+
+	private int rcpInfSeq = 0;
+    private List<Integer> rcpInfSeqArray = new ArrayList<Integer>();
+	
+	private int rcpSeq = 0;
+	//접수상태
+	private String rcpInfStat;
+	//취소사유
+	private String canReason;
+	//골프접수번호
+	private String rcpNumber;
+	//골프접수번호리스트
+    private List<String> rcpNumberArray = new ArrayList<String>();
+
+	//발송구분
+	private String srType;
+	//택배접수번호
+	private String rtNumber;
+	//배송지불타입
+	private String payType;
+	//발송골프장명
+	private String sendGolfName;
+	//발송골프장순번
+	private int sendGolfSeq = 0;
+	//보내는분이름
+	private String cusSendNm;
+
+	//보내는분연락처
+	private String cusSendTelnum;
+	private PhoneVO cusSendTelnumNo;
+
+	//보내는분기타연락처
+	private String cusSendTelnum2;
+	private PhoneVO cusSendTelnum2No;
+
+	//보내는분우편번호
+	private String cusSendZip;
+	//보내는분주소
+	private String cusSendAddr1;
+	//보내는분상세주소
+	private String cusSendAddr2;
+
+	//보내는분도서산간여부
+	private String sendIslYn;
+	//발송엽업소명
+	private String brStrNm;
+	//발송영업소코드
+	private String brStrCode;
+	//받는분이름
+	private String cusReNm;
+
+	//받는분연락처
+	private String cusReTelnum;
+	private PhoneVO cusReTelnumNo;
+
+	//받는분기타연락처
+	private String cusReTelnum2;
+	private PhoneVO cusReTelnum2No;
+
+	//받는분우편번호
+	private String cusReZip;
+	//받는분주소
+	private String cusReAddr1;
+	//받는분상세주소
+	private String cusReAddr2;
+	//받는분골프장명
+	private String recvGolfName;
+	//받는분골프장순번
+	private int recvGolfSeq = 0;
+	//받는분도서산간여부
+	private String recvIslYn;
+	//도착영업소명
+	private String brEndNm;
+	//도착영업소코드
+	private String brEndCode;
+	//물품명
+	private String pdNm;
+	//포장상태
+	private String pdPack;
+	//기타운임
+	private String pdGolfCnt;
+	//개별단가
+	private String pdIndivPrice;
+	//보스턴백수량
+	private int bostonCnt = 0;
+	//골프백수량
+	private int pdCnt = 0;
+	//기타운임
+	private int pdEtcPay = 0;
+	//도서운임
+	private int pdDosunPay = 0;
+	//배송운임
+	private int pdDeliPay = 0;
+	//총운임
+	private int pdPay = 0;
+	//물품메모
+	private String pdMemo;
+	//픽업희망일
+	private String picReqDt;
+	//인수완료시간
+	private String scTime;
+	//외부업체
+	private String extComp;
+	//외부업체 연락처
+	private String extCompTelnum;
+	//운송장번호
+	private String pdBarcode;
+	//택배접수일시
+	private String pdRecDt;
+	//등록일
+	private String regDate;
+	//수정일
+	private String modDate;
+	//사용여부
+	private String useYn;
+	//사용자
+	private String regUser;
+	//등록구분
+	private String rcpKind;
+	//등록구분명
+	private String rcpKindName;
+	//접수자
+	private String cusReceiptNm;
+	//접수자 전화번호
+	private String cusReceiptTelNum;
+	
+	private int iconFee;
+	
+	private String changeDeltypeYn;
+	
+	//카카오 접수자 ID
+	private String userId;
+	
+	//택배사진 파일명
+	private String fileNm;
+	
+	//편도 왕복 리스트
+	List<GolfReceiptInfVO> list;
+
+	//골프백 사진등록 담당기사 전화번호 (암호화)
+	private byte[] codePhoto;
+	
+	/**
+	 * 배송구분 - 1:편도, 2:왕복
+	 */
+	private String delKind;
+
+	// 경기일
+	private String gameDt;
+
+	// 결제상태(0: 입금대기, 1: 결제완료, 9: 결제취소)
+	private String payStat;
+
+	// 운임체계(1:기본운임, 2:1차특판가, 3:2차특판가)
+	private String fareType;
+
+	//api 수정삭제여부
+	private String golfUpdate;
+	
+	// 결제여부(0 : 아이콘, 1:카카오)
+	private String payGubun;
+	
+	// 결제용 묶음코드
+	private String orderId;
+
+	//api 주소
+	private String outApi;
+	
+	private int discount;
+	
+	/*
+	public String getCusReTelnum() {
+		return this.getCusReTelnumNo().getNo();
+	}
+
+	public void setCusReTelnum(String cusReTelnum) {
+		this.getCusReTelnumNo().setNo(cusReTelnum);
+	}
+	*/
+
+
+	/**
+	 * 접수상태명
+	 * @return
+	 */
+	public String getRcpInfStatName() {
+		if (this.getRcpInfStat() == null)
+			return "";
+		else if (this.getRcpInfStat().equals("0"))
+			return "골프접수";
+		else if (this.getRcpInfStat().equals("1"))
+			return "픽업요청";
+		else if (this.getRcpInfStat().equals("2"))
+			return "택배접수";
+		else if (this.getRcpInfStat().equals("3"))
+			return "배송완료";
+		else if (this.getRcpInfStat().equals("4"))
+			return "접수대기";
+		else if (this.getRcpInfStat().equals("7"))
+			return "골프취소";
+		else if (this.getRcpInfStat().equals("8"))
+			return "픽업취소";
+		else if (this.getRcpInfStat().equals("9"))
+			return "택배취소";
+		else
+			return "";
+	}
+
+	/**
+	 * 품목명
+	 * @return
+	 */
+	public String getPdNmName() {
+		if (this.getPdNm() == null)
+			return "";
+		else if (this.getPdNm().equals("0"))
+			return "골프백";
+		else if (this.getPdNm().equals("1"))
+			return "보스턴백";
+		else if (this.getPdNm().equals("2"))
+			return "기타";
+		else
+			return "";
+	}
+
+	/**
+	 * 배송구분명
+	 * @return
+	 */
+	public String getDelKindName() {
+		if (this.getDelKind() == null)
+			return "";
+		else if (this.getDelKind().equals("1"))
+			return "편도";
+		else if (this.getDelKind().equals("2"))
+			return "왕복";
+		else
+			return "";
+	}
+
+	/**
+	 * 발송구분명
+	 * @return
+	 */
+	public String getSrTypeName() {
+		if (this.getSrType() == null)
+			return "";
+		else if (this.getSrType().equals("S"))
+			return "왕복 1차";
+		else if (this.getSrType().equals("R"))
+			return "왕복 2차";
+		else
+			return "편도";
+	}
+
+	/**
+	 * 결제상태명 (0: 입금대기, 1: 결제완료, 9: 결제취소)
+	 * @return
+	 */
+	public String getPayStatName() {
+		if (this.getPayStat() == null)
+			return "";
+		else if (this.getPayStat().equals("0"))
+			return "결제대기";
+		else if (this.getPayStat().equals("1"))
+			if (this.getPayGubun().equals("0")) {
+				return "일반결제";	
+			}else {
+				return "카카오 결제";
+			}
+		else if (this.getPayStat().equals("9"))
+			return "결제취소";
+		else
+			return "";
+	}
+}

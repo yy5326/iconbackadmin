@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="golfHistory">
+
+	<!-- 골프히스토리 등록  -->
+	<insert id="insertHistory" parameterType="com.golf.service.model.GolfHistoryVO" >
+		<selectKey keyProperty="hisSeq" resultType="int" order="BEFORE" statementType="PREPARED">
+	    	SELECT NEXT VALUE FOR HIS_SEQ
+	  	</selectKey>
+
+		INSERT INTO GOLF_HISTORY
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="hisSeq != null">
+				HIS_SEQ,
+			</if>
+			<if test="rcpNumber != null">
+				RCP_NUMBER,
+			</if>
+			<if test="regUser != null">
+				REG_USER,
+			</if>
+			
+				 REG_DATE,
+				 
+			<if test="historyMemo != null">
+				 HISTORY_MEMO
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="hisSeq != null">
+				#{hisSeq,jdbcType=VARCHAR}, 
+			</if>
+			<if test="rcpNumber != null">
+				#{rcpNumber,jdbcType=VARCHAR}, 
+			</if>
+			<if test="regUser != null">
+				#{regUser,jdbcType=VARCHAR}, 
+			</if>
+				 NOW(),
+			<if test="historyMemo != null">
+				#{historyMemo,jdbcType=VARCHAR}
+			</if>
+		</trim>
+	</insert>
+	
+	<!-- 골프히스토리 배열등록  -->
+	<insert id="insertHistoryArr" parameterType="com.golf.service.model.GolfHistoryVO" >
+		INSERT INTO GOLF_HISTORY
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+				HIS_SEQ,
+				RCP_NUMBER,
+			<if test="regUser != null">
+				REG_USER,
+			</if>
+				 REG_DATE,
+			<if test="historyMemo != null">
+				 HISTORY_MEMO
+			</if>
+		</trim>
+		VALUES
+		<foreach collection="rcpNumberArray" item="rcpNumber" separator=",">
+			(
+			  (SELECT NEXT VALUE FOR HIS_SEQ)
+			, #{rcpNumber,jdbcType=INTEGER}
+			<if test="regUser != null">
+				, #{regUser,jdbcType=VARCHAR}
+			</if>
+			, NOW()
+			
+			<if test="historyMemo != null">
+				, #{historyMemo,jdbcType=VARCHAR}
+			</if>
+			)
+	 	</foreach>
+	</insert>
+</mapper>

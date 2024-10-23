@@ -1,0 +1,103 @@
+<%@ page language="java" contentType="text/html;" pageEncoding="UTF-8"%>
+<%@ include file="/WEB-INF/jsp/common/tags.jsp"%>
+<html>
+<head>
+	<title><s:eval expression="@globals['site.baseTitle']" /></title>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	<meta name="format-detection" content="telephone=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<link rel="stylesheet" href="/common/css/common.css" />
+	<link rel="stylesheet" href="/common/css/reset.css" />
+	<link rel="stylesheet" href="/common/css/base.css" />
+	<link rel="stylesheet" href="/common/css/style.css" />
+	<link rel="stylesheet" href="/common/css/jquery/colorbox/colorbox.css" type="text/css" />
+	<link rel="stylesheet" href="/common/SlickGrid-2.4.19/css/smoothness/jquery-ui.css" type="text/css"/>
+
+	<script type="text/javascript" src="/common/js/jquery/jquery-1.11.0.min.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/jquery-migrate-1.4.1.min.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/jquery-ui-1.10.3.custom.min.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/jquery.ui.datepicker.custom.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/jquery.locator.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/colorbox/jquery.colorbox.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/jquery.oLoader.min.js"></script>
+	<script type="text/javascript" src="/common/js/lib.js"></script>
+    <script type="text/javascript" src="/common/js/common.jquery.util.js"></script>
+    <script type="text/javascript" src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+</head> 
+
+<body> 
+	<form name="form1" id="form1" action="golfCamProc.do" method="post" enctype="multipart/form-data">
+		<div class="mobile">
+			<h1><img src="/common/images/logo/m_logo.jpg" alt="로고" /></h1>
+			<div>
+				<span ><img src="/common/images/listStyle.png" alt="화살표" />골프백 내부사진</span>
+				<div class="filebox">
+					<label for="ex_file">
+						<img id="picex_file" src="/common/images/photo.jpg" alt="사진"/>
+					</label>
+		  			<input type="file" id="ex_file" name="multiFile" class="camera notNull" data-name = "골프백 내부" accept="image/*">
+	  			</div>
+				<input accept="file_extension|image"style="display: none"/>
+			</div>	
+			<div class="pic2">
+				<span><img src="/common/images/listStyle.png" alt="화살표" /> 골프백 외부사진</span>
+				<div class="filebox">
+					<label for="ex_file2">
+						<img id="picex_file2" src="/common/images/photo.jpg" alt="사진"/>
+					</label>
+		  			<input type="file" id="ex_file2" name="multiFile" class="camera notNull" data-name = "골프백 외부" accept="image/*">
+		  		</div>
+				<input accept="file_extension|image" style="display: none"/>
+			</div>			
+		
+			 <input type="button" id="pickUpload" value="전송"/>
+			 <input type="hidden" name = "rcpInfSeq" id="rcpInfSeq" value="${search.rcpInfSeq}"/>
+			 <input type="hidden" name = "regUser" id="regUser" value="${search.regUser}"/>
+		 </div>
+	 </form>
+</body>
+
+
+<script type="text/javascript">
+	$(document).ready(function(){		
+		var objectUrl;
+		if (!('url' in window) && ('webkitURL' in window)) { 
+			window.URL = window.webkitURL; 
+		} 
+		
+		$('.camera').change(function(e){ 
+			var number = $(this).attr("id");
+			var pic = "#pic"+number;
+			objectUrl = URL.createObjectURL(e.target.files[0])
+			$(pic).attr('src', objectUrl); 
+		}); 
+
+		//메모리 누수 방지
+		$("img").load(function() {
+		   URL.revokeObjectURL(objectUrl);
+		});
+		
+		$("#pickUpload").click(function(e){
+			var notNullChk = true;
+			$("#form1").find(".notNull").each(function(index, item){
+				if ($(this).val().trim() == '') {  
+					alert($(this).attr("data-name")+"사진을 등록해주세요.");
+					notNullChk = false;
+					return false;
+				}
+			});	
+			
+			if(notNullChk == true){
+	    		if (confirm("픽업사진을 등록 하시겠습니까?")){
+					oLoaderLoading();
+					setTimeout(function(){
+						$("#form1").submit();
+					}, 1000);
+				}
+			}
+    	});			
+	});
+</script>
+
+</html>

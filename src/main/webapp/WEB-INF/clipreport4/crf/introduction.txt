@@ -1,0 +1,13 @@
+//종책보험 집계표 - json
+/cms/pay/total_insurance_json.crf
+//종책보험 집계표 - query
+/cms/pay/total_insurance_query.crf
+
+
+//지입료 집계표 - json
+/cms/pay/total_crv_json.crf
+
+//지입료 집계표 올드파일 - json
+/cms/pay/total_crv_past_json.crf
+
+
