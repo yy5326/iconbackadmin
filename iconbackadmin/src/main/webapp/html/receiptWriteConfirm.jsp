@@ -1,0 +1,414 @@
+<%@ page language="java" contentType="text/html;" pageEncoding="UTF-8"%>
+<%@ include file="/WEB-INF/jsp/common/tags.jsp"%>
+<%@ include file="/WEB-INF/include/admin_start_html.jsp"%>
+
+		<div class="contents">
+				<h2 class="acen">택배접수</h2>
+				<div id="original">
+					<div class="receiver">
+						<p class="type">보내는 분 <span class="red">*</span><span>표시는 필수 입력사항입니다</span></p>
+						<div class="tableBox">
+							<table>
+								<tr>
+									<th>편도/왕복 <span class="red">*</span></th>
+									<td>
+										${vo.delKind eq '1' ? '편도' : '왕복' }
+									</td>
+								</tr>
+								<tr>
+									<th>이름 <span class="red">*</span></th>
+									<td>${list[0].cusSendNm}</td>
+								</tr>
+								<tr>
+									<th>연락처 <span class="red">*</span></th>
+									<td>${list[0].cusSendTelnum}
+		        						<span class="th">기타 연락처 <span class="red">*</span></span>
+										${list[0].cusSendTelnum2}
+		        					</td>
+								</tr>
+								<tr>
+									<th>골프장 상호</th>
+									<td>
+										${list[0].sendGolfName}
+									</td>
+								</tr>
+								<tr>
+									<th rowspan="3" class="address">주소 <span class="red">*</span></th>
+									<td>
+										${list[0].cusSendZip}
+									</td>
+								</tr>
+								<tr>
+									<td>
+										${list[0].cusSendAddr1}
+									</td>
+								</tr>
+								<tr>
+									<td>
+										${list[0].cusSendAddr2}
+									</td>
+								</tr>
+								<tr>
+									<th>발송영업소 <span class="red">*</span></th>
+									<td>
+										${list[0].brStrNm}
+									</td>
+								</tr>
+								<tr>
+									<th>외부업체 <span class="red">*</span></th>
+									<td>
+										${list[0].extComp}
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+					<div class="sender">
+						<p class="type">받는 분 <span class="red">*</span><span>표시는 필수 입력사항입니다</span></p>
+						<div class="tableBox">
+							<table>
+								<tr>
+									<th>이름 <span class="red">*</span></th>
+									<td>${list[0].cusReNm}</td>
+								</tr>
+								<tr>
+									<th>연락처 <span class="red">*</span></th>
+									<td>${list[0].cusReTelnum}
+		        						<span class="th">기타 연락처 <span class="red">*</span></span>
+		        						${list[0].cusReTelnum2}
+		        					</td>
+								</tr>
+								<tr>
+									<th>골프장 상호 <span class="red">*</span></th>
+									<td>${list[0].recvGolfName}</td>
+								</tr>
+								<tr>
+									<th rowspan="3" class="address">주소 <span class="red">*</span></th>
+									<td>
+										${list[0].cusReZip}
+									</td>
+								</tr>
+								<tr>
+									<td>
+										${list[0].cusReAddr1}
+									</td>
+								</tr>
+								<tr>
+									<td>
+										${list[0].cusReAddr2}
+									</td>
+								</tr>
+								<tr>
+									<th>도착영업소 <span class="red">*</span></th>
+									<td>
+										${list[0].brEndNm}
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+					<div class="product_info">
+						<p class="type">물품정보 <span class="red">*</span><span>표시는 필수 입력사항입니다</span></p>
+						<div class="tableBox">
+							<table>
+								<tr>
+									<th>경기일 <span class="red">*</span></th>
+									<td>
+										${vo.gameDt}
+									</td>
+								</tr>
+								<tr>
+									<th>픽업희망일 <span class="red">*</span></th>
+									<td>
+										${list[0].picReqDt}
+									</td>
+								</tr>
+								<tr>
+									<th>품목명 <span class="red">*</span></th>
+									<td>
+										${list[0].pdNm eq '0' ? '골프백' : list[0].pdNm eq '1' ? '보스턴백' : '기타'}
+									</td>
+								</tr>
+								<tr>
+									<th>포장상태 <span class="red">*</span></th>
+									<td>${list[0].pdPack}</td>
+								</tr>
+								<tr>
+									<th>추가상품 <span class="red">*</span></th>
+									<td>
+										${list[0].pdAdd eq '0' ? '비닐백' : '선택안함'}
+									</td>
+								</tr>
+								<tr>
+									<th>배송구분 <span class="red">*</span></th>
+									<td>
+										${list[0].payType eq '0' ? '현불택배' : '착불택배'}
+									</td>
+								</tr>
+								<tr>
+									<th>수량 <span class="red">*</span></th>
+									<td>
+										${list[0].pdCnt}<span class="unit">개</span>
+										<!-- <a href="#" class="btn">개별단가</a>
+										<span class="th_fee">기타 운임 <span class="red">*</span></span>
+										<input type="text" class="w265" /><span class="unit">원</span> -->
+									</td>
+								</tr>
+								<tr>
+									<th>도서운임 <span class="red">*</span></th>
+									<td>
+										<fmt:formatNumber value="${list[0].pdDosunPay}" pattern="#,###"/><span class="unit">원</span>
+									</td>
+								</tr>
+								<tr>
+									<th>총 합계 <span class="red">*</span></th>
+									<td><fmt:formatNumber value="${list[0].pdPay}" pattern="#,###"/><span class="unit">원</span></td>
+								</tr>
+								<tr>
+									<th>메모</th>
+									<td>${list[0].pdMemo}</td>
+								</tr>
+								<!-- <tr>
+									<th>파일 <span class="red">*</span></th>
+									<td>
+										<div class="fileBox">
+											<label for="uploadBtn" class="btn_file upload acen">파일 선택</label>
+											<input type="text" class="fileName" readonly="readonly" placeholder="선택한 파일이 없음" />
+											<input type="file" id="uploadBtn" class="upload uploadBtn" />
+										</div>
+									</td>
+								</tr> -->
+								<tr>
+									<th>운임구분 <span class="red">*</span></th>
+									<td>입금대기</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</div>
+
+				<c:if test="${vo.delKind eq '2'}">
+					<div id="rotate">
+						<div class="rot_tit">
+							<span></span>
+							<p>왕복 배송지</p>
+						</div>
+						<div class="receiver" style="position: relative;">
+						<p class="type" style="margin-top: 40px;">보내는 분 <span class="red">*</span><span>표시는 필수 입력사항입니다</span><span class="red"></span></p>
+						<div class="tableBox">
+							<table>
+								<tr>
+									<th>이름 <span class="red">*</span></th>
+									<td>
+										${list[1].cusSendNm}
+									</td>
+								</tr>
+								<tr>
+									<th>연락처 <span class="red">*</span></th>
+									<td>
+										${list[1].cusSendTelnum}
+		        						<span class="th">기타 연락처 <span class="red">*</span></span>
+										${list[1].cusSendTelnum2}
+		        					</td>
+								</tr>
+								<tr>
+									<th>골프장 상호</th>
+									<td>
+										${list[1].sendGolfName}
+									</td>
+								</tr>
+								<tr>
+									<th rowspan="3" class="address">주소 <span class="red">*</span></th>
+									<td>
+										${list[1].cusSendZip}
+									</td>
+								</tr>
+								<tr>
+									<td>
+										${list[1].cusSendAddr1}
+									</td>
+								</tr>
+								<tr>
+									<td>
+										${list[1].cusSendAddr2}
+									</td>
+								</tr>
+								<tr>
+									<th>발송영업소 <span class="red">*</span></th>
+									<td>
+										${list[1].brStrNm}
+									</td>
+								</tr>
+								<tr>
+									<th>외부업체 <span class="red">*</span></th>
+									<td>
+										${list[1].extComp}
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+					<div class="sender">
+						<p class="type">받는 분 <span class="red">*</span><span>표시는 필수 입력사항입니다</span></p>
+						<div class="tableBox">
+							<table>
+								<tr>
+									<th>이름 <span class="red">*</span></th>
+									<td>${list[1].cusReNm}</td>
+								</tr>
+								<tr>
+									<th>연락처 <span class="red">*</span></th>
+									<td>
+										${list[1].cusReTelnum}
+		        						<span class="th">기타 연락처 <span class="red">*</span></span>
+										${list[1].cusReTelnum2}
+		        					</td>
+								</tr>
+								<tr>
+									<th>골프장 상호 <span class="red">*</span></th>
+									<td>
+										${list[1].recvGolfName}
+									</td>
+								</tr>
+								<tr>
+									<th rowspan="3" class="address">주소 <span class="red">*</span></th>
+									<td>
+										${list[1].cusReZip}
+									</td>
+								</tr>
+								<tr>
+									<td>
+										${list[1].cusReAddr1}
+									</td>
+								</tr>
+								<tr>
+									<td>
+										${list[1].cusReAddr2}
+									</td>
+								</tr>
+								<tr>
+									<th>도착영업소 <span class="red">*</span></th>
+									<td>
+										${list[1].brEndNm}
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+					<div class="product_info">
+						<p class="type">물품정보 <span class="red">*</span><span>표시는 필수 입력사항입니다</span></p>
+						<div class="tableBox">
+							<table>
+								<!-- <tr>
+									<th>경기일 <span class="red">*</span></th>
+									<td>
+										<input type="text" name="gameDt" class="input datepicker" style="width:90px;" >
+										<a class="calendar datepicker" style="cursor: pointer;"></a>
+									</td>
+								</tr> -->
+								<tr>
+									<th>픽업희망일 <span class="red">*</span></th>
+									<td>
+										${list[1].picReqDt}
+									</td>
+								</tr>
+								<tr>
+									<th>품목명 <span class="red">*</span></th>
+									<td>
+										${list[1].pdNm eq '0' ? '골프백' : list[1].pdNm eq '1' ? '보스턴백' : '기타'}
+									</td>
+								</tr>
+								<tr>
+									<th>포장상태 <span class="red">*</span></th>
+									<td>${list[1].pdPack}</td>
+								</tr>
+								<tr>
+									<th>추가상품 <span class="red">*</span></th>
+									<td>
+										${list[1].pdAdd eq '0' ? '비닐백' : '선택안함'}
+									</td>
+								</tr>
+								<tr>
+									<th>배송구분 <span class="red">*</span></th>
+									<td>
+										${list[1].payType eq '0' ? '현불택배' : '착불택배'}
+									</td>
+								</tr>
+								<tr>
+									<th>수량 <span class="red">*</span></th>
+									<td>
+										${list[1].pdCnt}<span class="unit">개</span>
+										<!-- <a href="#" class="btn">개별단가</a>
+										<span class="th_fee">기타 운임 <span class="red">*</span></span>
+										<input type="text" class="w265" /><span class="unit">원</span> -->
+									</td>
+								</tr>
+								<tr>
+									<th>도서운임 <span class="red">*</span></th>
+									<td><fmt:formatNumber value="${list[1].pdDosunPay}" pattern="#,###"/><span class="unit">원</span></td>
+								</tr>
+								<tr>
+									<th>총 합계 <span class="red">*</span></th>
+									<td><fmt:formatNumber value="${list[1].pdPay}" pattern="#,###"/><span class="unit">원</span></td>
+								</tr>
+								<tr>
+									<th>메모</th>
+									<td>${list[1].pdMemo}</td>
+								</tr>
+								<!-- <tr>
+									<th>파일 <span class="red">*</span></th>
+									<td>
+										<div class="fileBox">
+											<label for="uploadBtn" class="btn_file upload acen">파일 선택</label>
+											<input type="text" class="fileName" readonly="readonly" placeholder="선택한 파일이 없음" />
+											<input type="file" id="uploadBtn" class="upload uploadBtn" />
+										</div>
+									</td>
+								</tr> -->
+								<!-- <tr>
+									<th>운임구분 <span class="red">*</span></th>
+									<td><input type="text" readonly="readonly" class="w265" placeholder="입금대기" /></td>
+								</tr> -->
+							</table>
+						</div>
+					</div>
+				 </div>
+			 </c:if>
+		<div class="receipt receipt02">
+			<a href="javascript:;" id="add" class="btn acen">접수</a>
+			<a href="javascript:history.back();" id="add" class="btn acen cancle">취소</a>
+		</div>
+	</div>
+<%@ include file="/WEB-INF/include/admin_footer_html.jsp"%>
+</body>
+
+<script type="text/javascript">
+
+	$(document).ready(function(){
+		//등록
+		$("#add").click(function(){
+			if (!confirm("접수하시겠습니까?"))
+				return;
+			//$("form").submit();
+			var jsonData = $.extend({}, new Object(JSON.parse('${jsonVO}')), new Object(JSON.parse('${jsonList}')));
+
+			$.ajax({
+				type : "POST",
+				async: false ,
+				url : "receiptProc.do",
+				data : JSON.stringify(jsonData),
+				dataType : "json",
+				contentType: "application/json",
+				success : function(data) {
+					if(data == "true"){
+						alert("접수가 정상적으로 완료되었습니다.");
+						location.href="./receiptList.do";
+					}
+		        },error : function(xhr, status, error) {
+					alert("에러발생  " + xhr.status + "관리자에게 문의 바랍니다.");
+				}
+			});
+		});
+
+	});
+</script>

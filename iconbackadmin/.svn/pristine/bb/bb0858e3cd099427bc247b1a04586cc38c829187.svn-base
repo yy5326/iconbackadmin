@@ -1,0 +1,483 @@
+<%@ page language="java" contentType="text/html;" pageEncoding="EUC-KR"%>
+<%@ include file="/WEB-INF/jsp/common/tags.jsp"%>
+<%@ include file="/WEB-INF/include/admin_start_html.jsp"%>
+
+<div class="contents">
+	<form action="./receipt.do" method="post">
+		<input type="hidden" name="delKind" value="${vo.delKind }">
+		<input type="hidden" name="rcpInfSeq" value="${vo.rcpInfSeq }">
+	
+		<div id="original">
+			<div class="receiver">
+				<p class="type">보내는 분 <span class="red">*</span><span>표시는 필수 입력사항입니다</span></p>
+				<div class="tableBox">
+					<table>
+						<tr>
+							<th>이름 <span class="red">*</span></th>
+							<td>
+								<input type="text" name="list[0].cusSendNm" class="notNull w410" data-name="이름" value="${vo.cusSendNm}"/>
+							</td>
+						</tr>
+						<tr>
+							<th>연락처 <span class="red">*</span></th>
+							<td>
+<c:set var="cusSendTelnum" value="${fn:split(vo.cusSendTelnum,'-')}" />
+
+								<select role="phone1" class="phone">
+									<option value="010" <c:if test="${cusSendTelnum[0] eq '010' }">selected="selected"</c:if>>010</option>
+									<option value="011" <c:if test="${cusSendTelnum[0] eq '011' }">selected="selected"</c:if>>011</option>
+									<option value="016" <c:if test="${cusSendTelnum[0] eq '016' }">selected="selected"</c:if>>016</option>
+									<option value="017" <c:if test="${cusSendTelnum[0] eq '017' }">selected="selected"</c:if>>017</option>
+									<option value="02" <c:if test="${cusSendTelnum[0] eq '02' }">selected="selected"</c:if>>02</option>
+									<option value="032" <c:if test="${cusSendTelnum[0] eq '032' }">selected="selected"</c:if>>032</option>
+									<option value="031" <c:if test="${cusSendTelnum[0] eq '031' }">selected="selected"</c:if>>031</option>
+								</select> -
+        						
+        						<input role="phone1" type="tel" class="notNull phone" maxlength="4" data-name="연락처" value="${cusSendTelnum[1] }" /> -
+        						<input role="phone1" type="tel" class="notNull phone" maxlength="4" data-name="연락처" value="${cusSendTelnum[2] }" />
+        						<input type="hidden" role="phone1" name="list[0].cusSendTelnum">
+        						
+
+<c:set var="cusSendTelnum2" value="${fn:split(vo.cusSendTelnum2,'-')}" />
+        						
+        						<span class="th">기타 연락처 <span class="red">*</span></span>
+								<select role="ephone1" class="phone">
+									<option value="010" <c:if test="${cusSendTelnum2[0] eq '010' }">selected="selected"</c:if>>010</option>
+									<option value="011" <c:if test="${cusSendTelnum2[0] eq '011' }">selected="selected"</c:if>>011</option>
+									<option value="016" <c:if test="${cusSendTelnum2[0] eq '016' }">selected="selected"</c:if>>016</option>
+									<option value="017" <c:if test="${cusSendTelnum2[0] eq '017' }">selected="selected"</c:if>>017</option>
+									<option value="02" <c:if test="${cusSendTelnum2[0] eq '02' }">selected="selected"</c:if>>02</option>
+									<option value="032" <c:if test="${cusSendTelnum2[0] eq '032' }">selected="selected"</c:if>>032</option>
+									<option value="031" <c:if test="${cusSendTelnum2[0] eq '031' }">selected="selected"</c:if>>031</option>
+								</select> -
+        						
+        						<input role="ephone1" type="tel" class="notNull phone" maxlength="4" data-name="기타 연락처" value="${cusSendTelnum2[1] }" /> -
+        						<input role="ephone1" type="tel" class="notNull phone" maxlength="4" data-name="기타 연락처" value="${cusSendTelnum2[2] }" />
+        						<input type="hidden" role="ephone1" name="list[0].cusSendTelnum2">
+        					</td>
+						</tr>
+						<tr>
+							<th>골프장 상호</th>
+							<td>
+								<input type="text" role="golfSearch1" name="list[0].sendGolfName" class="w410" readonly="readonly" value="${vo.sendGolfName}"/>
+								<input type="hidden" role="golfSearch1" name="list[0].sendGolfSeq" class="w410" value="${vo.sendGolfSeq }"/>
+								<a href="javascript:;" role="golfSearch1" class="btn">찾기</a>
+							</td>
+						</tr>
+						<tr>
+							<th rowspan="3" class="address">주소 <span class="red">*</span></th>
+							<td>
+								<input type="text" role="zip1" name="list[0].cusSendZip" placeholder="우편번호" readonly="readonly" onclick="javascript:searchPostcode('zip1');" class="notNull" data-name="주소" value="${vo.cusSendZip}"/>
+								<a href="javascript:searchPostcode('zip1');" class="postcode btn">우편번호 검색</a>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<input type="text" role="zip1" name="list[0].cusSendAddr1" class="w586" placeholder="기본주소" readonly="readonly" onclick="javascript:searchPostcode('zip1');" value="${vo.cusSendAddr1}"/>
+								<input type="hidden" name="list[0].sendIslYn"/>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<input type="text" role="zip1" name="list[0].cusSendAddr2" class="w586" placeholder="상세주소를 입력해 주세요" data-name="상세주소" value="${vo.cusSendAddr2}"/>
+							</td>
+						</tr>
+						<tr>
+							<th>발송영업소 <span class="red">*</span></th>
+							<td>
+								<input type="text" role="golfSearch1" name="list[0].brStrNm" class="notNull" data-name="발송영업소" value="${vo.brStrNm}"/>
+								<input type="hidden" role="golfSearch1" name="list[0].brStrCode"/>
+								<a href="javascript:;" class="btn">찾기</a>
+							</td>
+						</tr>
+						<tr>
+							<th>외부업체</th>
+							<td>
+								<input type="text" name="list[0].extComp" value="${vo.extComp}"/>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div class="sender">
+				<p class="type">받는 분 <span class="red">*</span><span>표시는 필수 입력사항입니다</span></p>
+				<div class="tableBox">
+					<table>
+						<tr>
+							<th>이름 <span class="red">*</span></th>
+							<td><input type="text" name="list[0].cusReNm" class="notNull w410"  data-name="이름" value="${vo.cusReNm}"/></td>
+						</tr>
+						<tr>
+							<th>연락처 <span class="red">*</span></th>
+							<td>
+							
+<c:set var="cusReTelnum" value="${fn:split(vo.cusReTelnum,'-')}" />							
+							
+								<select role="phone2" class="phone">
+									<option value="010" <c:if test="${cusReTelnum[0] eq '010' }">selected="selected"</c:if>>010</option>
+									<option value="011" <c:if test="${cusReTelnum[0] eq '011' }">selected="selected"</c:if>>011</option>
+									<option value="016" <c:if test="${cusReTelnum[0] eq '016' }">selected="selected"</c:if>>016</option>
+									<option value="017" <c:if test="${cusReTelnum[0] eq '017' }">selected="selected"</c:if>>017</option>
+									<option value="02" <c:if test="${cusReTelnum[0] eq '02' }">selected="selected"</c:if>>02</option>
+									<option value="032" <c:if test="${cusReTelnum[0] eq '032' }">selected="selected"</c:if>>032</option>
+									<option value="031" <c:if test="${cusReTelnum[0] eq '031' }">selected="selected"</c:if>>031</option>
+								</select> -
+        						
+        						<input type="tel" role="phone2" class="notNull phone" maxlength="4" data-name="연락처" value="${cusReTelnum[1] }"/> -
+        						<input type="tel" role="phone2" class="notNull phone" maxlength="4" data-name="연락처" value="${cusReTelnum[2] }"/>
+        						<input type="hidden" role="phone2" name="list[0].cusReTelnum">
+        						
+<c:set var="cusReTelnum2" value="${fn:split(vo.cusReTelnum2,'-')}" />        						
+        						
+        						<span class="th">기타 연락처 <span class="red">*</span></span>
+								<select role="ephone2" class="phone">
+									<option value="010" <c:if test="${cusReTelnum2[0] eq '010' }">selected="selected"</c:if>>010</option>
+									<option value="011" <c:if test="${cusReTelnum2[0] eq '011' }">selected="selected"</c:if>>011</option>
+									<option value="016" <c:if test="${cusReTelnum2[0] eq '016' }">selected="selected"</c:if>>016</option>
+									<option value="017" <c:if test="${cusReTelnum2[0] eq '017' }">selected="selected"</c:if>>017</option>
+									<option value="02" <c:if test="${cusReTelnum2[0] eq '02' }">selected="selected"</c:if>>02</option>
+									<option value="032" <c:if test="${cusReTelnum2[0] eq '032' }">selected="selected"</c:if>>032</option>
+									<option value="031" <c:if test="${cusReTelnum2[0] eq '031' }">selected="selected"</c:if>>031</option>
+								</select> -
+        						
+        						<input type="tel" role="ephone2" class="notNull phone" maxlength="4" data-name="기타 연락처" value="${cusReTelnum2[1] }"/> -
+        						<input type="tel" role="ephone2" class="notNull phone" maxlength="4" data-name="기타 연락처" value="${cusReTelnum2[2] }"/>
+        						<input type="hidden" role="ephone2" name="list[0].cusReTelnum2">
+        					</td>
+						</tr>
+						<tr>
+							<th>골프장 상호</th>
+							<td>
+								<input type="text" role="golfSearch2" name="list[0].recvGolfName" class="w410" data-name="골프장 상호" readonly="readonly" value="${vo.recvGolfName}"/>
+								<input type="hidden" role="golfSearch2" name="list[0].recvGolfSeq" class="w410" value="${vo.recvGolfSeq }"/>
+								<a href="javascript:;" role="golfSearch2" class="btn">찾기</a>
+								
+								<input type="hidden" id="golfSeq" name="golfSeq" class="w410" value="0"/>
+							</td>
+						</tr>
+						<tr>
+							<th rowspan="3" class="address">주소 <span class="red">*</span></th>
+							<td>
+								<input type="text" role="zip2" name="list[0].cusReZip" placeholder="우편번호" readonly="readonly" onclick="javascript:searchPostcode('zip2');" class="notNull" data-name="주소" value="${vo.cusReZip}"/>
+								<a href="javascript:searchPostcode('zip2');" class="postcode btn">우편번호 검색</a>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<input type="text" role="zip2" name="list[0].cusReAddr1" class="w586" placeholder="기본주소" readonly="readonly" onclick="javascript:searchPostcode('zip2');" value="${vo.cusReAddr1}"/>
+								<input type="hidden" name="list[0].recvIslYn"/>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<input type="text" role="zip2" name="list[0].cusReAddr2" class="w586" placeholder="상세주소를 입력해 주세요" data-name="상세주소" value="${vo.cusReAddr2}"/>
+							</td>
+						</tr>
+						<tr>
+							<th>도착영업소 <span class="red">*</span></th>
+							<td>
+								<input type="text" role="golfSearch2" name="list[0].brEndNm" class="notNull w410" data-name="도착영업소" value="${vo.brEndNm}"/>
+								<input type="hidden" role="golfSearch2" name="list[0].brEndCode"/>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div class="product_info">
+				<p class="type">물품정보 <span class="red">*</span><span>표시는 필수 입력사항입니다</span></p>
+				<div class="tableBox">
+					<table>
+						<tr>
+							<th>경기일 <span class="red">*</span></th>
+							<td>
+								<input type="text" name="gameDt" class="notNull input datepicker" style="width:90px;" data-name="경기일" value="${vo.gameDt}"/>
+								<a class="calendar datepicker" style="cursor: pointer;"></a>
+							</td>
+						</tr>
+						<tr>
+							<th>픽업희망일 <span class="red">*</span></th>
+							<td>
+								<input type="text" name="list[0].picReqDt" class="notNull input datepicker" style="width:90px;" data-name="픽업희망일" value="${vo.picReqDt}"/>
+								<a class="calendar datepicker" style="cursor: pointer;"></a>
+							</td>
+						</tr>
+						<tr>
+							<th>품목명 <span class="red">*</span></th>
+							<td>
+								<select name="list[0].pdNm" class="notNull w265" data-name="품목명">								
+									<option value="국제골프택배기본" <c:if test="${vo.pdNm eq '국제골프택배기본'}">selected="selected"</c:if>>국제골프택배기본</option>
+									<option value="국제골프택배세트" <c:if test="${vo.pdNm eq '국제골프택배세트'}">selected="selected"</c:if>>국제골프택배세트</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<th>포장상태 <span class="red">*</span></th>
+							<td>
+								<%-- <input type="text" name="list[0].pdPack" class="notNull w410"  data-name="포장상태" value="${vo.pdPack}"/> --%>
+								<!-- <input type="radio" id="pdPackOneWay0" name="list[0].pdPack" value="편도" checked />
+  								<label for="oneWay"><span>편도</span></label>
+								<input type="radio" id="pdPackBack0" name="list[0].pdPack" value="왕복"/>
+  								<label for="back"><span>왕복</span></label> -->
+  								<select name="list[0].pdPack" class="notNull w265" data-name="포장상태">								
+									<option value="편도" <c:if test="${vo.pdPack eq '편도'}">selected="selected"</c:if>>편도</option>
+									<option value="왕복" <c:if test="${vo.pdPack eq '왕복'}">selected="selected"</c:if>>왕복</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<th>배송구분 <span class="red">*</span></th>
+							<td>
+								<select name="list[0].payType" class="notNull w265" data-name="배송구분">
+									<option value="0" <c:if test="${vo.payType eq '0'}">selected="selected"</c:if>>현불택배</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<th>수량 <span class="red">*</span></th>
+							<td>
+								<input type="text" name="list[0].pdCnt" class="notNull w265 input onlyNumber" value="${vo.pdCnt}" data-name="수량" /><span class="unit">개</span>
+								<!-- <a href="#" class="btn">개별단가</a>
+								<span class="th_fee">기타 운임 <span class="red">*</span></span>
+								<input type="text" class="w265" /><span class="unit">원</span> -->
+							</td>
+						</tr>						
+						<tr>
+							<th>골프채 수량 <span class="red">*</span></th>
+							<td>
+								<input type="text" name="list[0].pdGolfCnt" class="notNull w265 input onlyNumber" value="${vo.pdGolfCnt}" data-name="수량" /><span class="unit">개</span>
+							</td>
+						</tr>
+						<tr>
+							<th>도서운임 <span class="red">*</span></th>
+							<td>
+								<input type="text" role="pay" name="list[0].pdDosunPay" class="w265 input onlyNumber" readonly="readonly" value="${vo.pdDosunPay}"/><span class="unit">원</span>
+							</td>
+						</tr>
+						<tr>
+							<th>총 합계 <span class="red">*</span></th>
+							<td><input type="text" role="pay" name="list[0].pdPay" class="w265 input onlyNumber" readonly="readonly" value="${vo.pdPay}"/><span class="unit">원</span></td>
+						</tr>
+						<tr>
+							<th class="memo">메모</th>
+							<td><textarea name="list[0].pdMemo" cols="30" rows="10">${vo.pdMemo}</textarea></td>
+						</tr>
+						<!-- <tr>
+							<th>파일 <span class="red">*</span></th>
+							<td>
+								<div class="fileBox">
+									<label for="uploadBtn" class="btn_file upload acen">파일 선택</label>
+									<input type="text" class="fileName" readonly="readonly" placeholder="선택한 파일이 없음" />
+									<input type="file" id="uploadBtn" class="upload uploadBtn" />
+								</div>
+							</td>
+						</tr> -->
+						<tr>
+							<th>운임구분 <span class="red">*</span></th>
+							<td><input type="text" name="rcpStat" readonly="readonly" class="w265" placeholder="입금대기" /></td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	 </form>
+	<div class="receipt receipt02">
+		<a href="javascript:;" id="" class="btn acen">저장</a>
+		<a href="javascript:history.back();" class="btn acen cancle">취소</a>
+	</div>
+</div>
+
+<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script type="text/javascript">
+
+	$(document).ready(function(){
+		/*
+		var uploadFile = $('.fileBox .uploadBtn');
+		uploadFile.on('change', function(){
+			if(window.FileReader){
+				var filename = $(this)[0].files[0].name;
+			} else {
+				var filename = $(this).val().split('/').pop().split('\\').pop();
+			}
+			$(this).siblings('.fileName').val(filename);
+		});
+		*/
+
+		//라디오버튼 편도/왕복 클릭 시 이벤트
+		/*
+		$("input[name=delKind]").click(function(){
+			if($(this).prop("id") == "oneWay"){
+				$("#rotate").hide();
+				$("input[name$=srType]").attr("disabled",true);
+				$("#rotate :input").attr("disabled",true);
+			}else{
+				$("#rotate").show();
+				$("input[name$=srType]").removeAttr("disabled");
+				$("#rotate :input").removeAttr("disabled");
+			}
+			//운임계산
+			searchIsl();
+		});
+		*/
+
+		//골프장 상호 찾기
+		$("[role^=golfSearch]").not("input[name*=br]").click(function(){
+			parent.$.colorbox({
+				href : './receiptGolfLayer.do?type1='+$(this).attr("role"),
+				overlayClose : false,
+				width : 1000,
+				height : 700,
+				iframe: true
+				/* onComplete: function() {
+					parent.$.colorbox.resize();
+				} */
+			});
+		});
+
+		//접수 시작
+		$("#update").click(function(){
+
+			//phoneNumber
+			addTelNum();
+
+			//등록 전 콤마제거
+			$("input[role=pay]").each(function(){
+				var uncommaData = uncomma($(this).val());
+				$(this).val(uncommaData);
+			});
+
+			//입력값 체크
+			if(checkData()){
+				$("form").submit();
+			}
+		});
+
+	});
+
+	//입력값 체크
+	function checkData(type){
+		var type = ($("input[name=delKind]").val() == "1") ? "#original" : "form";
+		var returnVal = true;
+		$(type+" .notNull").each(function(){
+			if ($.trim($(this).val()) == ""){
+	            alert($(this).attr("data-name")+" 항목을 입력해 주세요.");
+	            $(this).focus();
+	            returnVal = false;
+	            return false;
+			}
+		});
+		return returnVal;
+	}
+
+	//운임 계산 및 도서산간구분값 적용
+	function searchIsl(){
+		var amt = [5000, 30000, 24500];
+		var dosun1 = 0, dosun2 = 0;
+		
+		$("input[role=zip1]:eq(1),input[role=zip2]:eq(1),input[role=zip3]:eq(1),input[role=zip4]:eq(1)").each(function(idx){
+			
+			if ($(this).val().indexOf("제주") > -1) {
+				(idx < 2) ? dosun1 += 1 : dosun2 += 1;
+				$(this).next().val("Y");
+			} else {
+				$(this).next().val("N");
+			}
+		});
+
+		//편도
+		if ($("input[name=delKind]").val() == "1") {
+			
+			if ($("input[role=zip1]:eq(1)").val() != "" && $("input[role=zip2]:eq(1)").val() != "") {
+				$("input[name$=pdDosunPay]:first").val((dosun1 == 1) ? comma(amt[0]) : "0");
+				$("input[name$=pdPay]:first").val((dosun1 == 1) ? comma(amt[0] + amt[1]) : comma(amt[1]));
+			}
+			
+		//왕복
+		} else {
+			
+			if ($("input[role=zip1]:eq(1)").val() != "" && $("input[role=zip2]:eq(1)").val() != "") {
+				$("input[name$=pdDosunPay]:first").val((dosun1 == 1) ? comma(amt[0]) : "0");
+				$("input[name$=pdPay]:first").val((dosun1 == 1) ? comma(amt[0] + amt[2]) : comma(amt[2]));
+			}
+			
+			if ($("input[role=zip3]:eq(1)").val() != "" && $("input[role=zip4]:eq(1)").val() != "") {
+				$("input[name$=pdDosunPay]:last").val((dosun2 == 1) ? comma(amt[0]) : "0");
+				$("input[name$=pdPay]:last").val((dosun2 == 1) ? comma(amt[0] + amt[2]) : comma(amt[2]));
+			}
+		}
+	}
+
+	//전화번호 문자열 확인
+	function addTelNum(){
+		var telArr = new Array();
+		$(".phone").each(function(){
+			telArr.push($(this).attr("role"));
+		});
+		$.unique(telArr);
+		if(telArr.length > 0){
+			for(var i=0; i<telArr.length; i++){
+				var telNum = "";
+				$("[role="+telArr[i]+"]").each(function(idx){
+					if(idx == 3) return false;
+					if($(this).val() != "")
+						telNum += (idx == 0) ? $(this).val() : "-" + $(this).val();
+						//console.log(idx);
+				});
+				//10자리 이상만.. 일단?
+				if(telNum.length > 10) $("input[role="+telArr[i]+"]:last").val(telNum);
+			}
+		}
+	}
+
+	//다음주소 입력 창 오픈
+	function searchPostcode(roleName) {
+		new daum.Postcode({
+	        oncomplete: function(data) {
+
+	            var fullAddr = '';
+	            var extraAddr = '';
+
+	            if (data.userSelectedType === 'R') {
+	                fullAddr = data.roadAddress;
+
+	            } else {
+	                fullAddr = data.jibunAddress;
+	            }
+
+	            if(data.userSelectedType === 'R'){
+	                if(data.bname !== ''){
+	                    extraAddr += data.bname;
+	                }
+	                if(data.buildingName !== ''){
+	                    extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+	                }
+	                fullAddr += (extraAddr !== '' ? ' ('+ extraAddr +')' : '');
+	            }
+
+	            //동시 사용 처리
+	            $("input[role="+roleName+"]").each(function(idx){
+					if(idx == 0)
+						$(this).val(data.zonecode);
+					else if(idx == 1)
+						$(this).val(fullAddr);
+					else
+						$(this).val("").focus();
+	            });
+	    		var targetElement = roleName.replace("zip", "golfSearch");
+	    		$("input[role="+targetElement+"]").each(function(idx){
+	    			//if(idx == 0) $(this).val("").prop("readonly", (targetElement == "golfSearch2") ? true : false);
+	    			if(idx == 0) $(this).val("");
+	    			else if(idx == 1) $(this).val("0");
+	    			else if(idx == 2) $(this).val("").prop("readonly",false);
+	    			else $(this).val("");
+	    		});
+
+	            //운임계산
+	            searchIsl();
+	        }
+	    }).open();
+	}
+</script>
+
+
+
+</html>

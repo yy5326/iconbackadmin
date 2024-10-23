@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="golfFile">
+
+  <resultMap id="BaseResultMap" type="com.golf.service.model.GolfFileVO">
+    <id column="FILE_SEQ" jdbcType="NUMERIC" property="fileSeq" />
+    <result column="RCP_INF_SEQ" jdbcType="VARCHAR" property="rcpInfSeq" />
+    <result column="FILE_CODE" jdbcType="VARCHAR" property="fileCode" />
+    <result column="FILE_NM" jdbcType="VARCHAR" property="fileNm" />
+    <result column="FILE_SV_NM" jdbcType="VARCHAR" property="fileSvNm" />
+    <result column="FILE_CONT_TYPE" jdbcType="VARCHAR" property="fileContType" />
+    <result column="FILE_SIZE" jdbcType="VARCHAR" property="fileSize" />
+    <result column="REG_USER" jdbcType="VARCHAR" property="regUser" />
+    <result column="REG_DATE" jdbcType="VARCHAR" property="regDate" />
+    <result column="USE_YN" jdbcType="VARCHAR" property="useYn" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    FILE_SEQ, RCP_INF_SEQ, FILE_CODE, FILE_NM, FILE_SV_NM, FILE_CONT_TYPE, FILE_SIZE, REG_USER, REG_DATE, USE_YN
+  </sql>
+  
+	<!-- 골프히스토리 등록  -->
+	<insert id="insertFile" parameterType="com.golf.service.model.GolfHistoryVO" >
+		<selectKey keyProperty="fileSeq" resultType="int" order="BEFORE" statementType="PREPARED">
+	    	SELECT NEXT VALUE FOR FILESEQ
+	  	</selectKey>
+
+		INSERT INTO GOLF_RECEIPT_FILE
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="fileSeq != null">
+				FILE_SEQ,
+			</if>
+			<if test="rcpInfSeq != null">
+				RCP_INF_SEQ,
+			</if>
+			<if test="fileCode != null">
+				FILE_CODE,
+			</if>
+			<if test="fileNm != null">
+				FILE_NM,
+			</if>
+			<if test="fileSvNm != null">
+				FILE_SV_NM,
+			</if>
+			<if test="fileContType != null">
+				FILE_CONT_TYPE,
+			</if>
+			<if test="fileSize != null">
+				FILE_SIZE,
+			</if>
+			<if test="regUser != null">
+				REG_USER,
+			</if>
+				 REG_DATE, USE_YN
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="fileSeq != null">
+				#{fileSeq,jdbcType=VARCHAR}, 
+			</if>
+			<if test="rcpInfSeq != null">
+				#{rcpInfSeq,jdbcType=VARCHAR}, 
+			</if>
+			<if test="fileCode != null">
+				#{fileCode,jdbcType=VARCHAR}, 
+			</if>
+			<if test="fileNm != null">
+				#{fileNm,jdbcType=VARCHAR}, 
+			</if>
+			<if test="fileSvNm != null">
+				#{fileSvNm,jdbcType=VARCHAR}, 
+			</if>
+			<if test="fileContType != null">
+				#{fileContType,jdbcType=VARCHAR}, 
+			</if>
+			<if test="fileSize != null">
+				#{fileSize,jdbcType=VARCHAR}, 
+			</if>
+			<if test="regUser != null">
+				#{regUser,jdbcType=VARCHAR}, 
+			</if>
+				 NOW(), 'Y'
+		</trim>
+	</insert>
+	
+	<select id="selectByKey" parameterType="search" resultMap="BaseResultMap">
+	   SELECT 
+	   <include refid="Base_Column_List" />
+	   FROM GOLF_RECEIPT_FILE
+	  WHERE RCP_INF_SEQ = #{rcpInfSeq,jdbcType=VARCHAR}
+	    AND USE_YN = 'Y'
+	  ORDER BY FILE_SEQ ASC
+	 </select>
+	 
+	<update id="updateFile" parameterType="search">
+    	UPDATE GOLF_RECEIPT_FILE
+	    <set>
+	        USE_YN = 'N'
+	    </set>
+	    WHERE RCP_INF_SEQ = #{rcpInfSeq,jdbcType=VARCHAR}
+	      AND FILE_SV_NM = #{fileSvNm,jdbcType=VARCHAR}
+    </update>
+</mapper>

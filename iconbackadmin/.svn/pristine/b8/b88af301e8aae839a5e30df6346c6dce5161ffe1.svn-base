@@ -1,0 +1,16 @@
+<%@ page language="java" contentType="text/html;charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ include file="/WEB-INF/jsp/common/tags.jsp"%>
+<%--
+	헤더
+		1. menuType : 인터셉터 참조
+--%>
+<div class="topbar">
+	<div class="topbar-left">
+		<a class="logo">
+			<img src="/images/kd_logo.jpg" style="margin-right: 10px;" />
+			<img src="/images/hd_logo.jpg" />
+		</a>
+	</div>
+	<div class="utmu">
+	</div><!-- utmu_end -->
+</div><!-- topbar end -->

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cbGolfInfo">
+  <resultMap id="BaseResultMap" type="com.golf.chat.vo.CbGolfInfoVo">
+    <id column="GOLF_SEQ" jdbcType="NUMERIC" property="golfSeq" />
+    <result column="GOLF_NAME" jdbcType="VARCHAR" property="golfName" />
+    <result column="GOLF_TELNUM" jdbcType="VARCHAR" property="golfTelnum" />
+    <result column="GOLF_ADDR" jdbcType="VARCHAR" property="golfAddr" />
+    <result column="ISL_YN" jdbcType="VARCHAR" property="islYn" />
+    <result column="FEE1" jdbcType="NUMERIC" property="fee1" />
+    <result column="FEE4" jdbcType="NUMERIC" property="fee4" />
+    <result column="USE_YN" jdbcType="VARCHAR" property="useYn" />
+    <result column="GOLF_ADDR1" jdbcType="VARCHAR" property="golfAddr1" />
+    <result column="GOLF_ADDR2" jdbcType="VARCHAR" property="golfAddr2" />
+    <result column="ZIP_CODE" jdbcType="VARCHAR" property="zipCode" />
+    
+  </resultMap>
+  
+  <select id="selectByCnt" parameterType="search" resultType="Integer">
+  	 SELECT COUNT(*) CNT FROM GOLF_INF A
+  	 <if test="golfName != null and golfName != '' and golfName != 'string'">
+  	 WHERE A.GOLF_NAME LIKE '%${golfName}%'
+  	 </if>
+  </select>
+  
+  <select id="selectBySearch" parameterType="search" resultType="com.golf.chat.vo.CbGolfInfoVo">
+  	SELECT A.GOLF_SEQ, A.GOLF_NAME, IFNULL(A.GOLF_TELNUM, A.GOLF_TELNUM2) AS GOLF_TELNUM
+  		 , CONCAT(A.GOLF_ADDR1, A.GOLF_ADDR2) AS GOLF_ADDR
+  		 , CASE WHEN A.USE_YN = 'Y' THEN '가능' 
+  		        WHEN A.USE_YN = 'N' THEN '불가능'
+  		        ELSE '확인필요' END USE_YN
+  		 , CASE WHEN A.ISL_YN ='Y' THEN '도서' ELSE '내륙' END ISL_YN
+  		 , A.GOLF_ADDR1, A.GOLF_ADDR2, A.ZIP_CODE
+  	  FROM GOLF_INF A
+  	 WHERE A.GOLF_NAME LIKE '%${golfName}%'
+  	 ORDER BY A.GOLF_SEQ ASC
+  	 <if test="pageNum != 0 or pageItemNum != 0">
+	 	LIMIT ${pageNum} , ${pageItemNum}
+	 </if>
+  </select>
+  
+</mapper>

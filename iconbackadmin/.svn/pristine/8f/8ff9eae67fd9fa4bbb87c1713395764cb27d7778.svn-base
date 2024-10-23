@@ -1,0 +1,190 @@
+<?xml version="1.0" ?>
+
+<project name="Golf" default="default">
+	<property file="ant.properties" />
+
+	<target name="clean" description="Clean...">
+		<delete dir="${dir.dist}" />
+	</target>
+
+	<target name="init" depends="clean" description="Initializing...">
+		<mkdir dir="${dir.dist}" />
+		<mkdir dir="${dir.dist.classes}" />
+		<!--컴파일 시 참조 jar 추가-->
+		<path id="compile.classpath">
+			<fileset dir="${dir.lib}" includes="*.jar" />
+			<fileset dir="${dir.was.lib}" includes="servlet-api*.jar" />
+		</path>
+	</target>
+	
+	<target name="build" depends="init" description="Build...">
+		<!-- 컴파일 
+			debug="true" : 이클립스 개발환경은 기본적으로 디버그 모드 활성
+				ant build를 이용할 경우 debug 모드가 false로 작동하는 관계로 스프링 컨트롤러의 파라미터 개수에 맞춰 파라미터를 전달하지 않을 경우 500 오류 발생
+					ex) @RequestBody(),  @RequestParam() 어노테이션을 사용할 경우, 클래스 컴파일 모드가 debug="false"일 경우, required=false를 설정해도 반드시 파라미터를 전달해야 함.
+		-->
+		<javac srcdir="${dir.src}" destdir="${dir.dist.classes}" debug="true" classpathref="compile.classpath" includeantruntime="false" />
+		
+		<!-- 웹 리소스 복사 : 로컬 classes, html 코딩 디렉토리 제외 -->
+		<copy todir="${dir.dist}">
+			<fileset dir="${dir.www}">
+				<exclude name="**/WEB-INF/classes/**"/>
+				<!--<exclude name="**/html/**"/>-->
+			</fileset>
+		</copy>
+		
+		<!-- resources 복사 -->
+		<copy todir="${dir.dist.classes}">
+			<fileset dir="${dir.res}" />
+		</copy>
+		
+		<!-- 
+			업로드 파일
+			ant copy : overwrite : 기본값: 대상(target) 파일의 생성 시각이 오래됐을 경우만 overwrite 
+				※ KDExpress ant는 war구성 디렉토리를 항상 새로 만들어서 war압축하므로 의미 없음 
+			가끔씩만 진행 필요 - 용량이 너무 큼
+		-->
+		<!--
+		<copy todir="${dir.dist.upload}" verbose="true" overwrite="true">
+			<fileset dir="${dir.upload}/" includes="files/**" />
+			<fileset dir="${dir.upload}/" includes="editor/**" />
+		</copy>
+		-->
+		
+		<!-- only dev index.jsp to start.jsp -->
+		<move file="${dir.dist}/index.jsp" 
+			tofile="${dir.dist}/start.jsp" />
+		
+		
+		<!-- 환경설정 파일 변경 -->
+		<move file="${dir.dist}/WEB-INF/classes/egovframework/egovProps/db.dev.properties" 
+			tofile="${dir.dist}/WEB-INF/classes/egovframework/egovProps/db.properties" />
+		<delete file="${dir.dist}/WEB-INF/classes/egovframework/egovProps/db.op.properties" />
+		<delete file="${dir.dist}/WEB-INF/classes/egovframework/egovProps/db.stable.properties" />
+		
+		<move file="${dir.dist}/WEB-INF/classes/egovframework/egovProps/globals.dev.properties" 
+			tofile="${dir.dist}/WEB-INF/classes/egovframework/egovProps/globals.properties" />		
+		<delete file="${dir.dist}/WEB-INF/classes/egovframework/egovProps/globals.op.properties" />
+		<delete file="${dir.dist}/WEB-INF/classes/egovframework/egovProps/globals.stable.properties" />
+		
+		<move file="${dir.dist}/WEB-INF/classes/egovframework/egovProps/log4j.dev.xml" 
+			tofile="${dir.dist}/WEB-INF/classes/egovframework/egovProps/log4j.xml" />
+		<delete file="${dir.dist}/WEB-INF/classes/egovframework/egovProps/log4j.op.xml" />
+		
+		<move file="${dir.dist}/WEB-INF/classes/log4j2.dev.xml" 
+			tofile="${dir.dist}/WEB-INF/classes/log4j2.xml" />
+		<delete file="${dir.dist}/WEB-INF/classes/log4j2.op.xml" />
+		
+		<move file="${dir.dist}/WEB-INF/classes/egovframework/spring/com/context.dev-common.xml" 
+			tofile="${dir.dist}/WEB-INF/classes/egovframework/spring/com/context-common.xml" />
+		<delete file="${dir.dist}/WEB-INF/classes/egovframework/spring/com/context.op-common.xml" />
+		
+		<move file="${dir.dist}/WEB-INF/classes/egovframework/spring/com/context.dev-datasource.xml" 
+			tofile="${dir.dist}/WEB-INF/classes/egovframework/spring/com/context-datasource.xml" />
+		<delete file="${dir.dist}/WEB-INF/classes/egovframework/spring/com/context.op-datasource.xml" />
+		
+		<move file="${dir.dist}/WEB-INF/classes/egovframework/spring/com/context.dev-transaction.xml" 
+			tofile="${dir.dist}/WEB-INF/classes/egovframework/spring/com/context-transaction.xml" />
+		<delete file="${dir.dist}/WEB-INF/classes/egovframework/spring/com/context.op-transaction.xml" />
+		
+		
+		<!-- CLIP report tool config file -->
+		<move file="${dir.dist}/WEB-INF/clipreport4/DataConnection.dev.properties" 
+					tofile="${dir.dist}/WEB-INF/clipreport4/DataConnection.properties" />
+				<delete file="${dir.dist}/WEB-INF/clipreport4/DataConnection.op.properties" />
+				<delete file="${dir.dist}/WEB-INF/clipreport4/DataConnection.stable.properties" />
+		
+		<move file="${dir.dist}/WEB-INF/clipreport4/License.dev.properties" 
+					tofile="${dir.dist}/WEB-INF/clipreport4/License.properties" />
+				<delete file="${dir.dist}/WEB-INF/clipreport4/License.op.properties" />
+				<delete file="${dir.dist}/WEB-INF/clipreport4/License.stable.properties" />
+		
+		
+		<!-- war -->
+		<war destfile="${dir.dist}/${projectName}.war">
+			<fileset dir="${dir.dist}"/>
+		</war>
+	</target>
+	
+	<target name="default" depends="build" />
+	
+		<!--
+		<jar destfile="${dir.dist}/${projectName}.jar">
+			<fileset dir="${dir.classes}" />
+			<fileset dir="${dir.src}">
+				<include name="**/*.properties" />
+				<exclude name="**/*.java" />
+			</fileset>
+		</jar>
+		-->
+		
+		
+		<!--
+		<mkdir dir="${dir.dist}/lib" />
+		-->
+
+		<!--
+		<copy todir="${dir.classes}/res/">
+			<fileset dir="${dir.res}/">
+				<include name="**/*.*" />
+				<exclude name="**/*.db" />
+			</fileset>
+		</copy>
+		-->
+		
+		<!--
+		<copy todir="${dir.src}/res/">
+			<fileset dir="${dir.res}/">
+				<include name="**/*.*" />
+				<exclude name="**/*.db" />
+			</fileset>
+		</copy>
+		-->
+		
+		<!--
+		<copy todir="${dir.dist}/lib">
+			<fileset dir="${dir.lib}">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+		-->
+
+		
+	
+
+	<!--
+	<target name="createKey">
+		<echo level="info">Create SignKey...</echo>
+		<delete file="${basedir}/${keystore}" />
+		<exec dir="." executable="keytool">
+			<arg value="-genkey" />
+			<arg value="-alias" />
+			<arg value="${alias}" />
+			<arg value="-keystore" />
+			<arg value="${keystore}" />
+			<arg value="-keypass" />
+			<arg value="${keypass}" />
+			<arg value="-dname" />
+			<arg value="${dname}" />
+			<arg value="-storepass" />
+			<arg value="${storepass}" />
+		</exec>
+	</target>
+
+	<target name="sign" depends="build" description="Sign JAR">
+		<echo level="info">Signing SWT JARS...</echo>
+		<signjar jar="${dir.dist}/${projectName}.jar" keystore="${keystore}" alias="${alias}" storepass="${storepass}" keypass="${keypass}" />
+		<signjar jar="${dir.dist}/lib/swt-win32-win32.jar" keystore="${keystore}" alias="${alias}" storepass="${storepass}" keypass="${keypass}" />
+		<signjar jar="${dir.dist}/lib/swt-motif-linux-x86.jar" keystore="${keystore}" alias="${alias}" storepass="${storepass}" keypass="${keypass}" />
+		<echo level="info">Signing Other JARS...</echo>
+		<signjar jar="${dir.dist}/lib/jamod.jar" keystore="${keystore}" alias="${alias}" storepass="${storepass}" keypass="${keypass}" />
+		<signjar jar="${dir.dist}/lib/jcommon-1.0.14.jar" keystore="${keystore}" alias="${alias}" storepass="${storepass}" keypass="${keypass}" />
+		<signjar jar="${dir.dist}/lib/jfreechart-1.0.11.jar" keystore="${keystore}" alias="${alias}" storepass="${storepass}" keypass="${keypass}" />
+		<signjar jar="${dir.dist}/lib/poi-3.2-FINAL-20081019.jar" keystore="${keystore}" alias="${alias}" storepass="${storepass}" keypass="${keypass}" />
+		<signjar jar="${dir.dist}/lib/RXTXcomm.jar" keystore="${keystore}" alias="${alias}" storepass="${storepass}" keypass="${keypass}" />
+	</target>
+	-->
+
+	
+	
+</project>
