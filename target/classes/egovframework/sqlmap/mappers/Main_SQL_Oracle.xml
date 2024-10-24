@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="main">
+	<resultMap id="BaseResultMap" type="com.golf.service.model.MainVO">
+		<id column="SC_IDX" jdbcType="NUMERIC" property="scIdx" />
+		<result column="PD_BARCODE" jdbcType="VARCHAR" property="pdBarcode" />
+		<result column="SC_GUBUN" jdbcType="VARCHAR" property="scGubun" />
+		<result column="SC_NM" jdbcType="VARCHAR" property="scNm" />
+		<result column="SC_ID" jdbcType="VARCHAR" property="scId" />
+		<result column="SC_TELNUM" jdbcType="VARCHAR" property="scTelnum" />
+		<result column="SC_TIME" jdbcType="TIMESTAMP" property="scTime" />
+		<result column="SC_REGDT" jdbcType="TIMESTAMP" property="scRegdt" />
+		<result column="SC_STAT" jdbcType="NUMERIC" property="corpNo" />
+		<result column="SC_DELI_STAT" jdbcType="NUMERIC" property="corpPhone" />
+	</resultMap>
+	
+	
+	<sql id="select">
+		SC_IDX, PD_BARCODE, SC_GUBUN, SC_NM, SC_ID, SC_TELNUM
+	</sql>
+	
+	
+	<select id="selectList" resultMap="BaseResultMap">
+		SELECT 
+		<include refid="select" />
+		FROM T_SCAN_M_201848
+	</select>
+	
+	
+	
+</mapper>

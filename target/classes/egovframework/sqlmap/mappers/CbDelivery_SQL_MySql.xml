@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cbDelivery">
+  <resultMap id="BaseResultMap" type="com.golf.chat.vo.CbDeliveryVO">
+	<id column="USER_ID" jdbcType="VARCHAR" property="userId" />
+    <result column="RCP_NUMBER" jdbcType="VARCHAR" property="rcpNumber" />
+    <result column="DEL_KIND" jdbcType="VARCHAR" property="delKind" />
+    <result column="SR_TYPE" jdbcType="VARCHAR" property="srType" />
+    <result column="RCP_INF_SEQ" jdbcType="VARCHAR" property="rcpInfSeq" />
+    <result column="RCP_INF_STAT" jdbcType="VARCHAR" property="rcpInfStat" />
+    <result column="PD_PAY" jdbcType="VARCHAR" property="pdPay" />
+    <result column="PD_INDIV_PRICE" jdbcType="VARCHAR" property="pdIndivPrice" />
+    <result column="ORDER_ID" jdbcType="VARCHAR" property="orderId" />
+    <result column="EXT_COMP" jdbcType="VARCHAR" property="extComp" />
+    <result column="PD_BARCODE" jdbcType="VARCHAR" property="pdBarcode" />
+    <result column="EXT_COMP_TELNUM" jdbcType="VARCHAR" property="extCompTelNum" />
+    <result column="REG_DATE" jdbcType="VARCHAR" property="regDate" />
+    <result column="CAN_REASON" jdbcType="VARCHAR" property="canReason" />
+    
+    <result column="CUS_RECEIPT_NM" jdbcType="VARCHAR" property="cusReceiptNm" />
+    <result column="CUS_RECEIPT_TELNUM" jdbcType="VARCHAR" property="cusReceiptTelNum" />
+    <result column="GAME_DT" jdbcType="VARCHAR" property="gameDt" />
+    <result column="GAME_END_DT" jdbcType="VARCHAR" property="gameEndDt" />
+    <result column="PD_GOLF_CNT" jdbcType="VARCHAR" property="pdGolfCnt" />
+    <result column="PD_CNT" jdbcType="VARCHAR" property="pdCnt" />
+    <result column="CUS_SEND_NM" jdbcType="VARCHAR" property="cusSendNm" />
+    <result column="CUS_SEND_ADDR1" jdbcType="VARCHAR" property="cusSendAddr1" />
+    <result column="CUS_SEND_ADDR2" jdbcType="VARCHAR" property="cusSendAddr2" />
+    <result column="CUS_SEND_TELNUM" jdbcType="VARCHAR" property="cusSendTelNum" />
+    <result column="CUS_SEND_ZIP" jdbcType="VARCHAR" property="cusSendZip" />
+    <result column="PIC_REQ_DT" jdbcType="VARCHAR" property="picReqDt" />
+    <result column="CUS_RE_NM" jdbcType="VARCHAR" property="cusReNm" />
+    <result column="CUS_RE_TELNUM" jdbcType="VARCHAR" property="cusReTelNum" />        
+    <result column="CUS_RE_ZIP" jdbcType="VARCHAR" property="cusReZip" />    
+    <result column="CUS_RE_GOLF_NAME" jdbcType="VARCHAR" property="cusReGolfName" />
+    <result column="CUS_RE_ADDR1" jdbcType="VARCHAR" property="cusReAddr1" />
+    <result column="CUS_RE_ADDR2" jdbcType="VARCHAR" property="cusReAddr2" />    
+    <result column="PD_REC_DT" jdbcType="VARCHAR" property="pdRecDt" />
+    <result column="PD_MEMO" jdbcType="VARCHAR" property="pdMemo" />
+    <result column="RT_PIC_REQ_DT" jdbcType="VARCHAR" property="rtPicReqDt" />
+    <result column="RT_CUS_RE_TELNUM" jdbcType="VARCHAR" property="rtCusReTelNum" />
+    <result column="RT_CUS_RE_NM" jdbcType="VARCHAR" property="rtCusReNm" />
+    <result column="RT_CUS_RE_ADDR1" jdbcType="VARCHAR" property="rtCusReAddr1" />
+    <result column="RT_CUS_RE_ADDR2" jdbcType="VARCHAR" property="rtCusReAddr2" />
+    <result column="RT_CUS_RE_ZIP" jdbcType="VARCHAR" property="rtCusReZip" />
+    <result column="SEND_GOLF_SEQ" jdbcType="VARCHAR" property="sendGolfSeq" />
+    <result column="RECV_GOLF_SEQ" jdbcType="VARCHAR" property="recvGolfSeq" />
+    <result column="SEND_ISL_YN" jdbcType="VARCHAR" property="sendIslYn" />
+    <result column="RECV_ISL_YN" jdbcType="VARCHAR" property="recvIslYn" />
+    <result column="GOLF_PHOTO" jdbcType="VARCHAR" property="golfPhoto" />
+    <result column="CHANGE_DELTYPE_YN" jdbcType="VARCHAR" property="changeDeltypeYn" />
+    
+  </resultMap>
+  
+  <select id="selectByCnt" parameterType="String" resultType="com.golf.chat.vo.CbCommonVO">
+  	SELECT COUNT(*) CNT
+  	  FROM GOLF_RECEIPT_INF
+  	 WHERE USER_ID = #{userId,jdbcType=VARCHAR}
+  	   AND RCP_KIND = #{rcpKind,jdbcType=VARCHAR}
+  </select>
+  
+  
+  <select id="selectBySearch" parameterType="search" resultType="com.golf.chat.vo.CbDeliveryVO">
+   <!-- 챗봇에서는 모두 골프취소로 표기 -->
+  	SELECT A.USER_ID
+  	     , A.RCP_NUMBER
+	     , B.GOLF_NAME
+	     , CASE WHEN C.DEL_KIND = '2' THEN '왕복' ELSE '편도' END DEL_KIND
+	     , CASE WHEN A.SR_TYPE = 'R' THEN '회수' ELSE '발송' END SR_TYPE	   
+	     , CASE WHEN A.RCP_INF_STAT = '0' THEN CB_PAYSTAT_CODE(F.PAY_STAT, F.PAY_GUBUN) ELSE CB_RCPINFSTAT_CODE(A.RCP_INF_STAT) END RCP_INF_STAT  <!-- 골프접수인 경우 결제상태 리턴 -->      
+	     , CASE WHEN C.DEL_KIND = '2' THEN (SELECT SUM(G.PD_PAY) FROM GOLF_RECEIPT_INF G WHERE G.RCP_SEQ = C.RCP_SEQ) ELSE A.PD_PAY END PD_PAY	  <!--  왕복 시 합산금액 표시 -->
+         , A.PD_INDIV_PRICE
+	     , CASE WHEN C.DEL_KIND = '2' THEN CONCAT('GRP',A.RCP_SEQ) ELSE '' END  ORDER_ID
+	     , A.PD_BARCODE
+	     , A.EXT_COMP
+	     , REPLACE(A.EXT_COMP_TELNUM,'-','') AS EXT_COMP_TELNUM
+	     , A.REG_DATE
+	     , IFNULL(A.CAN_REASON,'') AS CAN_REASON
+		 , A.CUS_RE_ADDR1
+		 , IFNULL(A.CUS_RE_ADDR2,'') AS CUS_RE_ADDR2
+		 , A.CUS_SEND_ZIP
+		 , A.CUS_RE_ZIP
+		 , A.SEND_ISL_YN
+		 , A.RECV_ISL_YN	 
+		 , A.CHANGE_DELTYPE_YN
+	     , A.CUS_RECEIPT_NM
+	     , REPLACE(A.CUS_RECEIPT_TELNUM,'-','') AS CUS_RECEIPT_TELNUM
+	     , DATE_FORMAT(STR_TO_DATE(C.GAME_DT,'%Y-%m-%d'), '%Y%m%d') AS GAME_DT
+	     , DATE_FORMAT(STR_TO_DATE(C.GAME_END_DT,'%Y-%m-%d'), '%Y%m%d') AS GAME_END_DT
+	     , A.PD_GOLF_CNT
+	     , A.PD_CNT
+	     , A.CUS_SEND_NM
+	     , A.CUS_SEND_ADDR1		     
+	     , IFNULL(A.CUS_SEND_ADDR2,'') AS CUS_SEND_ADDR2
+	     , REPLACE(A.CUS_SEND_TELNUM,'-','') AS CUS_SEND_TELNUM
+	     , DATE_FORMAT(STR_TO_DATE(A.PIC_REQ_DT,'%Y-%m-%d'), '%Y%m%d') AS PIC_REQ_DT
+	     , A.CUS_RE_NM
+	     , REPLACE(A.CUS_RE_TELNUM2,'-','') AS CUS_RE_TELNUM
+	     , D.GOLF_NAME AS CUS_RE_GOLF_NAME
+	     , A.PD_MEMO
+	     , A.PD_REC_DT
+	     , CASE WHEN A.SR_TYPE='S' THEN DATE_FORMAT(STR_TO_DATE(E.PIC_REQ_DT,'%Y-%m-%d'), '%Y%m%d') ELSE '' END RT_PIC_REQ_DT
+   		 , CASE WHEN A.SR_TYPE='S' THEN REPLACE(E.CUS_SEND_TELNUM2,'-','') ELSE '' END RT_CUS_RE_TELNUM    		 
+	     , CASE WHEN A.SR_TYPE='S' THEN E.CUS_SEND_NM ELSE '' END RT_CUS_RE_NM
+	     , CASE WHEN A.SR_TYPE='S' THEN E.CUS_SEND_ADDR1 ELSE '' END RT_CUS_RE_ADDR1
+	     , CASE WHEN A.SR_TYPE='S' THEN IFNULL(E.CUS_SEND_ADDR2,'') ELSE '' END RT_CUS_RE_ADDR2
+	     , CASE WHEN A.SR_TYPE='S' THEN E.CUS_SEND_ZIP ELSE '' END RT_CUS_RE_ZIP
+		 , A.SEND_GOLF_SEQ
+	     , A.RECV_GOLF_SEQ
+	  FROM GOLF_RECEIPT_INF A
+	  LEFT OUTER JOIN GOLF_INF B ON A.SEND_GOLF_SEQ = B.GOLF_SEQ
+	  LEFT OUTER JOIN GOLF_RECEIPT_MST C ON A.RCP_SEQ = C.RCP_SEQ
+	  LEFT OUTER JOIN GOLF_INF D ON A.RECV_GOLF_SEQ = D.GOLF_SEQ
+	  LEFT OUTER JOIN (SELECT *FROM GOLF_RECEIPT_INF E WHERE E.RCP_SEQ = E.RCP_SEQ AND E.SR_TYPE='R') E ON A.RCP_SEQ = E.RCP_SEQ
+      LEFT OUTER JOIN GOLF_RECEIPT_PAY F ON A.RCP_INF_SEQ = F.RCP_INF_SEQ AND F.USE_YN = 'Y'
+	 WHERE 1=1
+	 <choose>
+		 <when test="rcpNumber !='' and rcpNumber !=null">
+		 	AND A.RCP_NUMBER = #{rcpNumber,jdbcType=VARCHAR}
+		 </when>
+		 <otherwise>
+		 	AND A.USER_ID = #{userId,jdbcType=VARCHAR}
+  	  		AND A.RCP_KIND = #{rcpKind,jdbcType=VARCHAR}
+		 </otherwise>
+	 </choose>
+		ORDER BY A.RCP_NUMBER DESC, A.RCP_SEQ DESC, A.RCP_INF_SEQ DESC
+	  <if test="rcpNumber =='' or rcpNumber == null">
+	 	LIMIT ${pageNum} , ${pageItemNum}
+	 </if>
+  </select>
+  
+  <select id="selectByRcpNumber" parameterType="search" resultType="com.golf.chat.vo.CbDeliveryVO">
+   	SELECT A.RCP_NUMBER
+  	  FROM GOLF_RECEIPT_INF A
+  	 WHERE A.RCP_SEQ = REPLACE(#{orderId,jdbcType=VARCHAR},'GRP','')
+  	 ORDER BY A.RCP_NUMBER ASC
+  </select>
+  
+  
+  <select id="selectByGolfPhoto" parameterType="search" resultType="com.golf.chat.vo.CbDeliveryVO">
+   	SELECT FILE_SV_NM AS GOLF_PHOTO
+   	     , RCP_INF_SEQ
+   	  FROM GOLF_RECEIPT_FILE
+	 WHERE RCP_INF_SEQ IN(
+						  SELECT RCP_INF_SEQ 
+						    FROM GOLF_RECEIPT_INF
+						   WHERE RCP_NUMBER = #{rcpNumber,jdbcType=VARCHAR}
+						  )
+	   AND FILE_CODE = 'pickup'
+	   AND USE_YN = 'Y'
+	   ORDER BY FILE_SEQ ASC
+  </select>
+  <!-- 삭제예정 -->
+  <select id="selectByStat" parameterType="String" resultType="String">
+  	SELECT CB_RCPINFSTAT_CODE(RCP_INF_STAT) AS RCP_INF_STAT
+  	  FROM GOLF_RECEIPT_INF
+	 WHERE RCP_NUMBER = #{rcpNumber,jdbcType=VARCHAR}
+  </select>
+  <!-- 삭제예정 -->
+  <update id="updateStat" parameterType="com.golf.chat.vo.CbDeliveryVO">
+  	UPDATE GOLF_RECEIPT_INF
+  	   SET RCP_INF_STAT = '0'
+  	     , REG_DATE = NOW()
+	 WHERE RCP_NUMBER = #{rcpNumber,jdbcType=VARCHAR}
+  </update>
+</mapper>
