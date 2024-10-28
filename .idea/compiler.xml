@@ -7,11 +7,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="base_dynamic" />
+        <module name="icon_backadmin" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="base_dynamic" target="8" />
+      <module name="icon_backadmin" target="8" />
     </bytecodeTargetLevel>
   </component>
 </project>

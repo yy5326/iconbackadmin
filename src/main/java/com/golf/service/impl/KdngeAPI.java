@@ -117,7 +117,12 @@ public class KdngeAPI extends BaseServiceImpl{
 			paramMap.put("PD_DELI_PAY", vo.getPdDeliPay());
 			paramMap.put("PD_MEMO", vo.getPdMemo());
 			paramMap.put("PD_DELI_GUBUN", vo.getPayType());
-			paramMap.put("PD_INDIV_PRICE", vo.getPdIndivPrice());
+			if(vo.getPrdType() == 3) {
+				paramMap.put("PD_INDIV_PRICE", "200");
+			}else {
+				paramMap.put("PD_INDIV_PRICE", vo.getPdIndivPrice());
+			}
+
 
 			EgovMap apiMap = callUrl(getApiUrl("SetGolfDelivery"), gson.toJson(paramMap), "PUT");
 			
