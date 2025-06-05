@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN" name="base">
 	 <properties>
-		<property name="log-path">/srv/was/tomcat_backadmin/logs/backadmin</property>
+		<property name="log-path">/usr/share/tomcat/tomcat_iconbackadmin/logs/backadmin</property>
 	</properties>
                   
 	<!-- Appender, Layout 설정 -->
