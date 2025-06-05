@@ -36,7 +36,7 @@
 									</td>
 								</tr>
 
-<c:set var="cusSendTelnum" value="${fn:split(vo.cusSendTelnum,'-')}" />								
+<c:set var="cusSendTelnum" value="${fn:split(vo.cusSendTelnum,'-')}" />
 								<tr>
 									<th>연락처 <span class="red">*</span></th>
 									<td>
@@ -94,7 +94,7 @@
 									</td>
 								</tr>
 
-<c:set var="extCompTelnum" value="${fn:split(vo.extCompTelnum,'-')}" />								
+<c:set var="extCompTelnum" value="${fn:split(vo.extCompTelnum,'-')}" />
 								<tr>
 									<th>업체연락처</th>
 									<td>
@@ -124,12 +124,12 @@
 									<td><input type="text" name="list[0].cusReNm" class="notNull w410"  value="${vo.cusReNm}" data-name="이름"/></td>
 								</tr>
 
-<c:set var="cusReTelnum" value="${fn:split(vo.cusReTelnum2,'-')}" />									
+<c:set var="cusReTelnum" value="${fn:split(vo.cusReTelnum2,'-')}" />
 								<tr>
 									<th>연락처 <span class="red">*</span></th>
 									<td>
 										<select role="ephone2" class="phone">
-										<c:forEach var="list" items="${phoneList}">											
+										<c:forEach var="list" items="${phoneList}">
 											<option value="010" <c:if test="${cusReTelnum[0] eq '010' }">selected="selected"</c:if>>010</option>
 											<option value="011" <c:if test="${cusReTelnum[0] eq '011' }">selected="selected"</c:if>>011</option>
 											<option value="016" <c:if test="${cusReTelnum[0] eq '016' }">selected="selected"</c:if>>016</option>
@@ -401,7 +401,7 @@
 							<tr>
 								<th>연락처 <span class="red">*</span></th>
 								<td>
-									
+
 									<select role="ephone4" class="phone">
 									<c:forEach var="list" items="${phoneList}">
 										<option value="${list}">${list}</option>
@@ -499,7 +499,7 @@
 									</select>
 								</td>
 							</tr>
-							
+
 							<tr>
 								<th>보스턴백 수량 <span class="red onlyNumber">*</span></th>
 								<td>
@@ -619,9 +619,9 @@
 
 <script type="text/javascript">
 
-	$(document).ready(function(){		
-		searchIsl();		
-		
+	$(document).ready(function(){
+		searchIsl();
+
 		//새로고침 또는 페이지 이동 시 확인
 	    $(window).on("beforeunload", function(){
 	        return "입력사항이 저장되지 않을 수 있습니다.\n저장하고 넘어가시겠습니까?";
@@ -686,7 +686,7 @@
 			var minDate = $("input[name=gameDt]").datepicker("getDate");
 
 			//경기일 포함 이전 3일(익일 ~ 경기일포함 영업일 3일 제외)
-			
+
 			if(attrFlag){
 				curDate.setDate(curDate.getDate() - (curDate.getDay() == 6 ? 4 : curDate.getDay() > 2 ? 3 : 5));
 			//경기일 포함 이후 6일
@@ -709,7 +709,7 @@
 
 		//라디오버튼 편도/왕복 클릭 시 이벤트
 		$("input[name=delKind]").click(function(){
-			
+
 			// 왕복 배송지 레이어 show / hide
 			if($(this).prop("id") == "oneWay"){
 				$("#rotate").hide();
@@ -720,17 +720,17 @@
 				$("input[name$=srType]").removeAttr("disabled");
 				$("#rotate :input").removeAttr("disabled");
 			}
-			
+
 			// 물품 정보 하위 포장상태를 선택값 동기화 세팅
-			if($(this).prop("id") == "oneWay"){				
+			if($(this).prop("id") == "oneWay"){
 				//$("input[id^=pdPackOneWay]").prop("checked", true);
 				$("select[name$=pdPack]").val("편도").prop("selected", true);
-				
+
 			}else{
 				//$("input[id^=pdPackBack]").prop("checked", true);
 				$("select[name$=pdPack]").val("왕복").prop("selected", true);
-			}				
-			
+			}
+
 			//운임계산
 			searchIsl();
 		});
@@ -782,14 +782,14 @@
 				});
 
 				$("select[name$=pdNm]:last").val($("select[name$=pdNm]:first").val());
-				
+
 				// 아이콘 수수료 왕복 세팅
 				iconFee3 = iconFee2;
 				iconFee4 = iconFee1;
-				
+
 				//운임계산
-	            searchIsl();				
-				
+	            searchIsl();
+
 			}else{
 				$("#rotate :input").not("select,:radio,input[name$=srType]").val("");
 				//골프장 선택, 영업소찾기 수동입력 불가로 제거
@@ -797,7 +797,7 @@
 					if($(this).attr("readonly") == "readonly")
 						$(this).prop("readonly", false);
 				}); */
-				
+
 				// 아이콘 수수료 왕복 부분만 초기화
 				iconFee3 = [];
 				iconFee4 = [];
@@ -821,13 +821,13 @@
 		//접수 시작
 		$("#add").click(function(){
 			var cnt = Number($("input[name$=pdCnt]:first").val()) + Number($("input[name$=bostonCnt]:first").val());
-			
+
 			if(1>cnt){
 				alert("백 수량을 입력해주세요.");
 				$("input[name$=pdCnt]:first").focus();
 				return;
 			}
-			
+
 			//편도 처리
 			if($("input[name=delKind]:checked").val() == "1"){
 				$("input[name$=srType]").attr("disabled",true);
@@ -943,7 +943,7 @@
 			evt.preventDefault();
 			var targetId = "zip"+$(this).attr("role");
 			var searchWord = $("input[role="+targetId+"]").val() == "" ? "" : $("input[role="+targetId+"]").val();
-			window.open("../common/officePopup.do?type1=A&type2="+$(this).attr('role')+"&searchWord="+searchWord, "officeSearch", "top=200, left=100, width=800px, height=480px");
+			window.open("/common/officePopup.do?type1=A&type2="+$(this).attr('role')+"&searchWord="+searchWord, "officeSearch", "top=200, left=100, width=800px, height=480px");
 		});
 	});
 	//document.ready
@@ -1045,7 +1045,7 @@
 		var amtArray = [[5000, 21000, 20000, 6000, 6000, 6000], [5000, 15000, 15000, 6000, 6000, 6000], [5000, 15000, 15000, 6000, 6000, 6000]]; //이 부분 변경 시 golfReceiptInf.selectByKakaoHistory 쿼리 수정 (배송운임 변경관련)
 		var amt = amtArray[$("#fareType option").index($("#fareType option:selected"))];
 		var dosun1 = 0, dosun2 = 0;
-		
+
 		$("input[role=zip1]:eq(1),input[role=zip2]:eq(1),input[role=zip3]:eq(1),input[role=zip4]:eq(1)").each(function(idx){
 			if($(this).val().indexOf("제주") > -1){
 				(idx < 2) ? dosun1 += 1 : dosun2 += 1;
@@ -1054,7 +1054,7 @@
 				$(this).next().val("N");
 			}
 		});
-		
+
 		//골프장으로 도서지역 구분
 		if(dosun1 == 0 && dosun2 == 0){
 			$("input[role=golfSearch1]:eq(0),input[role=golfSearch2]:eq(0),input[role=golfSearch3]:eq(0),input[role=golfSearch4]:eq(0)").each(function(idx){
@@ -1066,20 +1066,20 @@
 
 		var cnt = new Array;
 		var bostonCnt = new Array;
-		
+
 		$("input[name$=pdCnt]").each(function(){
 			cnt.push(($(this).val() != "") ? $(this).val() : 0);
 		});
-		
+
 		$("input[name$=bostonCnt]").each(function(){
 			bostonCnt.push(($(this).val() != "") ? $(this).val() : 0);
 		});
-		
+
 		var extraPrice = new Array;
 		$("input[name$=pdEtcPay]").each(function(){
 			extraPrice.push(($(this).val() != "") ? Number(uncomma($(this).val())) : 0);
 		});
-		
+
 		// 아이콘 수수료 계산
 		calculateIconFee();
 		//편도
@@ -1102,7 +1102,7 @@
 				$("input[name$=pdDeliPay]:last").val(comma(amt[2] * cnt[1] + (amt[5] * bostonCnt[1])));
 			}
 		}
-		
+
 		$('#iconFee0').val(comma($('#iconFee0').val()));
 		$('#iconFee1').val(comma($('#iconFee1').val()));
 	}
@@ -1197,19 +1197,19 @@
 	    			else if(idx == 2) $(this).val("");
 	    			else $(this).val("");
 	    		});
-	    		
+
 	    		initIconFee(targetElement);
 	            //운임계산
-	            searchIsl();	            
+	            searchIsl();
 	        }
 	    }).open();
 	}
-	
+
 	var iconFee1 = []; // 편도의 출발지 수수료
 	var iconFee2 = []; // 편도의 도착지 수수료
 	var iconFee3 = []; // 왕복시 출발지 수수료
 	var iconFee4 = []; // 왕복시 도착지 수수료
-	
+
 	// 주소 선택시 아이콘 수수료 초기화
 	function initIconFee(type) {
 		if ( type == 'golfSearch1' ) {
@@ -1222,7 +1222,7 @@
 			iconFee4 = [];
 		}
 	}
-	
+
 	// 골프장 선택시 아이콘 수수료 정보 set
 	function setIconFee(type, iconFeeArr) {
 		if ( type == 'golfSearch1' ) {
@@ -1235,12 +1235,12 @@
 			iconFee4 = iconFeeArr;
 		}
 	}
-	
+
 	// 아이콘 수수료 계산
 	function calculateIconFee() {
 		var delKindIndex = $("input[name=delKind]:checked").val()-1; // 편도/왕복
 		var fareTypeIndex = $("#fareType option").index($("#fareType option:selected")); // 운임체계
-		
+
 		if ( iconFee1.length == 0 && iconFee2.length == 0 ) {
 			// 출발 도착 모두 골프장이 아닐 경우 - 8000원
 			$('#iconFee0').val((8000 * $('#pdCnt0').val())+(6000 * $('#bostonCnt0').val()));
@@ -1254,7 +1254,7 @@
 			// 골프장->골프장일 경우 세팅된 수수료 중 낮은 수수료로 책정한다.
 			$('#iconFee0').val(Math.min(((iconFee1[delKindIndex][fareTypeIndex] * $('#pdCnt0').val()) + (iconFee1[delKindIndex + 2][fareTypeIndex] * $('#bostonCnt0').val())) , ((iconFee2[delKindIndex][fareTypeIndex]) * $('#pdCnt0').val()) + (iconFee2[delKindIndex + 2][fareTypeIndex] * $('#bostonCnt0').val())));
 		}
-		
+
 		if ( $("input[name=delKind]:checked").val() == '2' ) {
 			// 왕복시 수수료 계산
 			if ( iconFee3.length == 0 && iconFee4.length == 0 ) {
@@ -1263,26 +1263,26 @@
 				$('#iconFee1').val((4500 * $('#pdCnt1').val()) + (6000 * $('#bostonCnt1').val()));
 			} else if ( iconFee3.length != 0 && iconFee4.length == 0 ) {
 				// 출발지가 골프장일 경우
-				$('#iconFee1').val((iconFee3[delKindIndex][fareTypeIndex] * $('#pdCnt1').val()) + (iconFee3[delKindIndex + 2][fareTypeIndex] * $('#bostonCnt1').val()));								  
+				$('#iconFee1').val((iconFee3[delKindIndex][fareTypeIndex] * $('#pdCnt1').val()) + (iconFee3[delKindIndex + 2][fareTypeIndex] * $('#bostonCnt1').val()));
 			} else if ( iconFee3.length == 0 && iconFee4.length != 0 ) {
 				// 도착지가 골프장일 경우
-				$('#iconFee1').val((iconFee4[delKindIndex][fareTypeIndex] * $('#pdCnt1').val()) + (iconFee4[delKindIndex + 2][fareTypeIndex] * $('#bostonCnt1').val()));	
+				$('#iconFee1').val((iconFee4[delKindIndex][fareTypeIndex] * $('#pdCnt1').val()) + (iconFee4[delKindIndex + 2][fareTypeIndex] * $('#bostonCnt1').val()));
 			} else {
 				// 골프장->골프장일 경우 세팅된 수수료 중 낮은 수수료로 책정한다.
 				$('#iconFee1').val(Math.min(((iconFee3[delKindIndex][fareTypeIndex] * $('#pdCnt1').val()) + (iconFee3[delKindIndex + 2][fareTypeIndex] * $('#bostonCnt1').val())) , ((iconFee4[delKindIndex][fareTypeIndex]) * $('#pdCnt1').val()) + (iconFee4[delKindIndex + 2][fareTypeIndex] * $('#bostonCnt1').val())));
 			}
 		}
-		
+
 		//console.log("운임체계 : "+$("#fareType option").index($("#fareType option:selected")));
 		//console.log("편도/왕복 : "+$("input[name=delKind]:checked").val());
 		//console.log("아이콘 수수료1 : "+$('#iconFee').val());
 	}
-	
-	
+
+
 	function numberWithCommas(x) {
 		x = x.replace(/[^0-9]/g,'');   // 입력값이 숫자가 아니면 공백
 		x = x.replace(/,/g,'');          // ,값 공백처리
-		return x.replace(/\B(?=(\d{3})+(?!\d))/g, ","); // 정규식을 이용해서 3자리 마다 , 추가 
+		return x.replace(/\B(?=(\d{3})+(?!\d))/g, ","); // 정규식을 이용해서 3자리 마다 , 추가
 	}
 </script>
 </html>

@@ -40,6 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.golf.model.common.PhoneVO;
 import com.golf.service.dao.GeneralDAOImpl;
 import com.golf.service.impl.GolfReceiptServiceImpl;
+import com.golf.service.impl.KdngeAPI;
 import com.golf.service.model.GolfInfVO;
 import com.golf.service.model.GolfReceiptInfVO;
 import com.golf.service.model.GolfReceiptMstVO;
@@ -50,6 +51,9 @@ import com.golf.util.EgovMapDeserializer;
 import com.golf.util.StringUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import egovframework.rte.psl.dataaccess.util.EgovMap;
 import io.swagger.annotations.ApiOperation;
@@ -85,19 +89,22 @@ public class GolfApiController extends PrtController  {
 
 	@Resource
 	GolfReceiptServiceImpl _receiptService;
-	
+
 	@Resource
 	SendTalkController _sendTalk;
 
 	@Autowired
 	private GolfApi golfApi;
 	
+	@Autowired
+	private KdngeAPI kdngeApi;
+
 	@Resource
 	private CommonController common;
 
 	@Value("#{globals['api.key']}")
 	private String apiKey;
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
 	/** 영업소 물품 정보 수정
@@ -127,7 +134,7 @@ public class GolfApiController extends PrtController  {
 			GolfReceiptInfVO vo = gson.fromJson(gson.toJson(gm), GolfReceiptInfVO.class);
 			logger.debug("convertParam =====> "+ gson.toJson(gm));
 			logger.debug("convertParam =====> "+ vo.toString());
-			
+
 			if(!StringUtil.isEmpty(vo.getGolfUpdate())){
 				GolfReceiptInfVO temp = _receiptService.selectReceiptKey(vo);
 				if(temp.getRcpInfSeq() > 0){
@@ -137,24 +144,26 @@ public class GolfApiController extends PrtController  {
 				}
 
 				List<GolfReceiptInfVO> golfReceiptList = (List<GolfReceiptInfVO>)_gDao.selectList("golfReceiptInf.selectByKakao", vo);
-				
+
 				if(golfReceiptList.size()>0) {
 					vo.setRcpSeq(golfReceiptList.get(0).getRcpSeq());
 					vo.setRcpNumber(golfReceiptList.get(0).getRcpNumber());
 					vo.setRcpInfSeq(golfReceiptList.get(0).getRcpInfSeq());
 				}
-				
+
 				//상태변경(최초 운송장번호 생성 및 택배접수일 전달, 택배접수)
 				if("U".equals(vo.getGolfUpdate())){
 					vo.setRcpInfStat(StatusVO.Delivery.code());
-					
+
 					//골프백 사진 카톡 발송
 					List<SendRequestVO> sendTalkList =  new ArrayList<SendRequestVO>();
 					SendRequestVO sendTalk = new SendRequestVO();
 					JSONObject requestSendMessage = new JSONObject();
 			        ArrayList buttonList = new ArrayList();
-					
+
 					if(golfReceiptList.size()>0) {
+						
+						vo.setPdBarcode(vo.getRtNumber());
 						System.out.println("업데이트 요청");
 						_receiptService.updateReceipt(vo);
 
@@ -162,35 +171,36 @@ public class GolfApiController extends PrtController  {
 						vo.setRcpKind(golfReceiptList.get(0).getRcpKind());
 						golfApi.updateApi(vo, "update_cbag_status");
 
-						if(golfReceiptList.get(0).getRcpKind().equals("0")) {
-							vo.setCusSendNm(golfReceiptList.get(0).getCusReNm());//관리자에서 접수 한 경우 보내는 사람이름이 아이콘이여서 받는사람으로 변경	
+						// 교참추가
+						if(golfReceiptList.get(0).getRcpKind().equals("0") || golfReceiptList.get(0).getRcpKind().equals("5")) {
+							vo.setCusSendNm(golfReceiptList.get(0).getCusReNm());//관리자에서 접수 한 경우 보내는 사람이름이 아이콘이여서 받는사람으로 변경
 						}else {
 							vo.setCusSendNm(golfReceiptList.get(0).getCusSendNm());
 						}
-						
+
 						//수신고객명
 						sendTalk.setCusSendNm(vo.getCusSendNm());
 						//운송장번호
-						sendTalk.setPdBarcode(vo.getPdBarcode());
+						sendTalk.setPdBarcode(vo.getRtNumber());
 						//수신 연락처
 						sendTalk.setReceiverNum("01047630961");
 						//템플릿코드
 						sendTalk.setEtc1("hdexp_0011");
 						//예약자
 						sendTalk.setReceiver(golfReceiptList.get(0).getCusReceiptNm());
-						
+
 						//수신번호 파라미터 암호화
 						Base64 b = new Base64();
 						String url = super.getConfig().getWebMode().equals("op") ? "https://kdhd.icexp.co.kr/golfCam/golfCamWrite.do" : "https://test.icexp.co.kr/golfCam/golfCamWrite.do";
-						
+
 						requestSendMessage.put("name","골프백 사진 등록");
 						requestSendMessage.put("type","WL");
-						requestSendMessage.put("url_mobile", url + "?rcpInfSeq="+vo.getRcpInfSeq()+"&codePhoto="+b.encodeBase64URLSafeString(rsaTranse(sendTalk.getReceiverNum())));	
-						
+						requestSendMessage.put("url_mobile", url + "?rcpInfSeq="+vo.getRcpInfSeq()+"&codePhoto="+b.encodeBase64URLSafeString(rsaTranse(sendTalk.getReceiverNum())));
+
 						buttonList.add(requestSendMessage);
-						
+
 						sendTalk.setButtonList(buttonList);
-						
+
 						sendTalkList.add(sendTalk);
 						_sendTalk.sendFileUpload(sendTalkList);
 					}
@@ -200,16 +210,16 @@ public class GolfApiController extends PrtController  {
 				}else if("C".equals(vo.getGolfUpdate())){
 					 //영업소 취소 요청 => 픽업취소 단계로 변경
 					 vo.setRcpInfStat(StatusVO.PickupCancel.code());
-					 vo.setCanReason("영업소 취소");					 
+					 vo.setCanReason("영업소 취소");
 					 _receiptService.updateReceiptInfSel(vo, false);
-					 
+
 				//상태변경(택배취소)
 				}else if("D".equals(vo.getGolfUpdate())){
 					 //영업소 삭제 요청 => 택배취소 단계로 변경
 					 vo.setRcpInfStat(StatusVO.DeliveryCancel.code());
 					 vo.setCanReason("영업소 발송자료 삭제");
 					 _receiptService.updateReceiptInfSel(vo, false);
-					
+
 				}else{
 					return setJson("100", new JSONObject(gm));
 				}
@@ -264,7 +274,7 @@ public class GolfApiController extends PrtController  {
 
 		return new ResponseEntity<JSONObject>(obj, eHttpStatus);
 	}
-	
+
 	/**
 	 * 할증운임료 조회
 	 * @param vo
@@ -276,53 +286,147 @@ public class GolfApiController extends PrtController  {
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/update/traking", method = RequestMethod.POST)
 	public Object traking(@RequestBody GolfReceiptInfVO vo) throws Exception {
-		
+
 		Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").serializeNulls().create();
-        
-		try {	
-			String url = super.getConfig().getWebMode().equals("op") ? "http://kdtracking.kditlab.com/Tracking" : "http://kdtracking.kditlab.com:81/tracking";
-			EgovMap apiMap = gsonCallHttp(url, vo.getPdBarcode(), apiKey);
+
+		try {
+			
+			
+			EgovMap apiMap = kdngeApi.callUrl(kdngeApi.getApiUrl("api/v2/express/find/detail/"), vo.getPdBarcode(), "GET");
+
+//			String url = super.getConfig().getWebMode().equals("op") ? "http://kdtracking.kditlab.com/Tracking" : "http://kdtracking.kditlab.com:81/tracking";
+//			EgovMap apiMap = gsonCallHttp(url, vo.getRtNumber(), apiKey);
 			System.out.println("에이피아이맵" + apiMap);
 			if(!(apiMap == null)){
-				return toJson(apiMap);
-			}else{
-				ArrayList<Map<String, Object>> listMap = new ArrayList<>();
 				
-				ArrayList<String> list = new ArrayList<>();
+				JSONObject jsonObject = new JSONObject(apiMap);
+				Object listData = jsonObject.get("trackingList");
+				logger.debug("오브젝트1 "+ listData);
+				
+				org.json.JSONObject root = new org.json.JSONObject(new Gson().toJson(listData));
+				org.json.JSONArray jarray = root.getJSONArray("listData");
+			
 				
 				Map<String, Object> map = new HashMap<String , Object>();
+				Map<String, Object> info = new HashMap<String , Object>();
+				Map<String, Object> list = new HashMap<String, Object>();
+				ArrayList<JSONObject> arrayJson = new ArrayList<JSONObject>();
 				
-				map.put("listData", list);
+				for(int j = 0 ; j < jarray.length(); j++) {
+					
+					JSONObject jObj = new JSONObject();
+					jObj.put("regDate", jarray.getJSONObject(j).get("scanDt"));
+					jObj.put("location", jarray.getJSONObject(j).get("strtPointNm"));
+					jObj.put("scStat", "정상");
+					jObj.put("scNm", null); // null
+					jObj.put("tel", jarray.getJSONObject(j).get("strtPointTelno"));
+					jObj.put("stat", getScanStatusName(jarray.getJSONObject(j).get("scanType").toString()));
+					
+					arrayJson.add(jObj);
+				}
+				list.put("listData", arrayJson);
 				
+				map.put("items", list);
+				
+		        
+		        logger.debug("변환값 "+ map);
+				
+				JSONObject jsonObject2 = new JSONObject((Map) listData);
+				Object listData2 = jsonObject2.get("listData");
+				
+				logger.debug("오브젝트2 "+ listData2);
+			
+				info.put("barcode", apiMap.get("prodCode"));
+				info.put("branchStart", apiMap.get("sndnNm"));
+				info.put("branchEnd", apiMap.get("arvlNm"));
+				info.put("cnt", apiMap.get("count"));
+				info.put("pdDt", apiMap.get("prodRegDt"));
+				info.put("prod", apiMap.get("prodName"));
+				info.put("reName", apiMap.get("rvCustNm"));
+				info.put("sendName", apiMap.get("snCustNm"));
+				info.put("recDt", null);
+				info.put("relation", null);
+				
+				
+//				map.put("items", apiMap.get("trackingList"));
+				map.put("info", info);
+
+				return toJson(map);
+			}else{
+				ArrayList<Map<String, Object>> listMap = new ArrayList<>();
+
+				ArrayList<String> list = new ArrayList<>();
+
+				Map<String, Object> map = new HashMap<String , Object>();
+
+				map.put("list", list);
+
 				Map<String, Object> map2 = new HashMap<String , Object>();
 
-				map2.put("items", map);
+				logger.debug("list 확인 : " + map);
 				
-				
-//				
+//				map2.put("items", map);
+
+
+//
 //				String[] arr = {};
-//				
+//
 //				Map<String, Object> map2 = new HashMap<String, Object>();
-//				
+//
 //				map2.put("listData", list);
-//				
+//
 //				Map<String, Object> map3 = new HashMap<String, Object>();
-//				
+//
 //				map3.put("items" , map2);
-//				
+//
 //				listMap.add(map3);
-//				
+//
 				return map2;
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
-			
+
 			return "falsess";
 		}
-		
-	}
 
+	}
+	
+	 /**
+     * 스캔 타입 코드에 해당하는 설명 문자열을 반환
+     * @param code 스캔 타입 코드 (예: "0001")
+     * @return 상태 설명 문자열 (예: "예약접수")
+     */
+	public String getScanStatusName(String code) {
+        if (code == null) return "알 수 없음";
+
+        switch (code) {
+            case "0001":
+                return "예약접수";
+            case "0002":
+                return "발송";
+            case "0003":
+                return "터미널";
+            case "0004":
+                return "노선상차";
+            case "0005":
+                return "차량사고";
+            case "0006":
+                return "도착";
+            case "0007":
+                return "인수확인";
+            case "0008":
+                return "배송중";
+            case "0009":
+                return "회수";
+            case "0010":
+                return "발송취소";
+            default:
+                return "알 수 없음";
+        }
+    }
+	
+	
 	/**
 	 * 골프장 조회
 	 * @param vo
@@ -339,12 +443,12 @@ public class GolfApiController extends PrtController  {
 	      @ApiResponse(code = 311, message = "잘못된 파라메터")
 	})
 	public JSONObject golfList(@RequestBody GolfInfVO search, Model model) throws Exception {
-		
+
 		Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").serializeNulls().create();
 		String searchText = "";
-		
+
 		logger.debug("파라미터 확인용 : " + search.getType1());
-	
+
 		if(search.getType1().equals("2")) {
 			//주소로 검색
 			searchText = search.getGolfAddr1();
@@ -353,18 +457,19 @@ public class GolfApiController extends PrtController  {
 			searchText = search.getGolfName();
 		}
 		search.setSearchWord(searchText);
-		
+
 			if (search.getRecordCount() < 20)
 				search.setRecordCount(5);
 				search.setBlockCount(5);
-			
+
+			// 2025.05.21 상공(코참) Type2 == korcham 일 경우 경주신라CC / 강동디아너스CC 만 조회
 			List<GolfInfVO> golfInfList = (List<GolfInfVO>)_gDao.selectBySearch("golfInf.selectBySearch", search, "selectListCount");
-			
+
 			JSONObject obj = new JSONObject();
 			JSONArray dataArray = new JSONArray();
-			
-			try {	
-				
+
+			try {
+
 			for(GolfInfVO vo : golfInfList) {
 				JSONObject data = new JSONObject();
 				data.put("golfSeq", vo.getGolfSeq());
@@ -377,21 +482,21 @@ public class GolfApiController extends PrtController  {
 				data.put("zipCode", vo.getZipCode());
 				dataArray.add(data);
 			}
-			
+
 			obj.put("list",dataArray);
 			obj.put("search", search);
 			return  obj;
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
-			
+
 			obj.put("result", "fail");
 			return obj;
 		}
-		
+
 	}
-	
-	
+
+
 	/**
 	 * 골프장 조회 (개선)
 	 * @param vo
@@ -408,19 +513,19 @@ public class GolfApiController extends PrtController  {
 	      @ApiResponse(code = 311, message = "잘못된 파라메터")
 	})
 	public JSONObject golfList2(@RequestBody GolfInfVO search, Model model) throws Exception {
-		
-		
+
+
 		logger.debug("파라미터 확인용 : " + search.getType1());
-	
-		
-			
+
+
+
 			List<GolfInfVO> golfInfList = (List<GolfInfVO>)_gDao.selectBySearch("golfInf.selectBySearch", search, "selectListCount");
-			
+
 			JSONObject obj = new JSONObject();
 			JSONArray dataArray = new JSONArray();
-			
-			try {	
-				
+
+			try {
+
 				for(GolfInfVO vo : golfInfList) {
 					JSONObject data = new JSONObject();
 					data.put("golfSeq", vo.getGolfSeq());
@@ -433,20 +538,20 @@ public class GolfApiController extends PrtController  {
 					data.put("zipCode", vo.getZipCode());
 					dataArray.add(data);
 				}
-			
+
 			obj.put("list",dataArray);
 			//obj.put("search", search);
 			return  obj;
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
-			
+
 			obj.put("result", "fail");
 			return obj;
 		}
-		
+
 	}
-	
+
 	/**
 	 * Object to Gson String 변환
 	 * @param String
@@ -458,7 +563,7 @@ public class GolfApiController extends PrtController  {
 		Gson gson = new Gson();
 		return gson.toJson(obj);
 	}
-	
+
 	public EgovMap gsonCallHttp(String urlAddr, String param, String apiKey) throws Exception{
 
 		HttpGet httpGet = new HttpGet(urlAddr+"?barcode="+param);
@@ -471,22 +576,22 @@ public class GolfApiController extends PrtController  {
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(httpResponse.getEntity().getContent()));
 	    String inputLine;
-	    
+
         StringBuffer response = new StringBuffer();
- 
+
         while ((inputLine = reader.readLine()) != null) {
             response.append(inputLine);
         }
-        
+
         reader.close();
 
         httpClient.close();
-        
+
 		Gson gson = new GsonBuilder().registerTypeAdapter(EgovMap.class, new EgovMapDeserializer()).setDateFormat("yyyy-MM-dd'T'HH:mm:ssX").serializeNulls().create();
-		
+
 		EgovMap rtnMap = gson.fromJson(response.toString(), EgovMap.class);
-		
+
 		return rtnMap;
-		
+
 	}
 }

@@ -37,10 +37,10 @@ import com.golf.talk.vo.SendRequestVO;
 public class SendTalkServiceImpl {
 
 	private static final Logger logger = LoggerFactory.getLogger(SendTalkServiceImpl.class);
-	
+
 	@Resource(name="globalProperty")
 	GlobalProperty configBean;
-	
+
 	@Autowired
 	private GeneralDAOImpl _gDao;
 
@@ -48,11 +48,12 @@ public class SendTalkServiceImpl {
 		List<SendRequestVO> sendRequestList = new ArrayList<SendRequestVO>();
 		for ( GolfReceiptInfVO receiptInfoVO : receiptList ) {
 			boolean duplicateRound = false;
-			
+
 			SendRequestVO sendVo = new SendRequestVO();
 			sendVo.setReceiverNum(KaKaoUtil.getReceiverTelNum(receiptInfoVO)); // 수신자 연락처 - 접수자 연락처, 접수자 연락처가 없을 경우 보내는 분 연락처
 			sendVo.setReceiver(KaKaoUtil.getReceiver(receiptInfoVO)); // 수신자명
-			
+
+
 			sendVo.setRcpNumber(receiptInfoVO.getRcpNumber());
 			sendVo.setCusSendNm(receiptInfoVO.getCusSendNm());
 			sendVo.setCusReNm(receiptInfoVO.getCusReNm());
@@ -65,13 +66,12 @@ public class SendTalkServiceImpl {
 			sendVo.setPdDiscount(receiptInfoVO.getDiscount());
 			sendVo.setPrdType(receiptInfoVO.getPrdType());
 			sendVo.setBoston(receiptInfoVO.getBostonCnt());
-			
-			
+
 			String cusSendAddr2 = "";
 			if ( receiptInfoVO.getCusSendAddr2() != null ) {
 				cusSendAddr2 = receiptInfoVO.getCusSendAddr2();
 			}
-			
+
 			String cusReAddr2 = "";
 			if ( receiptInfoVO.getCusReAddr2() != null ) {
 				cusReAddr2 = receiptInfoVO.getCusReAddr2();
@@ -79,18 +79,31 @@ public class SendTalkServiceImpl {
 			sendVo.setCusSendAddr(receiptInfoVO.getCusSendAddr1()+" "+cusSendAddr2);
 			sendVo.setCusReAddr(receiptInfoVO.getCusReAddr1()+" "+cusReAddr2);
 			sendVo.setRcpSeq(receiptInfoVO.getRcpSeq());
-			
+
+
+			//인천공항용
+			if("A".equals(receiptInfoVO.getRcpType())) {
+				sendVo.setBoxCnt(receiptList.get(0).getBoxCnt());
+				sendVo.setPrdType(5); //인천공항은 1/3 모두라서 알림톡일때만 5
+				if(!receiptInfoVO.getRcpNumberArray().isEmpty()) {
+					// 골프/캐리어 접수각각
+					sendVo.setRcpNumbers(String.valueOf(receiptInfoVO.getRcpNumberArray()).replaceAll("\\[","").replaceAll("\\]",""));
+				}
+
+			}
+
+
 			for ( int i = 0 ; i < sendRequestList.size() ; i++ ) {
 				if ( sendRequestList.get(i).getRcpSeq() == receiptInfoVO.getRcpSeq() ) {
 					// 기존 add 한 list element 의 왕복건으로 처리
 					duplicateRound = true;
 					//sendRequestList.get(i).setEtc1("hdexp_0002");
 					if("2".equals(receiptList.get(i).getRcpKind())) {
-						KaKaoUtil.getTempleteForEtc("hdexp_0004", sendRequestList.get(i));						
+						KaKaoUtil.getTempleteForEtc("hdexp_0004", sendRequestList.get(i));
 					}else {
-						KaKaoUtil.getTempleteForEtc("hdexp_0002", sendRequestList.get(i));	
+						KaKaoUtil.getTempleteForEtc("hdexp_0002", sendRequestList.get(i));
 					}
-					
+
 					try {
 						if("2".equals(receiptList.get(i).getRcpKind())) {
 							sendRequestList.get(i).setTalkMessage(ReceiptCompleteMessage.getForUserRound(sendRequestList.get(i), sendVo));
@@ -105,12 +118,12 @@ public class SendTalkServiceImpl {
 					break;
 				}
 			}
-			
+
 			if ( !duplicateRound ) {
-				// 기존과 겹치지 않는 건으로 처리				
+				// 기존과 겹치지 않는 건으로 처리
 				if ( "1".equals(receiptInfoVO.getDelKind()) ) {
 					//sendVo.setEtc1("hdexp_0001");
-					
+
 					try {
 						if("2".equals(receiptInfoVO.getRcpKind())) {
 							KaKaoUtil.getTempleteForEtc("hdexp_0004", sendVo);
@@ -132,7 +145,7 @@ public class SendTalkServiceImpl {
 							sendVo.setTalkMessage(ReceiptCompleteMessage.getForUserRound(sendVo, sendVo));
 						}else {
 							KaKaoUtil.getTempleteForEtc("hdexp_0002", sendVo);
-							sendVo.setTalkMessage(PayRequestMessage.getRoundMessage(sendVo, sendVo));	
+							sendVo.setTalkMessage(PayRequestMessage.getRoundMessage(sendVo, sendVo));
 						}
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
@@ -140,20 +153,20 @@ public class SendTalkServiceImpl {
 						e.printStackTrace();
 					}
 				}
-				
+
 				sendRequestList.add(sendVo);
 			}
 		}
 		return sendRequestList;
 	}
-	
+
 	public List<SendRequestVO> createPaymentArrayList(List<GolfReceiptInfVO> receiptList, String etc, String sendType) {
 		List<SendRequestVO> sendRequestList = new ArrayList<SendRequestVO>();
 		for ( GolfReceiptInfVO receiptInfoVO : receiptList ) {
 			boolean duplicateRound = false;
-			
+
 			SendRequestVO sendVo = new SendRequestVO();
-			
+
 			logger.debug("여기 : " + receiptInfoVO.getCusSendNm() );
 			sendVo.setRcpNumber(receiptInfoVO.getRcpNumber());
 			sendVo.setCusSendNm(receiptInfoVO.getCusSendNm());
@@ -173,8 +186,8 @@ public class SendTalkServiceImpl {
 			if ( "user".equals(sendType) ) {
 				sendVo.setReceiverNum(KaKaoUtil.getReceiverTelNum(receiptInfoVO)); // 수신자 연락처 - 접수자 연락처, 접수자 연락처가 없을 경우 보내는 분 연락처
 				sendVo.setReceiver(KaKaoUtil.getReceiver(receiptInfoVO)); // 수신자명
-				
-				
+
+
 				KaKaoUtil.getTempleteForEtc(etc, sendVo);
 			} else {
 				sendVo.setReceiverNum("01047630961");
@@ -182,12 +195,12 @@ public class SendTalkServiceImpl {
 				sendVo.setReceiver("이인규");
 				KaKaoUtil.getIconTempleteForEtc(etc, sendVo);
 			}
-			
+
 			for ( int i = 0 ; i < sendRequestList.size() ; i++ ) {
 				if ( sendRequestList.get(i).getRcpSeq() == receiptInfoVO.getRcpSeq() ) {
 					// 기존 add 한 list element 의 왕복건으로 처리
 					duplicateRound = true;
-					
+
 					try {
 						if ( etc.equals("hdexp_0004")) {
 							// 결제 완료, 알림톡 유저, 왕복
@@ -202,7 +215,7 @@ public class SendTalkServiceImpl {
 							// 결제 취소, 알림톡 관리자, 왕복
 							sendRequestList.get(i).setTalkMessage(ReceiptCancelMessage.getForIconRound(sendRequestList.get(i), sendVo, sendRequestList.get(i).getPrdType()));
 						}
-						
+
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						logger.info("createPaymentArrayUserList - 기존 add 한 list element 의 왕복건으로 처리 오류");
@@ -211,9 +224,9 @@ public class SendTalkServiceImpl {
 					break;
 				}
 			}
-			
+
 			if ( !duplicateRound ) {
-				// 기존과 겹치지 않는 건으로 처리				
+				// 기존과 겹치지 않는 건으로 처리
 				if ( "1".equals(receiptInfoVO.getDelKind()) ) {
 					try {
 						if ( etc.equals("hdexp_0004")) {
@@ -255,13 +268,13 @@ public class SendTalkServiceImpl {
 						e.printStackTrace();
 					}
 				}
-				
+
 				sendRequestList.add(sendVo);
 			}
 		}
 		return sendRequestList;
 	}
-	
+
 	// 아이콘 관리자 골프대기->골프접수시 결제요청 알림톡 전송 - 파라미터 mstVO 있는 경우, 라운딩 일자가 리스트에 없는 로직에서 호출(화면에서 바로 접수완료)
 	public void sendPayRequest(List<GolfReceiptInfVO> receiptList, GolfReceiptMstVO mstVO) {
 		// TODO Auto-generated method stub
@@ -271,7 +284,7 @@ public class SendTalkServiceImpl {
 		List<SendRequestVO> sendRequestList = createPayRequestList(receiptList);
 		try {
 			sendTalk(sendRequestList);
-			
+
 			logger.debug("전송 내용" + sendRequestList);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -279,7 +292,7 @@ public class SendTalkServiceImpl {
 			e.printStackTrace();
 		}
 	}
-	
+
 	// 아이콘 관리자 골프대기->골프접수시 결제요청 알림톡 전송
 	public void sendPayRequest(List<GolfReceiptInfVO> receiptList) {
 		// TODO Auto-generated method stub
@@ -292,14 +305,14 @@ public class SendTalkServiceImpl {
 			e.printStackTrace();
 		}
 	}
-	
+
 	// 아이콘 관리자 접수취소시 알림톡 ( 고객, 아이콘 ) - 관리자 접수취소는 한건만 가능
 	public void deleteGolfDeliveryForCancel(GolfReceiptInfVO vo) {
 		// TODO Auto-generated method stub
 		GolfReceiptPayVO payVO = new GolfReceiptPayVO();
 		payVO.setRcpInfSeqArray(vo.getRcpInfSeqArray());
 		payVO.setPayStat(StringUtils.isEmpty(vo.getGolfUpdate()) ? StatusPayVO.Complete.code() : StatusPayVO.Cancel.code());
-		
+
 		List<GolfReceiptInfVO> rcpNumberList = new ArrayList<GolfReceiptInfVO>();
 		GolfReceiptInfVO sendVo = new GolfReceiptInfVO();
 		sendVo.setRcpNumber(vo.getRcpNumber());
@@ -307,7 +320,7 @@ public class SendTalkServiceImpl {
 		sendVo.setRcpNumberArray(vo.getRcpNumberArray());
 		sendVo.setPrdType(vo.getPrdType());
 		rcpNumberList.add(sendVo);
-		
+
 		// 골프취소
 		String delType = "";
 		// 이미 데이터가 취소처리된 다음이므로 원 데이터가 편도취소인지 왕복취소인지에 대한 구분이 필요하다. - 단건처리만
@@ -315,21 +328,21 @@ public class SendTalkServiceImpl {
 			delType = "왕복";
 		}*/
 		sendReceiptCancel(rcpNumberList,delType);
-		
+
 	}
-	
+
 	// 챗봇 결제 완료시 접수완료 알림톡(고객, 아이콘)
 	@SuppressWarnings("unchecked")
 	public void sendReceiptComplete(GolfReceiptPayVO golfReceiptPayVO) {
-		// TODO Auto-generated method stub		
-		List<GolfReceiptInfVO> rcpNumberList = (List<GolfReceiptInfVO>)_gDao.selectList("golfReceiptInf.selectByKakaoHistory", golfReceiptPayVO.getOrderId());		
+		// TODO Auto-generated method stub
+		List<GolfReceiptInfVO> rcpNumberList = (List<GolfReceiptInfVO>)_gDao.selectList("golfReceiptInf.selectByKakaoHistory", golfReceiptPayVO.getOrderId());
 		List<SendRequestVO> userlist = new ArrayList<SendRequestVO>();
 		List<SendRequestVO> iconList = new ArrayList<SendRequestVO>();
-		
-		for ( GolfReceiptInfVO receiptInfoVO : rcpNumberList ) {	
-			
+
+		for ( GolfReceiptInfVO receiptInfoVO : rcpNumberList ) {
+
 			receiptInfoVO = (GolfReceiptInfVO)_gDao.selectByKey("golfReceiptInf.selectDetailByRcpNumber", receiptInfoVO);
-			
+
 			SendRequestVO sendVo = new SendRequestVO();
 			sendVo.setReceiverNum(KaKaoUtil.getReceiverTelNum(receiptInfoVO)); // 수신자 연락처 - 접수자 연락처, 접수자 연락처가 없을 경우 보내는 분 연락처
 			sendVo.setReceiver(KaKaoUtil.getReceiver(receiptInfoVO)); // 수신자명
@@ -346,12 +359,12 @@ public class SendTalkServiceImpl {
 			sendVo.setPdDiscount(receiptInfoVO.getDiscount());
 			sendVo.setPrdType(receiptInfoVO.getPrdType());
 			sendVo.setBoston(receiptInfoVO.getBostonCnt());
-			
+
 			//sendVo.setEtc1("hdexp_0004");
 			KaKaoUtil.getTempleteForEtc("hdexp_0004", sendVo);
-			
+
 			userlist.add(sendVo);
-			
+
 			SendRequestVO iconSendVo = new SendRequestVO();
 			iconSendVo.setReceiverNum("01047630961");
 			iconSendVo.setRcpNumber(receiptInfoVO.getRcpNumber());
@@ -367,15 +380,15 @@ public class SendTalkServiceImpl {
 			iconSendVo.setPdDiscount(receiptInfoVO.getDiscount());
 			iconSendVo.setEtc1("hdexp_0005");
 			KaKaoUtil.getIconTempleteForEtc("hdexp_0005", iconSendVo);
-			
+
 			iconList.add(iconSendVo);
 		}
-		
+
 		try {
 			if ( "1".equals(userlist.get(0).getDelKind()) ) {
 				// 편도
 				String message = ReceiptCompleteMessage.getForUser(userlist.get(0));
-				sendTalk(userlist, message);				
+				sendTalk(userlist, message);
 				String iconMessage = ReceiptCompleteMessage.getForIcon(userlist.get(0), userlist.get(0).getPrdType());
 				sendTalk(iconList, iconMessage);
 			} else {
@@ -391,32 +404,32 @@ public class SendTalkServiceImpl {
 			logger.info("결제 완료시 접수완료 알림톡 전송 오류");
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	// 챗봇 접수취소시 접수취소 알림톡(고객, 아이콘)
 	public void sendReceiptCancel(List<GolfReceiptInfVO> resultList, String orderId) {
 		// TODO Auto-generated method stub
-		
+
 		List<SendRequestVO> userlist = new ArrayList<SendRequestVO>();
 		List<SendRequestVO> iconList = new ArrayList<SendRequestVO>();
-		
+
 		for ( GolfReceiptInfVO receiptInfoVO : resultList ) {
-						
-		
+
+
 			receiptInfoVO = (GolfReceiptInfVO)_gDao.selectByKey("golfReceiptInf.selectDetailByRcpNumber", receiptInfoVO);
-			
+
 			SendRequestVO sendVo = new SendRequestVO();
 			sendVo.setReceiverNum(KaKaoUtil.getReceiverTelNum(receiptInfoVO)); // 수신자 연락처 - 접수자 연락처, 접수자 연락처가 없을 경우 보내는 분 연락처
 			sendVo.setReceiver(KaKaoUtil.getReceiver(receiptInfoVO)); // 수신자명
-						
+
 			if("2".equals(receiptInfoVO.getRcpKind())) {
 				//스마트 스코어 왕복 취소건인 경우 알림톡에 2개 접수번호 표시, 편도는 자동으로 1개 표시
-				sendVo.setRcpNumber(String.join(" | ", resultList.get(0).getRcpNumberArray()));	
+				sendVo.setRcpNumber(String.join(" | ", resultList.get(0).getRcpNumberArray()));
 			}else {
-				sendVo.setRcpNumber(receiptInfoVO.getRcpNumber());	
+				sendVo.setRcpNumber(receiptInfoVO.getRcpNumber());
 			}
-			
+
 			sendVo.setCusSendNm(receiptInfoVO.getCusSendNm());
 			sendVo.setCusReNm(receiptInfoVO.getCusReNm());
 			sendVo.setPdCnt(receiptInfoVO.getPdCnt());
@@ -432,11 +445,11 @@ public class SendTalkServiceImpl {
 			//sendVo.setEtc1("hdexp_0006");
 			KaKaoUtil.getTempleteForEtc("hdexp_0006", sendVo);
 			userlist.add(sendVo);
-			
+
 			SendRequestVO iconSendVo = new SendRequestVO();
 			iconSendVo.setReceiverNum("01047630961");
 			//iconSendVo.setReceiverNum("01095949204");
-			
+
 			iconSendVo.setRcpNumber(receiptInfoVO.getRcpNumber());
 			iconSendVo.setCusSendNm(receiptInfoVO.getCusSendNm());
 			iconSendVo.setCusReNm(receiptInfoVO.getCusReNm());
@@ -453,12 +466,12 @@ public class SendTalkServiceImpl {
 			//iconSendVo.setEtc1("hdexp_0007");
 			KaKaoUtil.getIconTempleteForEtc("hdexp_0007", iconSendVo);
 			iconList.add(iconSendVo);
-		}	
+		}
 		try {
 			if ( orderId == null || "".equals(orderId) ) {
 				// 편도
 				String message = ReceiptCancelMessage.getForUser(userlist.get(0));
-				sendTalk(userlist, message);				
+				sendTalk(userlist, message);
 				String iconMessage = ReceiptCancelMessage.getForIcon(userlist.get(0), userlist.get(0).getPrdType());
 				sendTalk(iconList, iconMessage);
 			} else {
@@ -474,19 +487,19 @@ public class SendTalkServiceImpl {
 			logger.info("결제 완료시 접수완료 알림톡 전송 오류");
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	public void sendPayExpire(List<SendRequestVO> list, String message) throws Exception {
 		// TODO Auto-generated method stub
 		sendTalk(list, message);
 	}
-	
+
 	public void sendFileUpload(List<SendRequestVO> list, String message) throws Exception {
 		// TODO Auto-generated method stub
 		sendTalk(list, message);
 	}
-	
+
 	@SuppressWarnings({ "unused", "unchecked" })
 	public void sendTalk(List<SendRequestVO> list, String message) throws Exception {
 		String server = configBean.getWebMode();
@@ -495,24 +508,24 @@ public class SendTalkServiceImpl {
         JSONObject responseJson = null;
         KakaoVO templCodeList = null;
         List<KakaoVO> result = new ArrayList<KakaoVO>();
-		
+
         for ( SendRequestVO sendRequestVO : list ) {
         	KakaoVO kakaoVO = new KakaoVO();
         	kakaoVO.setKakaoInfoVO(new KakaoInfoVO());
     		kakaoVO.getKakaoInfoVO().setMode(server);
     		kakaoVO.setEtc1(sendRequestVO.getEtc1()); // 템플릿 그룹 ID
     		kakaoVO.setEtc2(sendRequestVO.getRcpNumber()); // 골프접수번호
-    		
+
     		// find template
     		logger.info(server+" server data search");
     		if ( server.equals("op") ) {
             	templCodeList = (KakaoVO) _gDao.selectOne("kakao.selectByNewTemplate", kakaoVO);
             }else {
-            	templCodeList = (KakaoVO) _gDao.selectOne("kakao.selectByTemplateTest", kakaoVO);							        	
+            	templCodeList = (KakaoVO) _gDao.selectOne("kakao.selectByTemplateTest", kakaoVO);
             }
     		templCodeList.setPhoneNumber(sendRequestVO.getReceiverNum());
-    		
-    		
+
+
     		// ready send & param set
     		String sendUrl = templCodeList.getKakaoInfoVO().getSendUrl();
     		requestSend.put("message_type","AT"); // 메세지타입
@@ -521,11 +534,16 @@ public class SendTalkServiceImpl {
     		requestSend.put("template_code", templCodeList.getTemplateCode()); // 템플릿 코드
     		requestSend.put("sender_no", "01047630961");	 	 //보내는 번호	- 아이콘 담당자 전번 hard coding
     		requestSend.put("message", message);
-    		
+
+
+    		logger.info("####################################");
+    		logger.info("send message: " + message);
+    		logger.info("####################################");
+
     		if(list.get(0).getButtonList()!=null) {
     			requestSend.put("button", list.get(0).getButtonList());
     		}
-    		
+
     		// send start
     		URL url = new URL(sendUrl);
     		conn = (HttpURLConnection) url.openConnection();
@@ -534,13 +552,13 @@ public class SendTalkServiceImpl {
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoInput(true);
             conn.setDoOutput(true);
-            
+
             DataOutputStream stream = new DataOutputStream(conn.getOutputStream());
             String parameters = requestSend.toJSONString();
             stream.write(parameters.getBytes("UTF-8"));
             stream.flush();
-            stream.close();           
-            
+            stream.close();
+
             // HTTP 응답코드에 따른 분기처리
             int responseCode = conn.getResponseCode();
             if (200 <= responseCode && responseCode <= 299) {
@@ -555,9 +573,9 @@ public class SendTalkServiceImpl {
                 // 응답받은 json 데이터를 파싱
                 JSONParser parser = new JSONParser();
                 Object obj = parser.parse(sb.toString());
-		        
+
                 responseJson = (JSONObject) obj;
-                logger.info("발송성공");               			                	
+                logger.info("발송성공");
             } else {
             	logger.info("발송실패");
             }
@@ -568,19 +586,19 @@ public class SendTalkServiceImpl {
             logger.info("send parameters : " + parameters);
             logger.info("response message: " + responseJson);
             logger.info("response code: " + responseJson.get("code"));
-            
+
             kakaoVO.setResponseCode(responseCode);
             kakaoVO.setSendParameters(parameters);
             kakaoVO.setTemplateCode(templCodeList.getTemplateCode());
             kakaoVO.setPhoneNumber(templCodeList.getPhoneNumber());
             kakaoVO.setApiCode(responseJson.get("code").toString());
             result.add(kakaoVO);
-            
+
             // 템플릿 그룹 ID
             _gDao.insert("kakao.insert", kakaoVO);
         }
 	}
-	
+
 	@SuppressWarnings({ "unused", "unchecked" })
 	public void sendTalk(List<SendRequestVO> list) throws Exception {
 		String server = configBean.getWebMode();
@@ -589,24 +607,24 @@ public class SendTalkServiceImpl {
         JSONObject responseJson = null;
         KakaoVO templCodeList = null;
         List<KakaoVO> result = new ArrayList<KakaoVO>();
-		
+
         for ( SendRequestVO sendRequestVO : list ) {
         	KakaoVO kakaoVO = new KakaoVO();
         	kakaoVO.setKakaoInfoVO(new KakaoInfoVO());
     		kakaoVO.getKakaoInfoVO().setMode(server);
     		kakaoVO.setEtc1(sendRequestVO.getEtc1()); // 템플릿 그룹 ID
     		kakaoVO.setEtc2(sendRequestVO.getRcpNumber()); // 골프접수번호
-    		    		
+
     		// find template
     		logger.info(server+" server data search");
     		if ( server.equals("op") ) {
             	templCodeList = (KakaoVO) _gDao.selectOne("kakao.selectByNewTemplate", kakaoVO);
             }else {
-            	templCodeList = (KakaoVO) _gDao.selectOne("kakao.selectByTemplateTest", kakaoVO);							        	
+            	templCodeList = (KakaoVO) _gDao.selectOne("kakao.selectByTemplateTest", kakaoVO);
             }
     		templCodeList.setPhoneNumber(sendRequestVO.getReceiverNum());
-    		
-    		
+
+
     		// ready send & param set
     		String sendUrl = templCodeList.getKakaoInfoVO().getSendUrl();
     		requestSend.put("message_type","AT"); // 메세지타입
@@ -615,7 +633,7 @@ public class SendTalkServiceImpl {
     		requestSend.put("template_code", templCodeList.getTemplateCode()); // 템플릿 코드
     		requestSend.put("sender_no", "01047630961");	 	 //보내는 번호	- 아이콘 담당자 전번 hard coding
     		requestSend.put("message", sendRequestVO.getTalkMessage());
-    		
+
     		// send start
     		URL url = new URL(sendUrl);
     		conn = (HttpURLConnection) url.openConnection();
@@ -624,17 +642,17 @@ public class SendTalkServiceImpl {
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoInput(true);
             conn.setDoOutput(true);
-            
+
             DataOutputStream stream = new DataOutputStream(conn.getOutputStream());
             String parameters = requestSend.toJSONString();
             stream.write(parameters.getBytes("UTF-8"));
             stream.flush();
-            stream.close();           
-            
+            stream.close();
+
             // HTTP 응답코드에 따른 분기처리
             int responseCode = conn.getResponseCode();
             logger.info("응답코드 : {}", responseCode);
-            
+
             if (200 <= responseCode && responseCode <= 299) {
                 // 응답스트림을 한줄씩 스트링버퍼에 담는다.
                 BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -647,10 +665,10 @@ public class SendTalkServiceImpl {
                 // 응답받은 json 데이터를 파싱
                 JSONParser parser = new JSONParser();
                 Object obj = parser.parse(sb.toString());
-		        
+
                 responseJson = (JSONObject) obj;
-                logger.info("발송성공");   
-                
+                logger.info("발송성공");
+
                 logger.info("send response code: " +responseCode);
                 logger.info("send URL: " +sendUrl);
                 logger.info("sender_key: " +templCodeList.getKakaoInfoVO().getSenderKey());
@@ -658,24 +676,24 @@ public class SendTalkServiceImpl {
                 logger.info("send parameters : " + parameters);
                 logger.info("response message: " + responseJson);
                 logger.info("response code: " + responseJson.get("code"));
-                
-                
+
+
                 kakaoVO.setResponseCode(responseCode);
                 kakaoVO.setSendParameters(parameters);
                 kakaoVO.setTemplateCode(templCodeList.getTemplateCode());
                 kakaoVO.setPhoneNumber(templCodeList.getPhoneNumber());
                 kakaoVO.setApiCode(responseJson.get("code").toString());
                 result.add(kakaoVO);
-                
+
                 // 템플릿 그룹 ID
                 _gDao.insert("kakao.insert", kakaoVO);
             } else {
             	logger.info("발송실패");
-            } 
-            
+            }
+
         }
 	}
-	
+
 	// 접수불가 알림톡 - 현재 어느 시점에 쓰이는지 정의되어 있지 않아 생성만 하고 메세지 전송 테스트 x
 	public void sendReceiptUnable(List<SendRequestVO> list, String message) throws Exception {
 		// TODO Auto-generated method stub

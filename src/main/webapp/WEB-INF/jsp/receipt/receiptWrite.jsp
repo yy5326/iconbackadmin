@@ -921,7 +921,7 @@
 			evt.preventDefault();
 			var targetId = "zip"+$(this).attr("role");
 			var searchWord = $("input[role="+targetId+"]").val() == "" ? "" : $("input[role="+targetId+"]").val();
-			window.open("../common/officePopup.do?type1=A&type2="+$(this).attr('role')+"&searchWord="+searchWord, "officeSearch", "top=200, left=100, width=800px, height=480px");
+			window.open("/common/officePopup.do?type1=A&type2="+$(this).attr('role')+"&searchWord="+searchWord, "officeSearch", "top=200, left=100, width=800px, height=480px");
 		});
 	});
 	//document.ready

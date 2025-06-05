@@ -14,7 +14,7 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 
 	private int rcpInfSeq = 0;
     private List<Integer> rcpInfSeqArray = new ArrayList<Integer>();
-	
+
 	private int rcpSeq = 0;
 	//접수상태
 	private String rcpInfStat;
@@ -136,23 +136,23 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 	private String cusReceiptNm;
 	//접수자 전화번호
 	private String cusReceiptTelNum;
-	
+
 	private int iconFee;
-	
+
 	private String changeDeltypeYn;
-	
+
 	//카카오 접수자 ID
 	private String userId;
-	
+
 	//택배사진 파일명
 	private String fileNm;
-	
+
 	//편도 왕복 리스트
 	List<GolfReceiptInfVO> list;
 
 	//골프백 사진등록 담당기사 전화번호 (암호화)
 	private byte[] codePhoto;
-	
+
 	/**
 	 * 배송구분 - 1:편도, 2:왕복
 	 */
@@ -169,27 +169,32 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 
 	//api 수정삭제여부
 	private String golfUpdate;
-	
+
 	// 결제여부(0 : 아이콘, 1:카카오)
 	private String payGubun;
-	
+
 	// 결제용 묶음코드
 	private String orderId;
 
 	//api 주소
 	private String outApi;
-	
+
 	//상품타입(1:골프택배, 2:중고채, 3:캐리어)
 	private int prdType;
-	
-	//중고채 박스 사이즈 
+
+	//중고채 박스 사이즈
 	private String boxSize;
-	
+
 	//중초개 박스 갯수
 	private Integer boxCnt;
-	
+
 	private int discount;
-	
+
+	private int discountTotal;
+
+	private int rcpAirSeq; //인천공항용
+	private String rcpType; //인천공항용
+
 	/*
 	public String getCusReTelnum() {
 		return this.getCusReTelnumNo().getNo();
@@ -205,7 +210,7 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 	 * @return
 	 */
 	public String getPrdTypeName() {
-		
+
 		if (this.getPrdType() == 0)
 			return "구분값 없음";
 		else if (this.getPrdType() == 1)
@@ -216,7 +221,7 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 			return "캐리어";
 		else
 			return "";
-		
+
 	}
 
 	/**
@@ -304,7 +309,7 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 			return "결제대기";
 		else if (this.getPayStat().equals("1"))
 			if (this.getPayGubun().equals("0")) {
-				return "일반결제";	
+				return "일반결제";
 			}else {
 				return "카카오 결제";
 			}

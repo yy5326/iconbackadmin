@@ -1077,4 +1077,9 @@ public class StringUtil {
         line = line.replace("</string>", "");
 		return line;
 	}
+
+	public static boolean isEmpty(Object object) {
+		String str = String.valueOf(object);
+		return str == null || str.length() == 0;
+	}
 }

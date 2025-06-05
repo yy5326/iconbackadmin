@@ -68,16 +68,16 @@
 		<result column="DEL_KIND" jdbcType="VARCHAR" property="delKind" />
 		<result column="GAME_DT" jdbcType="VARCHAR" property="gameDt" />
 		<result column="PAY_STAT" jdbcType="VARCHAR" property="payStat" />
-		
+
 		<result column="RCP_KIND" jdbcType="VARCHAR" property="rcpKind" />
 		<result column="RCP_KIND_NAME" jdbcType="VARCHAR" property="rcpKindName" />
 		<result column="CUS_RECEIPT_NM" jdbcType="VARCHAR" property="cusReceiptNm" />
 		<result column="CUS_RECEIPT_TELNUM" jdbcType="VARCHAR" property="cusReceiptTelNum" />
 		<result column="PAY_GUBUN" jdbcType="VARCHAR" property="payGubun" />
-		
+
 		<result column="ICON_FEE" jdbcType="INTEGER" property="iconFee" />
 		<result column="FILE_NM" jdbcType="INTEGER" property="fileNm" />
-		
+
 	</resultMap>
 
 
@@ -90,13 +90,13 @@
     PD_PACK, PD_GOLF_CNT, PD_INDIV_PRICE, PD_CNT, BOSTON_CNT, PD_ETC_PAY, PD_DOSUN_PAY, PD_DELI_PAY, PD_PAY, PD_MEMO,
     PIC_REQ_DT, SC_TIME, EXT_COMP, EXT_COMP_TELNUM, PD_BARCODE, PD_REC_DT, A.REG_DATE, MOD_DATE, A.REG_USER, A.USE_YN, A.ICON_FEE,
     CASE WHEN A.RCP_KIND ='0' THEN '아이콘'
-   		 WHEN A.RCP_KIND ='1' THEN '카카오' 
-   		 WHEN A.RCP_KIND ='2' THEN '스마트' 
+   		 WHEN A.RCP_KIND ='1' THEN '카카오'
+   		 WHEN A.RCP_KIND ='2' THEN '스마트'
    		 WHEN A.RCP_KIND ='3' THEN '현대C'
    		 WHEN A.RCP_KIND ='4' THEN '롯데R'
    		 ELSE '알수없음' END RCP_KIND_NAME, RCP_KIND,
    	CUS_RECEIPT_NM, CUS_RECEIPT_TELNUM
-   	
+
   </sql>
 
   <sql id="whereClause">
@@ -118,7 +118,7 @@
 		<if test="type6 != null and type6 != ''">
 			AND A.RCP_KIND = #{type6}
 		</if>
-		
+
 		<if test="startDate != null and startDate != ''">
 			<choose>
 				<when test="type2 == 'picReqDt'">
@@ -155,7 +155,7 @@
 				</when>
 				<when test="type3 == 'orderId'">
 					AND CONCAT('GRP', A.RCP_SEQ) LIKE '%${searchWord}%' AND B.DEL_KIND = '2'
-				</when>				
+				</when>
 				<when test="type3 == 'brStrNm'">
 					AND A.BR_STR_NM LIKE '%${searchWord}%'
 				</when>
@@ -179,8 +179,8 @@
 				</when>
 			</choose>
 		</if>
-		
-		
+
+
 		<if test="seqs != '' and seqs != null">
 			AND A.RCP_INF_SEQ
 			<foreach collection="seqs" item="item" open=" in (" separator="," close=")"> #{item} </foreach>
@@ -198,6 +198,8 @@
 			, D.PAY_STAT
 			, D.PAY_GUBUN
 			, A.PRD_TYPE
+			, A.RCP_TYPE
+			, A.RCP_AIR_SEQ
 		FROM GOLF_RECEIPT_INF A
 		LEFT JOIN GOLF_RECEIPT_MST B
 			ON B.RCP_SEQ = A.RCP_SEQ
@@ -208,13 +210,13 @@
 		WHERE A.USE_YN = 'Y'
 			AND B.USE_YN = 'Y'
 			<include refid="whereClause" />
-		ORDER BY 
+		ORDER BY
 		<if test="type7 != '' and type7 != null">
 			<if test="type7 == 'startBr'">
 			A.BR_STR_NM,
 			</if>
 			<if test="type7 == 'endBr'">
-			 A.BR_END_NM, 
+			 A.BR_END_NM,
 			 </if>
 		 </if>
 		A.RCP_SEQ DESC, A.RCP_INF_SEQ DESC
@@ -262,7 +264,7 @@
 			AND A.USE_YN = 'Y'
 			AND B.USE_YN = 'Y'
 	</select>
-	
+
 	<!-- 택배조회 상세보기 RCP_SEQ, SR_TYPE으로 검색 -->
 	<select id="selectDetailByRcpSeq" parameterType="com.golf.service.model.GolfReceiptInfVO" resultMap="BaseResultMap">
 		SELECT
@@ -290,7 +292,7 @@
 			AND A.USE_YN = 'Y'
 			AND B.USE_YN = 'Y'
 	</select>
-	
+
 	<!-- 택배조회 상세보기 RCP_NUMBER 으로 검색 -->
 	<select id="selectDetailByRcpNumber" parameterType="com.golf.service.model.GolfReceiptInfVO" resultMap="BaseResultMap">
 		SELECT
@@ -306,6 +308,7 @@
 			, C.PAY_STAT
 			, C.PAY_GUBUN
 			, A.PRD_TYPE
+			, A.RCP_TYPE
 		FROM GOLF_RECEIPT_INF A
 			LEFT JOIN GOLF_RECEIPT_MST B
 				ON B.RCP_SEQ = A.RCP_SEQ
@@ -330,7 +333,7 @@
 
 			, C.PAY_STAT
 			, C.PAY_GUBUN
-			, A.PRD_TYPE 
+			, A.PRD_TYPE
 		FROM GOLF_RECEIPT_INF A
 			LEFT JOIN GOLF_RECEIPT_MST B
 				ON B.RCP_SEQ = A.RCP_SEQ
@@ -343,7 +346,32 @@
 			AND A.USE_YN = 'Y'
 			AND B.USE_YN = 'Y'
 	</select>
-	
+
+
+  <select id="selectDetailByKeyForKdnge" parameterType="search" resultMap="BaseResultMap">
+		SELECT
+			<include refid="select" />
+
+			, (SELECT GOLF_NAME FROM GOLF_INF WHERE GOLF_SEQ = A.SEND_GOLF_SEQ) AS SEND_GOLF_NAME
+			, (SELECT GOLF_NAME FROM GOLF_INF WHERE GOLF_SEQ = A.RECV_GOLF_SEQ) AS RECV_GOLF_NAME
+
+			, B.DEL_KIND
+			, B.GAME_DT
+			, B.FARE_TYPE
+
+			, C.PAY_STAT
+			, C.PAY_GUBUN
+			, A.PRD_TYPE
+		FROM GOLF_RECEIPT_INF A
+			LEFT JOIN GOLF_RECEIPT_MST B
+				ON B.RCP_SEQ = A.RCP_SEQ
+			LEFT JOIN GOLF_RECEIPT_PAY C
+				ON C.RCP_INF_SEQ = A.RCP_INF_SEQ
+		WHERE A.RCP_NUMBER = #{rcpNumber,jdbcType=VARCHAR}
+			AND A.USE_YN = 'Y'
+			AND B.USE_YN = 'Y'
+	</select>
+
   	<!-- 리스트 하단 운임 통계(검색 조건에 따른) -->
 	<select id="selectTotalStats" parameterType="search" resultType="hashmap">
 		SELECT
@@ -513,7 +541,7 @@
       </if>
       <if test="bostonCnt != null">
         BOSTON_CNT,
-      </if>      
+      </if>
       <if test="pdEtcPay != null">
         PD_ETC_PAY,
       </if>
@@ -650,7 +678,7 @@
       </if>
       <if test="bostonCnt != null">
         #{bostonCnt,jdbcType=INTEGER},
-      </if>      
+      </if>
       <if test="pdEtcPay != null">
         #{pdEtcPay,jdbcType=INTEGER},
       </if>
@@ -785,7 +813,7 @@
       </if>
       <if test="bostonCnt != null and bostonCnt > 0">
         BOSTON_CNT = #{bostonCnt,jdbcType=INTEGER},
-      </if>      
+      </if>
       <if test="pdEtcPay != null">
         PD_ETC_PAY = #{pdEtcPay,jdbcType=INTEGER},
       </if>
@@ -860,7 +888,7 @@
       PD_NM = #{pdNm,jdbcType=VARCHAR},
       PD_PACK = #{pdPack,jdbcType=VARCHAR},
       PD_GOLF_CNT = #{pdGolfCnt,jdbcType=VARCHAR},
-      PD_INDIV_PRICE = #{pdIndivPrice,jdbcType=VARCHAR},      
+      PD_INDIV_PRICE = #{pdIndivPrice,jdbcType=VARCHAR},
       BOSTON_CNT = #{bostonCnt,jdbcType=INTEGER},
       PD_CNT = #{pdCnt,jdbcType=INTEGER},
       PD_ETC_PAY = #{pdEtcPay,jdbcType=INTEGER},
@@ -886,7 +914,7 @@
 	</select>
 
 	<!-- 카카오 히스토리등록용 골프 접수번호 가져오기 , 왕복 -> 편도취소 시 운임 재계산 EX)골프백 경우 개당 1000원 더 붙음-->
-	<select id="selectByKakaoHistory" parameterType="search" resultType="com.golf.service.model.GolfReceiptInfVO">		
+	<select id="selectByKakaoHistory" parameterType="search" resultType="com.golf.service.model.GolfReceiptInfVO">
 		SELECT A.RCP_NUMBER, A.RCP_INF_SEQ, A.ICON_FEE, A.PD_DELI_PAY, A.PD_DELI_PAY + A.ICON_FEE + A.PD_DOSUN_PAY + A.PD_ETC_PAY AS PD_PAY
 		     , A.PD_CNT, A.BOSTON_CNT
 		  FROM (
@@ -903,14 +931,14 @@
 	        		                WHEN B.FARE_TYPE = 1 THEN (C.FEE1 * A.PD_CNT) + (C.FEE7 * A.BOSTON_CNT)
 	        		                WHEN B.FARE_TYPE = 2 THEN (C.FEE2 * A.PD_CNT) + (C.FEE8 * A.BOSTON_CNT)
 	        		                WHEN B.FARE_TYPE = 3 THEN (C.FEE3 * A.PD_CNT) + (C.FEE9 * A.BOSTON_CNT)
-	        		                ELSE 0 END RECV_ICON_FEE 
+	        		                ELSE 0 END RECV_ICON_FEE
 	                         , CASE WHEN A.SEND_GOLF_SEQ IS NULL THEN (8000  * A.PD_CNT) + (6000 * A.BOSTON_CNT)
 	        		                WHEN B.FARE_TYPE = 1 THEN (D.FEE1 * A.PD_CNT) + (D.FEE7 * A.BOSTON_CNT)
 	        		                WHEN B.FARE_TYPE = 2 THEN (D.FEE2 * A.PD_CNT) + (D.FEE8 * A.BOSTON_CNT)
 	        		                WHEN B.FARE_TYPE = 3 THEN (D.FEE3 * A.PD_CNT) + (D.FEE9 * A.BOSTON_CNT)
-	        		                ELSE 0 END SEND_ICON_FEE 
+	        		                ELSE 0 END SEND_ICON_FEE
 							 , CASE WHEN B.FARE_TYPE = 1 THEN A.PD_DELI_PAY + (1000 * A.PD_CNT) + (0 * A.BOSTON_CNT)
-	        		                ELSE A.PD_DELI_PAY END PD_DELI_PAY 	        		                    
+	        		                ELSE A.PD_DELI_PAY END PD_DELI_PAY
 	                         , A.PD_CNT
 	                         , A.BOSTON_CNT
 	                         , A.RECV_GOLF_SEQ
@@ -925,9 +953,9 @@
 	               )A
 				)A
 	</select>
-	
+
 	<!-- 카카오 히스토리등록용 골프 접수번호 가져오기 , 왕복 -> 편도취소 시 운임 재계산 EX)골프백 경우 개당 1000원 더 붙음-->
-	<select id="selectForCarrier" parameterType="search" resultType="com.golf.service.model.GolfReceiptInfVO">		
+	<select id="selectForCarrier" parameterType="search" resultType="com.golf.service.model.GolfReceiptInfVO">
 		SELECT A.RCP_NUMBER, A.RCP_INF_SEQ, A.ICON_FEE, A.PD_DELI_PAY, A.PD_DELI_PAY + A.ICON_FEE + A.PD_DOSUN_PAY + A.PD_ETC_PAY AS PD_PAY
 		     , A.PD_CNT, A.BOSTON_CNT
 		  FROM (
@@ -944,14 +972,14 @@
 	        		                WHEN B.FARE_TYPE = 1 THEN (C.FEE1 * A.PD_CNT) + (C.FEE7 * A.BOSTON_CNT)
 	        		                WHEN B.FARE_TYPE = 2 THEN (C.FEE2 * A.PD_CNT) + (C.FEE8 * A.BOSTON_CNT)
 	        		                WHEN B.FARE_TYPE = 3 THEN (C.FEE3 * A.PD_CNT) + (C.FEE9 * A.BOSTON_CNT)
-	        		                ELSE 0 END RECV_ICON_FEE 
+	        		                ELSE 0 END RECV_ICON_FEE
 	                         , CASE WHEN A.SEND_GOLF_SEQ IS NULL THEN (13000  * A.PD_CNT) + (6000 * A.BOSTON_CNT)
 	        		                WHEN B.FARE_TYPE = 1 THEN (D.FEE1 * A.PD_CNT) + (D.FEE7 * A.BOSTON_CNT)
 	        		                WHEN B.FARE_TYPE = 2 THEN (D.FEE2 * A.PD_CNT) + (D.FEE8 * A.BOSTON_CNT)
 	        		                WHEN B.FARE_TYPE = 3 THEN (D.FEE3 * A.PD_CNT) + (D.FEE9 * A.BOSTON_CNT)
-	        		                ELSE 0 END SEND_ICON_FEE 
+	        		                ELSE 0 END SEND_ICON_FEE
 							 , CASE WHEN B.FARE_TYPE = 1 THEN A.PD_DELI_PAY
-	        		                ELSE A.PD_DELI_PAY END PD_DELI_PAY 	        		                    
+	        		                ELSE A.PD_DELI_PAY END PD_DELI_PAY
 	                         , A.PD_CNT
 	                         , A.BOSTON_CNT
 	                         , A.RECV_GOLF_SEQ
@@ -976,7 +1004,7 @@
    		   AND A.RCP_INF_STAT IN ('1','2')
    		   AND IFNULL(A.SC_TIME,'') = '';
 	</select>
-	
+
 
 	<!-- 택배사진 -->
 	<select id="selectByPhoto" parameterType="search" resultType="com.golf.service.model.GolfReceiptInfVO">
@@ -985,10 +1013,10 @@
   		  FROM GOLF_RECEIPT_FILE A
  		 WHERE A.RCP_INF_SEQ = #{rcpInfSeq,jdbcType=INTEGER}
  		   AND A.FILE_CODE = 'pickup'
- 		   AND A.USE_YN = 'Y' 		   
+ 		   AND A.USE_YN = 'Y'
  		 ORDER BY A.REG_DATE ASC
 	</select>
-	
+
 	<!-- 결제만료 그룹번호 리스트 -->
 	<select id="selectPayExpireRcpSeqList" parameterType="java.util.HashMap" resultType="String">
 		SELECT E.RCP_SEQ FROM GOLF_RECEIPT_INF E
@@ -1000,7 +1028,7 @@
          	AND E.RCP_KIND != '2'
             <!-- AND DATE_FORMAT(DATE_ADD(E.PIC_REQ_DT,INTERVAL #{intervalValue} DAY),'%Y%m%d')=DATE_FORMAT("2021-05-19",'%Y%m%d') -->
 	</select>
-	
+
 	<!-- 결제만료 그룹번호 리스트(휴일) -->
 	<!-- <select id="selectPayExpireRcpSeqListForHoliday" parameterType="search" resultType="String">
 		SELECT RCP_SEQ FROM GOLF_RECEIPT_INF A WHERE A.RCP_SEQ IN (SELECT E.RCP_SEQ FROM GOLF_RECEIPT_INF E
@@ -1010,7 +1038,7 @@
             AND (G.DEL_KIND='2' AND E.SR_TYPE='S' OR G.DEL_KIND='1')
             AND DATE_FORMAT(DATE_ADD(E.PIC_REQ_DT,INTERVAL -2 DAY),'%Y%m%d')=DATE_FORMAT(now(),'%Y%m%d')
 	</select> -->
-	
+
 	<!-- 결제만료 그룹번호 리스트(휴일) -->
 	<select id="selectPayExpireList" parameterType="java.util.HashMap" resultType="com.golf.service.model.GolfReceiptInfVO">
 		SELECT
@@ -1026,14 +1054,14 @@
 			ON C.GOLF_SEQ = B.GOLF_SEQ
 		LEFT JOIN GOLF_RECEIPT_PAY D
 			ON D.RCP_INF_SEQ = A.RCP_INF_SEQ
-		WHERE A.RCP_SEQ IN 
+		WHERE A.RCP_SEQ IN
 		<foreach collection="rcpSeqArr" item="item" index="index" separator="," open="(" close=")">
             #{item}
         </foreach>
          AND A.RCP_KIND != '2'
         ORDER BY B.DEL_KIND,A.RCP_SEQ, A.SR_TYPE DESC
 	</select>
-	
+
 	<!-- 골프접수 (rcpSeq는 직접입력)  -->
 	<insert id="chatInsertReceiptInf" parameterType="com.golf.service.model.GolfReceiptInfVO">
 		<selectKey keyProperty="rcpInfSeq,rcpNumber" resultType="com.golf.service.model.GolfReceiptInfVO" order="BEFORE" statementType="PREPARED">
@@ -1269,7 +1297,7 @@
 			</if>
 			<if test="pdIndivPrice != null">
 				#{pdIndivPrice,jdbcType=VARCHAR},
-			</if>			
+			</if>
 			<if test="boston_cnt != null and boston_cnt > 0">
 				#{boston_cnt,jdbcType=INTEGER},
 			</if>
@@ -1301,26 +1329,26 @@
 				#{extCompTelnum,jdbcType=VARCHAR},
 			</if>
 			<if test="rcpKind != null">
-				#{rcpKind,jdbcType=VARCHAR},				
+				#{rcpKind,jdbcType=VARCHAR},
 			</if>
 			<if test="cusReceiptNm != null">
-				#{cusReceiptNm,jdbcType=VARCHAR},				
+				#{cusReceiptNm,jdbcType=VARCHAR},
 			</if>
 			<if test="cusReceiptTelNum != null">
-				#{cusReceiptTelNum,jdbcType=VARCHAR},				
+				#{cusReceiptTelNum,jdbcType=VARCHAR},
 			</if>
 			<if test="userId != null">
-				#{userId,jdbcType=VARCHAR},				
+				#{userId,jdbcType=VARCHAR},
 			</if>
 			<if test="iconFee != null">
-				#{iconFee,jdbcType=INTEGER},			
+				#{iconFee,jdbcType=INTEGER},
 			</if>
 			<if test="changeDeltypeYn != null">
-				#{changeDeltypeYn,jdbcType=VARCHAR}				
+				#{changeDeltypeYn,jdbcType=VARCHAR}
 			</if>
 		</trim>
 	</insert>
-	
+
 	<!-- 택배접수 배송완료 API 스케줄 -->
 	<select id="selectscTimeList" parameterType="search" resultMap="BaseResultMap">
 		SELECT
@@ -1336,15 +1364,16 @@
 		WHERE A.USE_YN = 'Y'
 		  AND B.USE_YN = 'Y'
 		  AND A.RCP_INF_STAT = '2'
-		  AND A.PD_BARCODE IS NOT NULL 
-		  AND A.SC_TIME IS NULL		  
+		  AND A.PD_BARCODE IS NOT NULL
+		  AND A.SC_TIME IS NULL
       	  AND A.REG_DATE >= DATE_ADD(NOW(), INTERVAL -5 MONTH)
 		ORDER BY A.RCP_SEQ DESC	, A.RCP_INF_SEQ DESC
-	</select>	
-	
+	</select>
+
 	<select id="selectByRcpKindChk" parameterType="search" resultMap="BaseResultMap">
 		SELECT RCP_NUMBER, RCP_KIND, RCP_INF_STAT
 		  FROM GOLF_RECEIPT_INF
-		 WHERE RCP_SEQ = #{rcpSeq,jdbcType=INTEGER}		
+		 WHERE RCP_NUMBER = #{rcpNumber}
+		 
 	</select>
 </mapper>

@@ -17,10 +17,8 @@
 
 	<!-- 골프택배 결제정보 접수  -->
 	<insert id="insertReceiptPay" parameterType="com.golf.service.model.GolfReceiptPayVO">
-		<selectKey keyProperty="paySeq,rcpInfSeq" resultType="com.golf.service.model.GolfReceiptPayVO" order="BEFORE" statementType="PREPARED">
-			<if test="rcpInfSeq == null or rcpInfSeq == 0">
-				SELECT NEXT VALUE FOR PAY_SEQ as paySeq, PREVIOUS VALUE FOR RCP_INF_SEQ AS rcpInfSeq
-			</if>
+		<selectKey keyProperty="paySeq" resultType="com.golf.service.model.GolfReceiptPayVO" order="BEFORE" statementType="PREPARED">
+				SELECT NEXT VALUE FOR PAY_SEQ as paySeq
 		</selectKey>
 
 		INSERT INTO GOLF_RECEIPT_PAY

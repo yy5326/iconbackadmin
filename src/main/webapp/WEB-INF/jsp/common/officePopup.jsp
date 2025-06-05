@@ -32,7 +32,7 @@
 	});
 
 	function loadIframe(type1, type2, searchWord){
-		var sHref = "../common/officePopupFrame.do";
+		var sHref = "/common/officePopupFrame.do";
 		$.Nav('iframe', '#tabIframe', sHref, {type1: type1, type2: type2, searchWord: searchWord});
 	}
 

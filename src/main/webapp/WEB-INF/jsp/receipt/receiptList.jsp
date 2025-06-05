@@ -16,7 +16,7 @@
 					<a href="javascript:setGolfDelivery();" class="search_btn">픽업요청</a>
 					<a href="javascript:setGolfWait();" class="search_btn">골프접수</a>
 				</div>
-				<div class="right">					
+				<div class="right">
 					<a class="search_btn" href="javascript:$.Nav('excel','./receiptListExcel.do');">엑셀저장</a>
 				</div>
 			</div>
@@ -88,7 +88,7 @@
 							<th>픽업희망일</th>
 							<th>골프 접수번호</th>
 							<th>결제상태</th>
-							<th>택배접수일</th>							
+							<th>택배접수일</th>
 							<th>운송장번호</th>
 							<th id="startBr">발송 영업소</th> <input type="hidden" value="" name="type7" id="brSorting">
 							<th id="endBr">도착 영업소</th>
@@ -103,11 +103,11 @@
 					</thead>
 					<tbody>
 
-<c:set var="delKind" value="N"/>						
-<c:forEach var="m" items="${list}" varStatus="ss">	
+<c:set var="delKind" value="N"/>
+<c:forEach var="m" items="${list}" varStatus="ss">
 						<tr class="detail" id="${m.rcpInfSeq }" <c:if test="${m.rcpInfStat eq '3'}">style="background: #fff9d5;"</c:if>>
 							<td class="chk03" id="${ss.index }">
-								<input type="checkbox" id="chk01[${ss.index }]" class="golfChk" value="${m.rcpInfSeq }"/> 
+								<input type="checkbox" id="chk01[${ss.index }]" class="golfChk" value="${m.rcpInfSeq }"/>
 								<label for="chk01[${ss.index }]"></label>
 								<input type="hidden" id="rcpKindName" value="${m.rcpKindName}"/>
 								<input type="hidden" id="delKind" name = "delKind" value="${m.delKind}"/>
@@ -116,7 +116,7 @@
 								<input type="hidden" id="grpSeq" name="grpSeq" value="GRP${m.rcpSeq }"/>
 								<input type="hidden" id="rcpSeq" name="rcpSeq" value="${m.rcpSeq }"/>
 								<input type="hidden" id="rcpKind" name="rcpKind" value="${m.rcpKind }"/>
-								
+
 							</td>
 							<td style="margin-left: 0;">${m.rcpKindName}</td>
 							<td style="margin-left: 0;">${m.prdTypeName}</td>
@@ -128,38 +128,57 @@
 	<c:if test="${m.delKind eq '2' }">
 								${m.srTypeName }
 	</c:if>
-							</td>	
-			
+							</td>
+
 <c:set var ="rowSpan" value = "1"/>
 <c:if test = "${list[ss.index + 1].rcpSeq == m.rcpSeq }">
 		<c:set var ="rowSpan" value = "2"/>
-</c:if>		
-						
-<c:choose>							
+</c:if>
+
+<c:choose>
 	<c:when test="${m.delKind eq '2' && m.srType eq 'R'  && rowSpan == 2}">
 	<!-- 왕복 1,2차 모두 표시되는 경우 -->
 							<td rowspan="${rowSpan}">
 								GRP${m.rcpSeq }
 							</td>
 	</c:when>
-	
+
 	<c:when test="${m.delKind eq '2' && rowSpan == 1 && list[ss.index - 1].rcpSeq != m.rcpSeq}">
 	<!-- 이전 그룹번호와 같지 않고 왕복 1,2차 중 한개만 표시되는 경우 -->
 								<td>
 									GRP${m.rcpSeq }
 								</td>
 	</c:when>
-							
-	<c:otherwise>	
+
+	<c:otherwise>
 		<!-- 편도는 그룹번호 표시 안함 -->
 		<c:if test="${m.delKind eq '1'}">
-			<td></td>			
-		</c:if>	
-	</c:otherwise>		
-</c:choose>							
-							
-							<td>${fn:substring(m.picReqDt, 2, 10) }</td>	
-							<td>${m.rcpNumber } 
+			<c:set var ="rowAirSpan" value = "1"/>
+			<c:if test = "${list[ss.index + 1].rcpAirSeq == m.rcpAirSeq }">
+				<c:set var ="rowAirSpan" value = "2"/>
+			</c:if>
+
+			<c:choose>
+				<c:when test="${m.rcpType eq 'A' && m.rcpAirSeq ne ''}">
+					<c:if test="${rowAirSpan eq '2'}">
+						<td rowspan="${rowAirSpan}">
+							인천공항
+						</td>
+					</c:if>
+					<c:if test="${rowAirSpan eq '1' && list[ss.index - 1].rcpAirSeq != m.rcpAirSeq}">
+						<td>인천공항</td>
+					</c:if>
+				</c:when>
+				<c:otherwise>
+					<td></td>
+				</c:otherwise>
+			</c:choose>
+		</c:if>
+	</c:otherwise>
+</c:choose>
+
+							<td>${fn:substring(m.picReqDt, 2, 10) }</td>
+							<td>${m.rcpNumber }
 								<input type="hidden" name="rcpNumber" id="rcpNumber" value="${m.rcpNumber}"/>
 							</td>
 							<td>${m.payStatName }</td>
@@ -261,7 +280,7 @@
 	var chan_val = year+mon+ day;
 	var allChk = true;
 	var stateChk = "";
-	
+
 	$(document).ready(function() {
 		// 상세보기 가능한 영역에 손바닥 표시
 		$('td').not('td.chk03').css('cursor', 'pointer');
@@ -284,7 +303,7 @@
 				$("#allChkView").hide();
 				return;
 			}
-			
+
 		});
 		// 체크박스 전체선택
 		$("#allChk").click(function() {
@@ -331,7 +350,7 @@
 			} else
 				$('.detailReason').hide();
 		});
-		
+
 		//접수상태, 결제상태가 같은 리스트만 체크
 		$(".golfChk").change(function(){
 			var index = 0;
@@ -342,13 +361,13 @@
 					if($("#chkNum").val() == ""){
 						$("#chkNum").val($("input[name=payStatChk]").eq(index).val() + $("input[name=rcpInfStatChk]").eq(index).val());
 					}
-					
+
 					//처음 체크한 접수상태와 결제상태값과 같지 않은 경우 체크박스 자동 해제처리
 					if($("#chkNum").val() != $("input[name=payStatChk]").eq(index).val() + $("input[name=rcpInfStatChk]").eq(index).val()){
 						$(".golfChk").eq(index).attr("checked", false);
 						alert("접수상태 또는 결제상태가 같지 않습니다.");
 					}
-				});								
+				});
 			}else{
 				$("#chkNum").val("");
 			}
@@ -404,7 +423,7 @@
 		var orderType = "";
 		var state = true;
 		var rcpKind = "";
-		
+
 		if($(".golfChk:checked").length > 0){
 			$(".golfChk:checked").each(function(i,elements){
 				index = $(elements).index(".golfChk");
@@ -417,9 +436,9 @@
 					return false;
 				}
 				rcpInfSeqArray.push($(this).val());
-				rcpNumberArray.push($("input[name=rcpNumber]").eq(index).val());				
-			});	
-			
+				rcpNumberArray.push($("input[name=rcpNumber]").eq(index).val());
+			});
+
 			if(state==true){
 				//결제완료
 				if(strType=="완료"){
@@ -427,7 +446,7 @@
 						alert("결제완료 상태입니다.");
 						return;
 					}
-					
+
 					if(rcpInfStat!="0"){
 						alert("결제"+strType+"는 골프접수 단계에서만 가능합니다.");
 						state = false;
@@ -441,7 +460,7 @@
 						state = false;
 						return;
 					}
-					
+
 					if(rcpInfStat!="0" && rcpInfStat!="8" && rcpInfStat!="7" && rcpInfStat!="9" || payStat!="1"){
 						alert("결제"+strType+"는 골프접수, 골프취소, 픽업취소, 택배취소 단계에서만 가능합니다.");
 						state = false;
@@ -449,7 +468,7 @@
 					}
 					orderType = strType;
 				}
-			
+
 				strType = "결제"+strType;
 				$.ajaxSettings.traditional = true;
 				var param = { rcpInfSeqArray: rcpInfSeqArray, rcpNumberArray : rcpNumberArray, golfUpdate : orderType};
@@ -477,16 +496,16 @@
 			return;
 		}
 	}
-	
+
 	//픽업 요청
 	function setGolfDelivery(){
 		var seqArray = new Array();
 		var rcpNumberArray = new Array();
 		var state = true;
-		
-		if($(".golfChk:checked").length > 0){			
+
+		if($(".golfChk:checked").length > 0){
 			$(".golfChk:checked").each(function(i,elements){
-				
+
 				seqArray.push($(this).val());
 				rcpNumberArray.push($(elements).parent().find('#rcpNumber').val());
 
@@ -494,7 +513,7 @@
 				if(state==true){
 					state = getState($(this).val(), "P");
 				}
-			});	
+			});
 
 			$.ajaxSettings.traditional = true;
 			if(state==true){
@@ -525,7 +544,7 @@
 			return;
 		}
 	}
-	
+
 	//접수대기 -> 골프접수로 변경
 	function setGolfWait(){
 		var rcpKindName = '';
@@ -537,7 +556,7 @@
 		$(".golfChk:checked").each(function(i,elements){
 			rcpKindName = $(elements).parent().find('#rcpKindName').val();
 
-			if(state==true){				
+			if(state==true){
 				if(rcpKindName=="아이콘"){
 					alert("접수대기상태가 아닙니다.");
 					state = false;
@@ -554,8 +573,8 @@
 					rcpInfSeqArray.push($(this).val());
 				}
 			}
-		});		
-		
+		});
+
 		$.ajaxSettings.traditional = true;
 		if(state==true){
 			if(confirm("골프접수 신청을 하시겠습니까?")){
@@ -578,9 +597,9 @@
 					}
 				});
 			}
-		}		
+		}
 	}
-	
+
 	//선택 취소 레이어
 	function setGolfDeliveryCancel(){
 		if ($("input[type=checkbox]:checked").length < 1) {
@@ -597,8 +616,8 @@
 		//선택취소 상태체크
 		if (!getState(seq, "D")) {
 			return;
-		} 
-	
+		}
+
 		if (confirm("취소처리 하시겠습니까?")) {
 			if (seq != "") {
 
@@ -652,7 +671,7 @@
 			}
 		});
 	}
-	
+
 	function doSearch() {
 		$('#form71').submit();
 	}
@@ -660,17 +679,17 @@
 	function doReset() {
 		$.Nav('self', null, null, true);
 	}
-	
+
 	function sortingForBranch(br){
 		if(br == 'startBr'){
 			$('#brSorting').val("startBr");
-			
+
 		}else{
 			$('#brSorting').val("endBr");
 		}
-		
+
 		doSearch();
-		
+
 	}
 
 	$('#startBr').on('click',function(){

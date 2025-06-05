@@ -470,11 +470,11 @@ public class GolfReceiptController extends PrtController {
 			return super.setBindingResult(result, model);
 		
 		GolfReceiptInfVO infoVO = (GolfReceiptInfVO) _gDao.selectByKey("golfReceiptInf.selectDetailByKey", search.getRcpISeq());
-
-		if(!(_globalProperty.getWebMode().equals("op"))) {
-			infoVO.setPdDeliPay(infoVO.getPdDeliPay() + infoVO.getIconFee());
-			infoVO.setIconFee(0);
-		}
+		// 241126 임시 주석
+//		if(!(_globalProperty.getWebMode().equals("op"))) {
+//			infoVO.setPdDeliPay(infoVO.getPdDeliPay() + infoVO.getIconFee());
+//			infoVO.setIconFee(0);
+//		}
 		
 		model.addAttribute("vo", infoVO);
 		model.addAttribute("search", search);
@@ -499,10 +499,11 @@ public class GolfReceiptController extends PrtController {
 		List<String> phoneList = StringUtil.getMobilePhoneList();
 
 		
-		if(!(_globalProperty.getWebMode().equals("op"))) {
-			infoVO.setPdDeliPay(infoVO.getPdDeliPay() + infoVO.getIconFee());
-			infoVO.setIconFee(0);
-		}
+		// 241126 임시 주석
+//		if(!(_globalProperty.getWebMode().equals("op"))) {
+//			infoVO.setPdDeliPay(infoVO.getPdDeliPay() + infoVO.getIconFee());
+//			infoVO.setIconFee(0);
+//		}
 		
 		
 		model.addAttribute("vo", infoVO);
@@ -529,10 +530,11 @@ public class GolfReceiptController extends PrtController {
 		List<String> phoneList = StringUtil.getMobilePhoneList();
 
 		
-		if(!(_globalProperty.getWebMode().equals("op"))) {
-			infoVO.setPdDeliPay(infoVO.getPdDeliPay() + infoVO.getIconFee());
-			infoVO.setIconFee(0);
-		}
+		// 241126 임시 주석
+//		if(!(_globalProperty.getWebMode().equals("op"))) {
+//			infoVO.setPdDeliPay(infoVO.getPdDeliPay() + infoVO.getIconFee());
+//			infoVO.setIconFee(0);
+//		}
 		
 		
 		model.addAttribute("vo", infoVO);

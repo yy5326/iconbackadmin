@@ -63,7 +63,7 @@ import com.golf.service.impl.GolfApi;
  *
  */
 @Controller
-@EnableScheduling 
+@EnableScheduling
 @RequestMapping(value = "/common")
 public class CommonController extends PrtController {
 
@@ -72,17 +72,17 @@ public class CommonController extends PrtController {
 
 	@Resource
 	GolfReceiptServiceImpl _receiptService;
-	
+
 	@Resource
 	SendTalkServiceImpl _sendTalkService;
 
 	@Autowired
 	private GolfApi golfApi;
-	
+
 	@Autowired
 	private KdngeAPI kdngeApi;
-	
-	
+
+
 	private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
 	/**
@@ -101,11 +101,11 @@ public class CommonController extends PrtController {
  		List<StringPair> type1 = new ArrayList<StringPair>();
 // 		type1.add(new StringPair("우편번호", "A"));
 // 		type1.add(new StringPair("영업소명", "N"));
- 
+
  		//차세대 코드
 		type1.add(new StringPair("우편번호", "zipcode"));
  		type1.add(new StringPair("영업소명", "name"));
- 		
+
 		model.addAttribute("type1", type1);
 		model.addAttribute("search", infVO);
 		return "/common/officePopup";
@@ -141,12 +141,12 @@ public class CommonController extends PrtController {
 			apiMapList = (List<EgovMap>)apiMap.get("listData");
 		}
 
-		
+
 		EgovMap map = new EgovMap();
 		for(int i = 0; i<apiMapList.size(); i++) {
 			map = new EgovMap();
 			String addr = (String) apiMapList.get(i).get("address") + apiMapList.get(i).get("addressDetail");
-			map.put("picOfficeCode", apiMapList.get(i).get("branData"));
+			map.put("picOfficeCode", apiMapList.get(i).get("branCode"));
 			map.put("picOffice", apiMapList.get(i).get("branName"));
 			map.put("picOfficeZipCode", apiMapList.get(i).get("zipCode"));
 			map.put("picOfficeAddr", addr);
@@ -170,17 +170,7 @@ public class CommonController extends PrtController {
 	@RequestMapping(value = "/getExtraPrice.do")
 	public @ResponseBody String getExtraPrice(GolfReceiptInfVO vo) throws Exception {
 
-		Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").serializeNulls().create();
-		Map<String, String> paramMap = new HashMap<String, String>();
-		paramMap.put("PD_DELI_GUBUN", vo.getPayType());
-		paramMap.put("PD_INDIV_PRICE", vo.getPdIndivPrice());
-		EgovMap apiMap = callUrl(getApiUrl("GetExtraCharge"), gson.toJson(paramMap));
-
-		if(!apiMap.isEmpty()){
-			return toJson(apiMap);
-		}else{
-			return "false";
-		}
+		return kdngeApi.getExtraPrice(vo);
 	}
 
 	/**
@@ -240,74 +230,10 @@ public class CommonController extends PrtController {
 	public @ResponseBody String setGolfDeliveryArr(GolfReceiptInfVO infVO) throws Exception {
 		List<GolfReceiptInfVO> receiptList = (List<GolfReceiptInfVO>) _gDao.selectList("golfReceiptInf.selectDetailByKeyArr", infVO);
 		String returnVal = "success";
-		
-		for(GolfReceiptInfVO vo: receiptList) {
-			Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").serializeNulls().create();
-			Map<String, Object> paramMap = new HashMap<String, Object>();
-			paramMap.put("DELIBERYTYPE", "1"); //골프택배 고정
-			paramMap.put("RT_NUMBER", vo.getRtNumber());
-			paramMap.put("CUS_SEND_NM", vo.getCusSendNm());
-			paramMap.put("CUS_SEND_TELNUM", vo.getCusSendTelnum());
-			paramMap.put("CUS_SEND_TELNUM2", vo.getCusSendTelnum2());
-			paramMap.put("CUS_SEND_ZIP", vo.getCusSendZip());
-			paramMap.put("CUS_SEND_ADDR1", vo.getCusSendAddr1());
-			paramMap.put("CUS_SEND_ADDR2", vo.getCusSendAddr2());
-			paramMap.put("CUS_RE_NM", vo.getCusReNm());
-			paramMap.put("CUS_RE_TELNUM", vo.getCusReTelnum());
-			paramMap.put("CUS_RE_TELNUM2", vo.getCusReTelnum2());
-			paramMap.put("CUS_RE_ZIP", vo.getCusReZip());
-			paramMap.put("CUS_RE_ADDR1", vo.getCusReAddr1());
-			paramMap.put("CUS_RE_ADDR2", vo.getCusReAddr2());
-			paramMap.put("BR_STR_CODE", vo.getBrStrCode());
-			paramMap.put("BR_END_CODE", vo.getBrEndCode());
-			paramMap.put("PD_DELI_EXPT_DT", vo.getPicReqDt().concat(" 12:00:00"));
-			paramMap.put("PD_NM", vo.getPdNm());
-			paramMap.put("PD_PACK", vo.getPdPack());
-			paramMap.put("PD_CNT", vo.getPdCnt()+vo.getBostonCnt()); //골프백 + 보스턴백
 
-			//2021-02-22 PD_BOHUM_PAY로 변경 paramMap.put("PD_ETC_PAY", vo.getPdEtcPay());		
-			paramMap.put("PD_BOHUM_PAY", vo.getPdEtcPay());
-			
-			paramMap.put("PD_DOSUN_PAY", vo.getPdDosunPay());
-			paramMap.put("PD_DELI_PAY", vo.getPdDeliPay());
-			paramMap.put("PD_MEMO", vo.getPdMemo());
-			paramMap.put("PD_DELI_GUBUN", vo.getPayType());
-			if(vo.getPrdType() == 3) {
-				paramMap.put("PD_INDIV_PRICE", "200");
-			}else {
-				paramMap.put("PD_INDIV_PRICE", vo.getPdIndivPrice());
-			}
+			kdngeApi.setGolfDeliveryArr(infVO);
 
 
-			EgovMap apiMap = callUrl(getApiUrl("SetGolfDelivery"), gson.toJson(paramMap));
-			
-			logger.debug("api 요청(픽업) :" + gson.toJson(paramMap));
-			System.out.println("api 요청(픽업) :" + gson.toJson(paramMap));
-			
-			logger.debug("api 리턴 :" + apiMap);
-			if(!apiMap.isEmpty()){
-				//response code check
-				//성공 데이터
-				if("200".equals(apiMap.get("code").toString())){
-					infVO.setRtNumber(apiMap.get("rtNumber").toString());
-					infVO.setPdRecDt(apiMap.get("pdRecDt").toString());
-					infVO.setRcpNumber(vo.getRcpNumber());
-					infVO.setRcpInfSeq(vo.getRcpInfSeq());
-					//픽업요청 단계로 변경
-					infVO.setRcpInfStat(StatusVO.Pickup.code());
-					infVO.setRcpKind(vo.getRcpKind());
-					infVO.setRcpSeq(vo.getRcpSeq());
-
-					_receiptService.updateReceiptInfSel(infVO, false);
-										
-					//_gDao.update("golfReceipt.updateGolfInf", infVO);
-				}else{
-					returnVal = vo.getRcpNumber() + "(" + apiMap.get("code").toString() + ")";
-				}
-			}else{
-				returnVal = vo.getRcpNumber() + "(" + apiMap.get("code").toString() + ")";
-			}
-		}
 		return toJson(returnVal);
 	}
 
@@ -324,59 +250,7 @@ public class CommonController extends PrtController {
 	public @ResponseBody String deleteGolfDelivery(GolfReceiptInfVO infVO) throws Exception {
 		GolfReceiptInfVO vo = (GolfReceiptInfVO) _gDao.selectByKey("golfReceiptInf.selectDetailByKey", infVO.getRcpInfSeq());
 
-		//성공 데이터
-		String returnVal = "success";
-
-		//골프접수 -> 골프취소
-		if(StatusVO.Receipt.code().equals(vo.getRcpInfStat()) || StatusVO.Wait.code().equals(vo.getRcpInfStat())){
-			
-			//골프취소 단계로 변경
-			infVO.setRcpInfStat(StatusVO.ReceiptCancel.code());
-			infVO.setPrdType(vo.getPrdType());
-
-			_receiptService.updateReceiptInfSel(infVO, false);
-			
-			// 골프접수 상태변경시 알림톡 전송
-			/*if ( !super.getConfig().getWebMode().equals("op") ) {
-				_sendTalkService.deleteGolfDeliveryForCancel(vo);
-			}*/
-
-			//스마트스코어인 경우 알림톡 발송 안함
-			if(!"2".equals(infVO.getRcpKind())) {
-				_sendTalkService.deleteGolfDeliveryForCancel(vo);					
-			}
-			
-			return toJson(returnVal);
-		//픽업요청 -> 픽업취소
-		}else{
-			Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").serializeNulls().create();
-			Map<String, Object> paramMap = new HashMap<String, Object>();
-			paramMap.put("RT_NUMBER", vo.getRtNumber());
-			paramMap.put("PD_DELI_EXPT_DT", vo.getPicReqDt());
-			EgovMap apiMap = callUrl(getApiUrl("DeleteGolfDelivery"), gson.toJson(paramMap));
-
-			if(!apiMap.isEmpty()){
-				//response code check
-				if("200".equals(apiMap.get("code").toString())){
-					infVO.setRtNumber(apiMap.get("rtNumber").toString());					
-					//픽업취소 단계로 변경 및 취소사유 등록
-					infVO.setRcpInfStat(StatusVO.PickupCancel.code());
-					//픽업취소 시 입금대기 상태면 결제 상태값은 변경 안함
-					_receiptService.updateReceiptInfSel(infVO, !StatusPayVO.stay.code().equals(vo.getPayStat()) ? true : false);
-					
-					return toJson(returnVal);
-				}else if("100".equals(apiMap.get("code").toString())){
-					return toJson("error1");
-				}else if("300".equals(apiMap.get("code").toString())){
-					return toJson("error3");
-				}else{
-					return toJson("error2");
-				}
-			}else{
-				return toJson("error2");
-			}
-
-		}
+		return kdngeApi.deleteGolfDelivery(infVO);
 	}
 
 	/**
@@ -454,49 +328,81 @@ public class CommonController extends PrtController {
 	@SuppressWarnings("unchecked")
 	public List scTimeApi(List<GolfReceiptInfVO> receiptList, String history) throws Exception {
       	JSONArray apiArray = new JSONArray();
+		JSONObject requestSearch = new JSONObject();
+		JSONParser jsonParser = new JSONParser();
 		for(int i=0; i<receiptList.size();i++) {
 			if(receiptList.get(i).getPdBarcode()!=null && receiptList.get(i).getScTime()==null && receiptList.get(i).getRcpInfStat().equals(StatusVO.Delivery.code())) {
-				JSONObject requestSearch = new JSONObject();
-				requestSearch.put("RCP_INF_SEQ", receiptList.get(i).getRcpInfSeq());
-				requestSearch.put("PD_BARCODE", receiptList.get(i).getPdBarcode());
-				apiArray.add(requestSearch);
+				apiArray.add(receiptList.get(i).getPdBarcode());
 			}
 		}
+		requestSearch.put("prodCodes", jsonParser.parse(apiArray.toString()));
 
-		if(apiArray.size()>0) {
+		if(!"".equals(requestSearch.get("prodCodes"))) {
 			Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").serializeNulls().create();
-			EgovMap apiMap = callUrl(getApiUrl("GetSCTime"), gson.toJson(apiArray));
-			List<EgovMap> apiMapList = new ArrayList<EgovMap>();
-			if(apiMap.get("listData") != null && ((List<EgovMap>)apiMap.get("listData")).size()>0) {
-				apiMapList = (List<EgovMap>)apiMap.get("listData");
-			}
+			EgovMap apiMap = kdngeApi.callUrl(kdngeApi.getApiUrl("api/v1/express/find/delivered"), gson.toJson(requestSearch), "POST");
 
-			for(int i = 0; i<apiMapList.size(); i++) {
-				for(int j=0; j<receiptList.size();j++) {
-					if(receiptList.get(j).getRcpInfSeq()==Integer.parseInt(apiMapList.get(i).get("rcpInfSeq").toString())) {
-						if(apiMapList.get(i).get("scTime")!=null) {
-							//update
-							receiptList.get(j).setScTime(apiMapList.get(i).get("scTime").toString());
-							receiptList.get(j).setRcpInfStat(StatusVO.Complete.code());
-							_gDao.update("golfReceipt.updateGolfInfScTime", receiptList.get(j));
+			if (apiMap.get("listData") != null && ((List<EgovMap>) apiMap.get("listData")).size() > 0) {
+				List<EgovMap> apiMapList = (List<EgovMap>) apiMap.get("listData");
 
-							receiptList.get(j).setCanReason("");
-							golfApi.updateApi(receiptList.get(j), "update_cbag_status");	
-							
-							//히스토리 등록
-							if(history.equals("list")) {
-								_receiptService.insertGolfHistory(receiptList.get(j).getRcpNumber(), "배송완료");
-							}else {
-								//스케줄로 배송완료 체크 시
-								_receiptService.insertGolfShceduleHistory(receiptList.get(j).getRcpNumber(), "배송완료");
+				if (!apiMapList.isEmpty()) {
+
+					for (int i = 0; i < apiMapList.size(); i++) {
+
+						if (apiMapList.get(i).get("prodCode").equals(receiptList.get(i).getPdBarcode())) {
+
+							if (apiMapList.get(i).get("deliDate") != null) {
+								receiptList.get(i).setScTime(apiMapList.get(i).get("deliDate").toString());
+								receiptList.get(i).setRcpInfStat(StatusVO.Complete.code());
+								logger.debug("중간확인 {}", receiptList);
+								_gDao.update("golfReceipt.updateGolfInfScTime", receiptList.get(i));
+
+								receiptList.get(i).setCanReason("");
+								golfApi.updateApi(receiptList.get(i), "update_cbag_status");
+
+								//히스토리 등록
+								if (history.equals("list")) {
+									_receiptService.insertGolfHistory(receiptList.get(i).getRcpNumber(), "배송완료");
+								} else {
+									//스케줄로 배송완료 체크 시
+									_receiptService.insertGolfShceduleHistory(receiptList.get(i).getRcpNumber(), "배송완료");
+								}
+
 							}
-							
-							receiptList.get(j).setScTime(apiMapList.get(i).get("scTime").toString());
 						}
+
 					}
+
 				}
+
+
 			}
 		}
+//			for(int i = 0; i<apiMapList.size(); i++) {
+//				for(int j=0; j<receiptList.size();j++) {
+//					if(receiptList.get(j).getRcpInfSeq()==Integer.parseInt(apiMapList.get(i).get("rcpInfSeq").toString())) {
+//						if(apiMapList.get(i).get("scTime")!=null) {
+//							//update
+//							receiptList.get(j).setScTime(apiMapList.get(i).get("scTime").toString());
+//							receiptList.get(j).setRcpInfStat(StatusVO.Complete.code());
+//							_gDao.update("golfReceipt.updateGolfInfScTime", receiptList.get(j));
+//
+//							receiptList.get(j).setCanReason("");
+//							golfApi.updateApi(receiptList.get(j), "update_cbag_status");
+//
+//							//히스토리 등록
+//							if(history.equals("list")) {
+//								_receiptService.insertGolfHistory(receiptList.get(j).getRcpNumber(), "배송완료");
+//							}else {
+//								//스케줄로 배송완료 체크 시
+//								_receiptService.insertGolfShceduleHistory(receiptList.get(j).getRcpNumber(), "배송완료");
+//							}
+//
+//							receiptList.get(j).setScTime(apiMapList.get(i).get("scTime").toString());
+//						}
+//					}
+//				}
+//			}
+//		}
 		return receiptList;
 	}
 
@@ -602,7 +508,7 @@ public class CommonController extends PrtController {
 		sb.append(super.getConfig().getWebMode().equals("op") ? "https://kdapi.kditlab.com:447/RndGolf/" : "https://kdapi.kditlab.com:444/RndGolf/").append(url);
 		return sb.toString();
 	}
-		
+
 	//발송완료 체크 스케줄 1시간마다 실행 (fixedDelay=6000000)
 	@Scheduled(fixedDelay=6000000)
 	public void doSchedule() throws Exception {

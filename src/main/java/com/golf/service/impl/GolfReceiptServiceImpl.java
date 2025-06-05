@@ -46,10 +46,10 @@ import com.golf.service.impl.GolfApi;
 public class GolfReceiptServiceImpl extends BaseServiceImpl {
 
 	private static final Logger logger = LoggerFactory.getLogger(GolfReceiptServiceImpl.class);
-	
+
 	@Autowired
 	private GolfApi golfApi;
-	
+
 	/**
 	 * 골프택배 접수
 	 * @param mstVO
@@ -60,23 +60,65 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 
 		//접수 등록
 		getDAO().insert("golfReceipt.insertReceiptMst", mstVO);
-		
+
 		//물품 접수 등록
 		if(list != null){
+
+			// 왕복일시 2차 왕복건에 데이터가 null, 1차로 구분.
+			String rcpKind = list.get(0).getRcpKind();
+
 			for(GolfReceiptInfVO receiptInfVO : list){
+
+				/**
+				 * 2024.12.02 SG 보스턴백 수량에 따른 할인가
+				 * 골프택배 (전산) 수기 입력 접수시, 3000원 할인적용.
+				 * 편도 /왕복 3000
+				 * FareType : 1 기본운임
+				 * RcpKind : 0 (모바일, 웹)
+				 * DelKind : 1 편도, 2 왕복
+				 * + 교참추가
+				 */
+				if (("0".equals(rcpKind) || "5".equals(rcpKind)) && "1".equals(mstVO.getFareType())) {
+					if (receiptInfVO.getBostonCnt() > 0
+							&& receiptInfVO.getPdCnt() > 0) {
+
+						int bostonDiscount = 3000;
+						int discount = bostonDiscount * receiptInfVO.getBostonCnt();
+						int pdPay = receiptInfVO.getPdPay();
+						int iconPay = receiptInfVO.getIconFee();
+
+						//매칭된 수만큼 할인
+				        if(receiptInfVO.getBostonCnt() > receiptInfVO.getPdCnt()) {
+				          discount = bostonDiscount * receiptInfVO.getPdCnt();
+	                    }
+
+						if ("1".equals(mstVO.getDelKind())) { // 편도
+							iconPay = iconPay - discount;
+							receiptInfVO.setDiscount(pdPay-discount); //알림 발송 총합
+						} else if ("2".equals(mstVO.getDelKind())) { // 왕복
+							receiptInfVO.setDiscount((pdPay*2)-discount); //알림 발송 총합
+							discount = discount/2;
+							iconPay = iconPay - discount;
+						}
+						receiptInfVO.setIconFee(iconPay < 0 ? 0 : iconPay);
+						receiptInfVO.setPdPay(receiptInfVO.getPdPay() - discount);
+					}
+				}
+
 				getDAO().insert("golfReceipt.insertReceiptInf", receiptInfVO);
 
 				//결제금액
 				GolfReceiptPayVO payVO = new GolfReceiptPayVO();
-				
+
 				String historyMemo = "아이콘 택배접수 편도";
 				payVO.setOrderId(receiptInfVO.getRcpNumber());
-				
+				payVO.setRcpInfSeq(receiptInfVO.getRcpInfSeq());
+
 				if(receiptInfVO.getSrType()!=null) {
 					if(receiptInfVO.getSrType().equals("S")) {
 						historyMemo = "아이콘 택배접수 왕복1차";
 					}else if(receiptInfVO.getSrType().equals("R")) {
-						historyMemo = "아이콘 택배접수 왕복2차";	
+						historyMemo = "아이콘 택배접수 왕복2차";
 					}
 					payVO.setOrderId("GRP"+mstVO.getRcpSeq());
 				}
@@ -116,7 +158,7 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 			//물품 접수 등록
 			if(infVo != null){
 				getDAO().update("golfReceiptInf.updateSelective", infVo);
-				
+
 				//결제금액
 				GolfReceiptPayVO payVO = new GolfReceiptPayVO();
 				payVO.setPayAmt(infVo.getPdPay());
@@ -125,7 +167,7 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 				getDAO().update("golfReceiptPay.updateSelective", payVO);
 				//api 전송
 				golfApi.updateApi(infVo, "update_receipt");
-				
+
 				//히스토리 등록
 				insertGolfHistory(String.valueOf(infVo.getRcpNumber()), historyMemo);
 			}
@@ -144,7 +186,7 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 	 */
 	public void updateReceipt(GolfReceiptInfVO infVo) throws Exception {
 		String historyMemo = "영업소 택배접수";
-		
+
 		//영업소에서 오는 금액 업데이트 금지
 		infVo.setPdPay(0);
 		getDAO().update("golfReceiptInf.updateSelective", infVo);
@@ -153,9 +195,9 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 //		GolfReceiptPayVO payVO = new GolfReceiptPayVO();
 //		payVO.setRcpKind(infVo.getRcpKind());
 //		payVO.setRcpInfSeq(infVo.getRcpInfSeq());
-//		
+//
 //		getDAO().update("golfReceiptPay.updateSelectiveByRcpInfSeqArray", payVO);
-		
+
 		//히스토리 등록
 		insertGolfHistory(String.valueOf(infVo.getRcpNumber()), historyMemo);
 	}
@@ -168,16 +210,16 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 	 */
 	public void updateReceiptInfSel(GolfReceiptInfVO infVo, boolean flag) throws Exception {
 		System.out.println("취소처리");
-		String historyMemo = "픽업요청";	
+		String historyMemo = "픽업요청";
 		String rcpKind ="";
 		List<String> rcpNumberArr = new ArrayList<String>();
 		List<Integer> rcpInfSeqArr = new ArrayList<Integer>();
-				
+
 		GolfReceiptPayVO payVO = new GolfReceiptPayVO();
 
 		//접수구분
 		List<GolfReceiptInfVO> golfRcptList = (List<GolfReceiptInfVO>)getDAO().selectList("golfReceiptInf.selectByRcpKindChk", infVo);
-		
+
 		if(golfRcptList.size() > 0) {
 			for(GolfReceiptInfVO golfRcp : golfRcptList) {
 				rcpKind = golfRcp.getRcpKind();
@@ -186,27 +228,27 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 			//스마트스코어 취소알림톡 표시 및 히스토리 등록용 (왕복인 경우 2건 표시, 2건 히스토리 등록)
 			infVo.setRcpNumberArray(rcpNumberArr);
 		}
-		
-		
+
+
 		if(infVo.getRcpInfStat().equals(StatusVO.Delivery.code())) {
-			historyMemo = "택배접수";	
-			
-			
+			historyMemo = "택배접수";
+
+
 		}else if(infVo.getRcpInfStat().equals(StatusVO.ReceiptCancel.code())) {
-			historyMemo = "골프취소";	
+			historyMemo = "골프취소";
 			GolfReceiptMstVO mstVo = new GolfReceiptMstVO();
 			GolfReceiptInfVO receiptVo = new GolfReceiptInfVO();
 			mstVo.setRcpSeq(infVo.getRcpSeq());
-			
+
 			//스마트스코어 취소 경우 (전체취소, 결제취소)
 			if("2".equals(rcpKind)) {
 				historyMemo = "스마트스코어 골프, 결제 취소";
 				receiptVo.setRcpInfStat(StatusVO.ReceiptCancel.code());
-				receiptVo.setRcpSeq(mstVo.getRcpSeq());		
-				receiptVo.setRcpKind(rcpKind);		
-				
-				
-				//왕복1차가 배송완료가 아닐때는 접수취소하면 둘다 취소된다 
+				receiptVo.setRcpSeq(mstVo.getRcpSeq());
+				receiptVo.setRcpKind(rcpKind);
+
+
+				//왕복1차가 배송완료가 아닐때는 접수취소하면 둘다 취소된다
 				System.out.println("테스트해본니다ㅓ" + golfRcptList.get(0).getRcpInfStat());
 				if(!golfRcptList.get(0).getRcpInfStat().equals("3")){
 					getDAO().update("golfReceipt.cancelSmartGolfInf", receiptVo);
@@ -215,10 +257,10 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 					receiptVo.setRcpNumber(golfRcptList.get(1).getRcpNumber());
 					getDAO().update("golfReceipt.cancelSmartGolfInfComplete", receiptVo);
 				}
-				
+
 				payVO.setPayStat(StatusPayVO.Cancel.code());
 				//왕복1차이고  모두 취소
-				
+
 				logger.debug("사이즈"+ golfRcptList.size());
 				logger.debug("델카인드"+ infVo.getDelKind());
 				if(golfRcptList.size() > 1 && "1".equals(infVo.getDelKind())) {
@@ -227,58 +269,66 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 					//왕복2차 및 편도인 경우 한건만 취소
 					payVO.setOrderId(infVo.getRcpNumber());
 				}
-				
+
 				getDAO().update("golfReceiptPay.cancelSmartGolfPay", payVO);
 			}else {
 				//편도처리
 				mstVo.setDelKind("1");
 				getDAO().update("golfReceiptMst.updateSelective", mstVo);
-				
+
 				//왕복인 경우 그룹번호에서 골프접수번호로 변경
 				if("2".equals(infVo.getDelKind())) {
-					
+
 					receiptVo.setOrderId("GRP"+infVo.getRcpSeq());
-					
+
 					List<GolfReceiptInfVO> golfReceiptList;
 					if(infVo.getPrdType() == 3) {
 						 golfReceiptList = (List<GolfReceiptInfVO>)getDAO().selectList("golfReceiptInf.selectForCarrier", receiptVo);
 					}else {
 						 golfReceiptList = (List<GolfReceiptInfVO>)getDAO().selectList("golfReceiptInf.selectByKakaoHistory", receiptVo);
 					}
-					
-					
+
+
 					if(golfReceiptList.size()>0) {
 						for(GolfReceiptInfVO receiptInfVO : golfReceiptList){
 							payVO = new GolfReceiptPayVO();
-														
+
 							payVO.setOrderId(receiptInfVO.getRcpNumber());
 							payVO.setRcpInfSeq(receiptInfVO.getRcpInfSeq());
 							payVO.setPayAmt(receiptInfVO.getPdPay());
 							rcpInfSeqArr.add(receiptInfVO.getRcpInfSeq());
 							payVO.setRcpInfSeqArray(rcpInfSeqArr);
-							
+
 							getDAO().update("golfReceiptPay.updateSelectiveByRcpInfSeqArray", payVO);
-							
-							receiptVo.setIconFee(receiptInfVO.getIconFee());
-							receiptVo.setPdPay(receiptInfVO.getPdPay());
+
+							//20241129 왕복 선택취소시 할인율 저장.
+							if(receiptInfVO.getBostonCnt() > 0
+									&& !infVo.getRcpNumber().equals(receiptInfVO.getRcpNumber())) {
+								int discountTotal = 3000*receiptInfVO.getBostonCnt();
+								receiptVo.setIconFee(receiptInfVO.getIconFee()-discountTotal);
+								receiptVo.setPdPay(receiptInfVO.getPdPay()-discountTotal);
+							}else {
+								receiptVo.setIconFee(receiptInfVO.getIconFee());
+								receiptVo.setPdPay(receiptInfVO.getPdPay());
+							}
 							receiptVo.setPdDeliPay(receiptInfVO.getPdDeliPay());
 							receiptVo.setRcpInfSeq(receiptInfVO.getRcpInfSeq());
 							getDAO().update("golfReceipt.updateGolfInf", receiptVo);
-							
+
 							logger.debug("point 1");
 						}
 					}
 				}
 			}
-			
+
 		}else if(infVo.getRcpInfStat().equals(StatusVO.PickupCancel.code())) {
-			historyMemo = "픽업취소";	
+			historyMemo = "픽업취소";
 		}else if(infVo.getRcpInfStat().equals(StatusVO.DeliveryCancel.code())) {
 			historyMemo = "택배취소";
 		}else if(infVo.getRcpInfStat().equals(StatusVO.Receipt.code())) {
 			historyMemo = "골프접수 신청";
 		}
-		
+
 		if(infVo != null){
 			getDAO().update("golfReceipt.updateGolfInf", infVo);
 			logger.debug("point 2");
@@ -291,16 +341,16 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 				payVO = new GolfReceiptPayVO();
 				payVO.setRcpInfSeq(infVo.getRcpInfSeq());
 				payVO.setPayStat(StatusPayVO.Cancel.code());
-				
+
 				rcpInfSeqArr.add(infVo.getRcpInfSeq());
 				payVO.setRcpInfSeqArray(rcpInfSeqArr);
 
 				getDAO().update("golfReceiptPay.updateSelectiveByRcpInfSeqArray", payVO);
-				
+
 			}
 		}
-		
-		//영업소에서 데이터가 오는 경우 골프 접수번호를 주지 않아서 회수번호로 골프 접수번호를 조회 (단 접수대기상태에서 골프접수로 변환 시 제외)	
+
+		//영업소에서 데이터가 오는 경우 골프 접수번호를 주지 않아서 회수번호로 골프 접수번호를 조회 (단 접수대기상태에서 골프접수로 변환 시 제외)
 		if(infVo.getRcpNumber()==null) {
 			List<GolfReceiptInfVO> golfReceiptList = (List<GolfReceiptInfVO>)getDAO().selectList("golfReceiptInf.selectByKakao", infVo);
 			if(golfReceiptList.size()>0) {
@@ -309,52 +359,64 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 		}
 
 		//히스토리 등록 및 API 전송
-		if("2".equals(rcpKind) || "0".equals(rcpKind)) {			
-			
+		if("2".equals(rcpKind) || "0".equals(rcpKind) || "5".equals(rcpKind)) { // 교참추가..
+
 			GolfReceiptInfVO api =  (GolfReceiptInfVO)getDAO().selectOne("golfReceiptInf.selectDetailByRcpNumber", infVo.getRcpNumber());
-			
+
 			System.out.println("에이피아이첫" + api);
-			
+
 			if(!infVo.getRcpInfStat().equals(StatusVO.ReceiptCancel.code())) {
 				rcpNumberArr = new ArrayList<String>();
 				rcpNumberArr.add(infVo.getRcpNumber());
 				//히스토리 등록용
 				infVo.setRcpNumberArray(rcpNumberArr);
-				
+
 				//알림톡 발송용 (스마트스코어인 경우 알림톡 발송 안함)
 				infVo.setRcpNumber(rcpNumberArr.get(0));
 			}else if("2".equals(rcpKind)){
 				//스마스스코어 취소 시 왕복등록건은 1차, 2차 모두 히스토리에 등록되고 알림톡 메세지에 rcmNumber 두개 표시 및 스마트스코어에 rcpNumber 2개 전송
 				api.setRcpNumber(String.join(" | ", rcpNumberArr));
 				api.setRcpNumberArray(rcpNumberArr);
-				
+
 				System.out.println("에이피아이" + new Gson().toJson(api));
 			}
-						
+
 			//api 전송
-			
+
 			System.out.println("크기" + rcpNumberArr.size());
-			
+
 //			if(rcpNumberArr.size() == 2){
 //				//요청을 두번 해줘야한다고 한다 ..
 //				api.setRcpNumber(rcpNumberArr.get(0));
 //				System.out.println("first" + api.getRcpNumber());
 //				golfApi.updateApi(api, "update_cbag_status");
-//				
+//
 //				api.setRcpNumber(rcpNumberArr.get(1));
 //				System.out.println("second" + api.getRcpNumber());
 //				golfApi.updateApi(api, "update_cbag_status");
-//				
+//
 //			}else{
 //				golfApi.updateApi(api, "update_cbag_status");
 //			}
-			golfApi.updateApi(api, "update_cbag_status");
-			
+
+			// 2025.04.23 스마스스토어 취소제외
+			String rcpInfStat = infVo.getRcpInfStat(); // 접수 상태코드
+			boolean isNotCancelStatus = // 취소코드가 아니면!
+			        !StatusVO.ReceiptCancel.code().equals(rcpInfStat) // 골프취소 7
+			        && !StatusVO.PickupCancel.code().equals(rcpInfStat) // 픽업취소 8
+			        && !StatusVO.DeliveryCancel.code().equals(rcpInfStat); // 택배취소 9
+			if (!"2".equals(rcpKind) && isNotCancelStatus) {
+				// 외주 업체 api
+				// 2025.05.21 updateApi() 스마트스코어 전용 API 아님. 아이콘택배 상태변경 API도 포함됨.
+				// 선택취소, 픽업취소의 경우 여기 안오고,  express/regno/cancels 호출하는듯
+				golfApi.updateApi(api, "update_cbag_status");
+			}
+
 			insertGolfHistoryArr(infVo.getRcpNumberArray(), historyMemo);
 			System.out.println("히스토리메모" + historyMemo);
-			
+
 		}else {
-			insertGolfHistory(String.valueOf(infVo.getRcpNumber()), historyMemo);	
+			insertGolfHistory(String.valueOf(infVo.getRcpNumber()), historyMemo);
 		}
 	}
 
@@ -366,9 +428,13 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 	public String updateReceiptPaymentArray(GolfReceiptInfVO infVo) throws Exception {
 		System.out.println("결제 취소처리");
 		String result = "success";
-		
+
+
 		String historyMemo = "아이콘 결제완료";
-		
+		if("5".equals(infVo.getRcpKind())) {
+			historyMemo = "교참 결제완료";
+		}
+
 		GolfReceiptPayVO payVO = new GolfReceiptPayVO();
 		payVO.setRcpInfSeqArray(infVo.getRcpInfSeqArray());
 		payVO.setPayStat(StringUtils.isEmpty(infVo.getGolfUpdate()) ? StatusPayVO.Complete.code() : StatusPayVO.Cancel.code());
@@ -381,18 +447,21 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 				payVO.setKakaoPayMessage(""); //결제 완료인 경우 빈칸처리 (카카오에서 접수 된 건은 결제요청이라는 메세지가 기본적으로 들어가있음)
 			}
 			getDAO().update("golfReceiptPay.updateSelectiveByRcpInfSeqArray", payVO);
-			
+
 			if(payVO.getPayStat().equals(StatusPayVO.Cancel.code())){
 				historyMemo = "아이콘 결제취소";
+				if("5".equals(infVo.getRcpKind())) {
+					historyMemo = "교참 결제취소";
+				}
 			}
 			insertGolfHistoryArr(infVo.getRcpNumberArray(), historyMemo);
 		}else {
 			result = "fail";
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * 영업소 회수번호로 물품접수번호,마스터 접수번호 조회
 	 * @param infVo
@@ -408,16 +477,16 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 	 * @param url
 	 * @throws Exception
 	 */
-	public void insertGolfShceduleHistory(String rcpNumber, String historyMemo){		
+	public void insertGolfShceduleHistory(String rcpNumber, String historyMemo){
 		GolfHistoryVO golfHistoryVO = new GolfHistoryVO();
 		golfHistoryVO.setRcpNumber(rcpNumber);
 		golfHistoryVO.setHistoryMemo(historyMemo);
 
 		golfHistoryVO.setRegUser("영업소 API");
-		
+
 		getDAO().insert("golfHistory.insertHistory", golfHistoryVO);
 	}
-	
+
 	/**
 	 * 히스토리 등록
 	 * @param url
@@ -426,12 +495,12 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 	public void insertGolfHistory(String rcpNumber, String historyMemo){
 		HttpServletRequest request = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest();
 		HttpSession session = request.getSession(true);
-		
+
 		GolfHistoryVO golfHistoryVO = new GolfHistoryVO();
 		golfHistoryVO.setRcpNumber(rcpNumber);
 		golfHistoryVO.setHistoryMemo(historyMemo);
 
-		if(super.getConfig().getWebMode().equals("op")) { 
+		if(super.getConfig().getWebMode().equals("op")) {
 			if(session.getAttribute("historyEmpCode")!=null) {
 				golfHistoryVO.setRegUser(session.getAttribute("historyEmpCode").toString());
 			}else {
@@ -440,11 +509,11 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 		}else {
 			golfHistoryVO.setRegUser("local");
 		}
-		
+
 		getDAO().insert("golfHistory.insertHistory", golfHistoryVO);
 	}
 
-	
+
 	/**
 	 * 히스토리 등록
 	 * @param url
@@ -458,7 +527,7 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 		golfHistoryVO.setRcpNumberArray(insertGolfHistoryArr);
 		golfHistoryVO.setHistoryMemo(historyMemo);
 
-		if(super.getConfig().getWebMode().equals("op")) { 
+		if(super.getConfig().getWebMode().equals("op")) {
 			if(session.getAttribute("historyEmpCode")!=null) {
 				golfHistoryVO.setRegUser(session.getAttribute("historyEmpCode").toString());
 			}else {
@@ -470,5 +539,5 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 
 		getDAO().insert("golfHistory.insertHistoryArr", golfHistoryVO);
 	}
-	
+
 }

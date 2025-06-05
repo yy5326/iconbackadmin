@@ -6,15 +6,15 @@ import lombok.Data;
 
 
 public @Data class SendRequestVO {
-	
+
 	// 알림톡 수신명
 	private String receiver;
 	/// 알림톡 수신 연락처
 	private String receiverNum;
-	
+
 	// 메세지 관련 템플릿 key
 	private String etc1;
-	
+
 	// 배송구분(1-편도/2-왕복)
 	private String delKind;
 	// 접수번호
@@ -45,7 +45,7 @@ public @Data class SendRequestVO {
 	private Integer pdEtcPay;
 	// 할인 적용
 	private Integer pdDiscount;
-	
+
 	//버튼
 	private ArrayList buttonList;
 	//그룹번호
@@ -56,8 +56,13 @@ public @Data class SendRequestVO {
 	private String pdBarcode;
 	// 접수구분(0 : 관리자, 1 : 챗봇, 2 : 어플)
 	private String rcpKind;
-	
+
 	private int prdType;
-	
+
 	private int boston;
+
+	// 캐리어 수량
+	private Integer boxCnt;
+
+	private String rcpNumbers;
 }

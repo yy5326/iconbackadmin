@@ -22,7 +22,7 @@
 	
 	<select id="selectByTemplateTest"  parameterType="com.golf.talk.vo.KakaoVO" resultMap="BaseResultMap">
 		SELECT B.CLIENT_ID, B.PASSWORD, B.VERSION, B.SENDER_KEY
-		     , B.TOKEN, B.TOKEN_URL, B.SEND_URL, A.ETC1, A.SENDER_NO
+		     , B.TEST_TOKEN AS TOKEN, B.TOKEN_URL, B.SEND_URL, A.ETC1, A.SENDER_NO
              <choose>
              	<when test="mode == 'local' ">
              		, A.TEST_TEMPLATE_CODE AS TEMPLATE_CODE		

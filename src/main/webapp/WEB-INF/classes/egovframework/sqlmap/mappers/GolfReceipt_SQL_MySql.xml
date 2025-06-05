@@ -97,7 +97,7 @@
 			<if test="rcpInfStat != null">
 				rcp_inf_stat,
 			</if>
-			<if test="prdType != null">
+			<if test="prdType != null and prdType > 0">
 				prd_type,
 			</if>
 			<if test="sendGolfSeq != null and sendGolfSeq > 0">
@@ -244,7 +244,7 @@
 			<if test="rcpInfStat != null">
 				#{rcpInfStat,jdbcType=VARCHAR},
 			</if>
-			<if test="prdType != null">
+			<if test="prdType != null and prdType > 0">
 				#{prdType, jdbcType=INTEGER},
 			</if>
 			<if test="sendGolfSeq != null and sendGolfSeq > 0">
@@ -330,7 +330,7 @@
 			</if>
 			<if test="bostonCnt != null and bostonCnt > 0">
 				#{bostonCnt,jdbcType=INTEGER},
-			</if>			
+			</if>
 			<if test="pdEtcPay != null and pdEtcPay > 0">
 				#{pdEtcPay,jdbcType=INTEGER},
 			</if>
@@ -356,30 +356,30 @@
 				#{extCompTelnum,jdbcType=VARCHAR},
 			</if>
 			<if test="rcpKind != null">
-				#{rcpKind,jdbcType=VARCHAR},				
+				#{rcpKind,jdbcType=VARCHAR},
 			</if>
 			<if test="cusReceiptNm != null">
-				#{cusReceiptNm,jdbcType=VARCHAR},				
+				#{cusReceiptNm,jdbcType=VARCHAR},
 			</if>
 			<if test="cusReceiptTelNum != null">
-				#{cusReceiptTelNum,jdbcType=VARCHAR},				
+				#{cusReceiptTelNum,jdbcType=VARCHAR},
 			</if>
 			<if test="userId != null">
-				#{userId,jdbcType=VARCHAR},				
+				#{userId,jdbcType=VARCHAR},
 			</if>
 			<if test="iconFee != null">
-				#{iconFee,jdbcType=INTEGER},			
+				#{iconFee,jdbcType=INTEGER},
 			</if>
 			<if test="changeDeltypeYn != null">
-				#{changeDeltypeYn,jdbcType=VARCHAR}	,			
+				#{changeDeltypeYn,jdbcType=VARCHAR}	,
 			</if>
 			<if test="boxCnt != null">
-				#{boxCnt,jdbcType=INTEGER},			
+				#{boxCnt,jdbcType=INTEGER},
 			</if>
 			<if test="boxSize != null">
-				#{boxSize,jdbcType=VARCHAR}		
+				#{boxSize,jdbcType=VARCHAR}
 			</if>
-			
+
 		</trim>
 	</insert>
 
@@ -439,12 +439,12 @@
 			<if test="canReason != null">
 		    	CAN_REASON = #{canReason,jdbcType=VARCHAR},
 		    </if>
-		    MOD_DATE = NOW(),			
+		    MOD_DATE = NOW(),
 		    RCP_INF_STAT = #{rcpInfStat,jdbcType=VARCHAR}
 		</set>
 		WHERE RCP_SEQ = #{rcpSeq,jdbcType=INTEGER}
 	</update>
-	
+
 	<!-- 왕복1차 배송완료시엔 왕복2차만 접수취소 -->
 	<update id="cancelSmartGolfInfComplete" parameterType="com.golf.service.model.GolfReceiptInfVO">
 		UPDATE GOLF_RECEIPT_INF
@@ -452,13 +452,13 @@
 			<if test="canReason != null">
 		    	CAN_REASON = #{canReason,jdbcType=VARCHAR},
 		    </if>
-		    MOD_DATE = NOW(),			
+		    MOD_DATE = NOW(),
 		    RCP_INF_STAT = #{rcpInfStat,jdbcType=VARCHAR}
 		</set>
 		WHERE RCP_NUMBER = #{rcpNumber,jdbcType=INTEGER}
 	</update>
-	
-		
+
+
 	<select id="selectReceiptKey" parameterType="com.golf.service.model.GolfReceiptInfVO" resultType="com.golf.service.model.GolfReceiptInfVO">
 		SELECT
 			IFNULL((SELECT
@@ -474,7 +474,7 @@
 		  	 , RCP_INF_STAT = #{rcpInfStat,jdbcType=VARCHAR}
 		 WHERE RCP_INF_SEQ = #{rcpInfSeq,jdbcType=INTEGER}
 	</update>
-	
+
 	<!-- 골프택배 발송정보 접수시 키값리턴 - 키값이 auto increment가 아니여서 어쩔 수 없음  -->
 	<select id="selectMaxReceiptKey" parameterType="com.golf.service.model.GolfReceiptMstVO" resultType="com.golf.service.model.GolfReceiptMstVO">
 		SELECT
@@ -482,7 +482,7 @@
 		FROM
 			GOLF_RECEIPT_MST
 	</select>
-	
+
 	<!-- 골프택배 발송정보 접수 - 챗봇용  -->
 	<insert id="insertReceiptInfChat" parameterType="com.golf.service.model.GolfReceiptInfVO">
 		<selectKey keyProperty="rcpInfSeq,rcpNumber" resultType="com.golf.service.model.GolfReceiptInfVO" order="BEFORE" statementType="PREPARED">
@@ -630,7 +630,13 @@
 				icon_fee,
 			</if>
 			<if test="changeDeltypeYn != null">
-				change_deltype_yn
+				change_deltype_yn,
+			</if>
+			<if test="rcpType != null and !''.equals(rcpType)">
+				RCP_TYPE,
+			</if>
+			<if test="rcpAirSeq != null and !''.equals(rcpAirSeq)">
+				RCP_AIR_SEQ,
 			</if>
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -731,7 +737,7 @@
 			<if test="bostonCnt != null and bostonCnt > 0">
 				#{bostonCnt,jdbcType=INTEGER},
 			</if>
-			
+
 			<if test="pdEtcPay != null and pdEtcPay > 0">
 				#{pdEtcPay,jdbcType=INTEGER},
 			</if>
@@ -757,23 +763,33 @@
 				#{extCompTelnum,jdbcType=VARCHAR},
 			</if>
 			<if test="rcpKind != null">
-				#{rcpKind,jdbcType=VARCHAR},				
+				#{rcpKind,jdbcType=VARCHAR},
 			</if>
 			<if test="cusReceiptNm != null">
-				#{cusReceiptNm,jdbcType=VARCHAR},				
+				#{cusReceiptNm,jdbcType=VARCHAR},
 			</if>
 			<if test="cusReceiptTelNum != null">
-				#{cusReceiptTelNum,jdbcType=VARCHAR},				
+				#{cusReceiptTelNum,jdbcType=VARCHAR},
 			</if>
 			<if test="userId != null">
-				#{userId,jdbcType=VARCHAR},				
+				#{userId,jdbcType=VARCHAR},
 			</if>
 			<if test="iconFee != null">
-				#{iconFee,jdbcType=INTEGER},			
+				#{iconFee,jdbcType=INTEGER},
 			</if>
 			<if test="changeDeltypeYn != null">
-				#{changeDeltypeYn,jdbcType=VARCHAR}				
+				#{changeDeltypeYn,jdbcType=VARCHAR},
+			</if>
+			<if test="rcpType != null and !''.equals(rcpType)">
+				#{rcpType},
+			</if>
+			<if test="rcpAirSeq != null and !''.equals(rcpAirSeq)">
+				#{rcpAirSeq},
 			</if>
 		</trim>
 	</insert>
+
+	<select id="getRcpAirSeq"  resultType="Integer">
+ 			SELECT NEXT VALUE FOR RCP_AIR_SEQ
+  	</select>
 </mapper>

@@ -202,6 +202,7 @@ public class UsedClubServiceImpl extends BaseServiceImpl {
 				//결제금액
 				GolfReceiptPayVO payVO = new GolfReceiptPayVO();
 				payVO.setPayAmt(receiptInfVO.getPdPay());
+				payVO.setRcpInfSeq(receiptInfVO.getRcpInfSeq());
 				payVO.setUserId(cbReceiptInfoVO.getUserId());
 				payVO.setKakaoPayStat(kakaoPayStat);
 				payVO.setKakaoPayMessage(kakaoPayMessage);

@@ -56,7 +56,10 @@
 	  	<!-- AND PIC_OFFICE1 LIKE '%${searchWord}%' OR PIC_OFFICE2 LIKE '%${searchWord}%' OR PIC_OFFICE3 LIKE '%${searchWord}%' -->
 	  </if>
 	  <if test="type1 == 2 ">
-	  	AND GOLF_ADDR1 LIKE '%${searchWord}%' OR GOLF_ADDR2 LIKE '%${searchWord}%'
+	  	AND (GOLF_ADDR1 LIKE '%${searchWord}%' OR GOLF_ADDR2 LIKE '%${searchWord}%')
+	  </if>
+	  <if test='type2 != null and type2 == "korcham"'>
+	  	AND GOLF_SEQ IN ('158', '164')
 	  </if>
   </sql>
   

@@ -5,41 +5,41 @@ import java.util.List;
 import com.golf.talk.vo.SendRequestVO;
 
 public class ReceiptCompleteMessage {
-	
+
 	static String serviceName = "";
 	static String itemName ="";
-	
 
-	
+
+
 	public static String getForUser(SendRequestVO sendRequestVO) {
 		if ( "0".equals(sendRequestVO.getRcpKind()) ) {
-			// 관리자 접수, 편도 
+			// 관리자 접수, 편도
 			return makeForUserByIcon(sendRequestVO, sendRequestVO.getPrdType());
 		} else if ( "1".equals(sendRequestVO.getRcpKind()) ) {
-			// 챗봇 접수, 편도 
+			// 챗봇 접수, 편도
 			return makeForUserByChat(sendRequestVO);
 		} else if ( "2".equals(sendRequestVO.getRcpKind()) ) {
-			// 어플 접수, 편도 
+			// 어플 접수, 편도
 			return makeForUserByIcon(sendRequestVO, sendRequestVO.getPrdType());
 		} else {
 			// 구분값 없을시
 			return makeForUserByIcon(sendRequestVO, sendRequestVO.getPrdType());
 		}
 	}
-	
+
 	public static String getForIconInfo(SendRequestVO sendRequestVO) {
 		if ( "0".equals(sendRequestVO.getRcpKind()) ) {
-			// 관리자 접수, 편도 
+			// 관리자 접수, 편도
 			return makeForUserByIconInfo(sendRequestVO, sendRequestVO.getPrdType());
 		} else {
 			// 구분값 없을시
 			return "fail";
 		}
 	}
-	
+
 	public static String makeForUserByIcon(SendRequestVO sendRequestVO, int prdType) {
 		StringBuffer sb = new StringBuffer();
-		
+
 		sb.append("[아이콘] 접수 완료 \n\n");
 		if(prdType == 3) {
 			serviceName = "아이콘 트래블 ";
@@ -48,8 +48,8 @@ public class ReceiptCompleteMessage {
 			serviceName = "골프택배 ";
 			itemName = "골프택배 ";
 		}
-		
-		
+
+
 
 		//sb.append("안녕하세요. "+sendRequestVO.getReceiver()+" 고객님 골프택배 "+sendRequestVO.getRcpNumber()+" 접수가 완료되었습니다.\n\n");
 		sb.append("안녕하세요. "+sendRequestVO.getCusReNm()+" 고객님 "+ itemName +sendRequestVO.getRcpNumber()+" 접수가 완료되었습니다.\n\n");
@@ -65,13 +65,16 @@ public class ReceiptCompleteMessage {
 		sb.append("추가 문의사항이 있으시면 고객센터 1544-3044로 문의부탁드립니다.\n");
 		return sb.toString();
 	}
-	
+
 	public static String makeForUserByIconInfo(SendRequestVO sendRequestVO, int prdType) {
 		StringBuffer sb = new StringBuffer();
-		
+
 		if(prdType == 3) {
 			sb.append("[아이콘] 아이콘 트래블 접수 안내 \n\n");
 			sb.append("안녕하세요. "+sendRequestVO.getReceiver()+" 고객님 아이콘 트래블을 이용해주셔서 감사합니다.\n");
+		}else if(prdType == 5) {
+			sb.append("[아이콘] 인천공항 배송 접수 안내 \n\n");
+			sb.append("안녕하세요. "+sendRequestVO.getReceiver()+" 고객님 아이콘 인천공항 배송서비스를 이용해주셔서 감사합니다.\n");
 		}else {
 			sb.append("[아이콘] 골프택배 접수 안내 \n\n");
 			sb.append("안녕하세요. "+sendRequestVO.getReceiver()+" 고객님 아이콘 골프택배를 이용해주셔서 감사합니다.\n");
@@ -81,7 +84,7 @@ public class ReceiptCompleteMessage {
 
 		sb.append("[영업시간]\n");
 		sb.append("평일 08시~17시\n\n");
-		
+
 		sb.append("[접수 확정 일정 안내]\n");
 		sb.append("접수 확정의 경우 영업시간 내 접수 시 1영업일 내 연락드릴 예정이며,\n");
 		sb.append("업무종료⦁주말⦁공휴일에 접수 시 평일 영업시간 내 확인이 되는 점 양해 부탁드립니다.\n");
@@ -93,30 +96,33 @@ public class ReceiptCompleteMessage {
 		if(prdType == 3) {
 			sb.append("⦁ 여행장소 내 캐리어 보관 불가\n");
 			sb.append("⦁ 여행 일정상 배송 불가 \n\n");
-			
+		}else if(prdType == 5) {
+			sb.append("⦁ 여행 일정상 배송 불가 \n\n");
 		}else {
 			sb.append("⦁ 골프장 내 보관 불가\n");
 			sb.append("⦁ 라운드 일정상 배송 불가 \n\n");
-			
 		}
-		
-		sb.append("[제주도 운송시 배송 불가 품목]\n");
+		if(prdType == 5) {
+			sb.append("[위탁 수하물 금지 품목]\n");
+		}else {
+			sb.append("[제주도 운송시 배송 불가 품목]\n");
+		}
 		sb.append("⦁ 배터리 들어간 제품 \n");
 		sb.append("(거리측정기, 휴대용 선풍기, 면도기, 보조배터리 등)\n");
 		sb.append("⦁ 스프레이 액체류 \n");
 		sb.append("(무스, 헤어 스프레이, 스프레이 형 선크림 등)\n");
 		sb.append("⦁ 핫팩, 무기류, 향정신성 의약품 등\n\n");
-		
+
 		sb.append("[상담문의]\n");
 		sb.append("⦁ 1544-3044 (평일 08 ~ 17시)\n\n");
-		
+
 		sb.append("접수 관련 변경이나 추가 문의사항이 있으시면 대표번호로 연락 부탁드립니다.\n\n");
-		
+
 		sb.append("감사합니다.");
-		
+
 		return sb.toString();
 	}
-	
+
 	public static String makeForUserByChat(SendRequestVO sendRequestVO) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("[아이콘] 접수 완료 \n\n");
@@ -138,13 +144,13 @@ public class ReceiptCompleteMessage {
 		sb.append("추가 문의사항이 있으시면 고객센터 1544-3044로 문의부탁드립니다.\n");
 		return sb.toString();
 	}
-	
+
 	public static String getForUserRound(List<SendRequestVO> list) {
 		if ( "0".equals(list.get(0).getRcpKind()) ) {
 			// 관리자 접수, 왕복
 			return makeForUserRoundByIcon(list, list.get(0).getPrdType());
 		} else if ( "1".equals(list.get(0).getRcpKind()) ) {
-			// 챗봇 접수, 왕복 
+			// 챗봇 접수, 왕복
 			return makeForUserRoundByChat(list);
 		} else if ( "2".equals(list.get(0).getRcpKind()) ) {
 			// 어플 접수, 왕복
@@ -154,10 +160,10 @@ public class ReceiptCompleteMessage {
 			return makeForUserRoundByIcon(list, list.get(0).getPrdType());
 		}
 	}
-	
+
 	public static String makeForUserRoundByIcon(List<SendRequestVO> list, int prdType) {
 		StringBuffer sb = new StringBuffer();
-		
+
 		if(prdType == 3) {
 			serviceName = "아이콘 트래블 ";
 			itemName = "캐리어 ";
@@ -181,7 +187,7 @@ public class ReceiptCompleteMessage {
 		sb.append("추가 문의사항이 있으시면 고객센터 1544-3044로 문의부탁드립니다.\n");
 		return sb.toString();
 	}
-	
+
 	public static String makeForUserRoundByChat(List<SendRequestVO> list) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("[아이콘] 접수 완료 \n\n");
@@ -203,23 +209,23 @@ public class ReceiptCompleteMessage {
 		sb.append("추가 문의사항이 있으시면 고객센터 1544-3044로 문의부탁드립니다.\n");
 		return sb.toString();
 	}
-	
+
 	public static String getForUserRound(SendRequestVO startRequestVO, SendRequestVO roundRequestVO) {
 		if ( "0".equals(startRequestVO.getRcpKind()) ) {
-			// 관리자 접수, 편도 
+			// 관리자 접수, 편도
 			return makeForUserRoundByIcon(startRequestVO, roundRequestVO, startRequestVO.getPrdType());
 		} else if ( "1".equals(startRequestVO.getRcpKind()) ) {
-			// 챗봇 접수, 왕복 
+			// 챗봇 접수, 왕복
 			return makeForUserRoundByChat(startRequestVO, roundRequestVO);
 		} else if ( "2".equals(startRequestVO.getRcpKind()) ) {
-			// 어플 접수, 왕복 
+			// 어플 접수, 왕복
 			return makeForUserRoundByIcon(startRequestVO, roundRequestVO, startRequestVO.getPrdType());
 		} else {
 			// 구분값 없을시
 			return makeForUserRoundByIcon(startRequestVO, roundRequestVO, startRequestVO.getPrdType());
 		}
 	}
-	
+
 	/**
 	 *  아이콘 접수 완료
 	 */
@@ -232,7 +238,7 @@ public class ReceiptCompleteMessage {
 			serviceName = "골프택배 ";
 			itemName = "골프택배 ";
 		}
-		
+
 		sb.append("[아이콘] 접수 완료 \n\n");
 
 		if ( roundRequestVO != null ) {
@@ -254,10 +260,10 @@ public class ReceiptCompleteMessage {
 		sb.append("추가 문의사항이 있으시면 고객센터 1544-3044로 문의부탁드립니다.\n");
 		return sb.toString();
 	}
-	
-	
-	
-	
+
+
+
+
 	public static String makeForUserRoundByChat(SendRequestVO startRequestVO, SendRequestVO roundRequestVO) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("[아이콘] 접수 완료 \n\n");
@@ -266,7 +272,7 @@ public class ReceiptCompleteMessage {
 		} else {
 			sb.append("안녕하세요. "+startRequestVO.getReceiver()+" 고객님 골프택배 "+startRequestVO.getRcpNumber()+" 접수가 완료되었습니다.\n\n");
 		}
-		
+
 
 		sb.append("접수완료 상세 내역은 챗봇내의 접수내역에서 확인 바라며 \n");
 		sb.append("원활한 배송 진행을 위해 아래 유의사항을 확인해주시기 바랍니다.\n\n");
@@ -283,9 +289,9 @@ public class ReceiptCompleteMessage {
 		sb.append("추가 문의사항이 있으시면 고객센터 1544-3044로 문의부탁드립니다.\n");
 		return sb.toString();
 	}
-	
+
 	public static String getForIcon(SendRequestVO sendRequestVO, int prdType) {
-		
+
 		if(prdType == 3) {
 			serviceName = "아이콘 트래블 ";
 			itemName = "캐리어";
@@ -293,16 +299,16 @@ public class ReceiptCompleteMessage {
 			serviceName = "골프택배 ";
 			itemName = "골프백";
 		}
-		
+
 		String gameDt = "";
 		if ( sendRequestVO.getGameDt() != null ) {
 			gameDt = sendRequestVO.getGameDt();
 		}
-		
+
 		StringBuffer sb = new StringBuffer();
 		sb.append("[아이콘] 접수 완료 \n\n");
-		
-		if ( "0".equals(sendRequestVO.getRcpKind()) ) {
+
+		if ( "0".equals(sendRequestVO.getRcpKind()) || "5".equals(sendRequestVO.getRcpKind()) ) { // 교참
 			// 아이콘접수일 경우 받는분
 			sb.append("예약자 : "+sendRequestVO.getCusReNm()+" \n");
 		} else if ( "1".equals(sendRequestVO.getRcpKind()) ) {
@@ -311,30 +317,30 @@ public class ReceiptCompleteMessage {
 		} else {
 			sb.append("예약자 : "+sendRequestVO.getReceiver()+" \n");
 		}
-		
+
 		sb.append("접수번호 : "+sendRequestVO.getRcpNumber()+" \n");
 		sb.append("연락처 : "+sendRequestVO.getReceiverNum()+"\n");
 		sb.append(itemName+"수량 : "+sendRequestVO.getPdCnt()+"\n");
-		
+
 		if(prdType != 3 ) {
 			sb.append("보스턴백수량 : "+sendRequestVO.getBoston()+"\n");
 			sb.append("라운딩일정 : "+gameDt+"\n");
 			sb.append("픽업희망일 : "+sendRequestVO.getPicReqDt()+"\n");
 			sb.append("총합계 : "+sendRequestVO.getPdPay()+"원 \n");
 			sb.append("(추가할증 : "+sendRequestVO.getPdEtcPay()+"원) \n\n");
-		
+
 		}else {
 			sb.append("여행일정 : "+gameDt+"\n");
 			sb.append("픽업희망일 : "+sendRequestVO.getPicReqDt()+"\n");
 			sb.append("총합계 : "+sendRequestVO.getPdPay()+"원 \n\n");
 		}
-		
+
 
 		sb.append("결제완료 !\n\n");
 
 		return sb.toString();
 	}
-	
+
 	public static String getForIconRound(List<SendRequestVO> list, int prdType) {
 
 		if(prdType == 3) {
@@ -344,17 +350,17 @@ public class ReceiptCompleteMessage {
 			serviceName = "골프택배 ";
 			itemName = "골프백";
 		}
-		
-		
+
+
 		String gameDt = "";
 		if ( list.get(0).getGameDt() != null ) {
 			gameDt = list.get(0).getGameDt();
 		}
-		
+
 		StringBuffer sb = new StringBuffer();
 		sb.append("[아이콘] 접수 완료 \n\n");
 
-		if ( "0".equals(list.get(0).getRcpKind()) ) {
+		if ( "0".equals(list.get(0).getRcpKind()) ||  "5".equals(list.get(0).getRcpKind()) ) { // 교참
 			// 아이콘접수일 경우 받는분
 			sb.append("예약자 : "+list.get(0).getCusReNm()+" \n");
 		} else if ( "1".equals(list.get(0).getRcpKind()) ) {
@@ -377,12 +383,12 @@ public class ReceiptCompleteMessage {
 			sb.append("픽업희망일 : "+list.get(0).getPicReqDt()+"\n");
 			sb.append("총합계 : "+list.get(0).getPdPay()+"원 \n\n");
 		}
-		
+
 		sb.append("결제완료 !\n\n");
 
 		return sb.toString();
 	}
-	
+
 	public static String getForIconRound(SendRequestVO startRequestVO, SendRequestVO roundRequestVO , int prdType) {
 		if(prdType == 3) {
 			serviceName = "아이콘 트래블 ";
@@ -391,16 +397,16 @@ public class ReceiptCompleteMessage {
 			serviceName = "골프택배 ";
 			itemName = "골프백";
 		}
-		
+
 		String gameDt = "";
 		if ( startRequestVO.getGameDt() != null ) {
 			gameDt = startRequestVO.getGameDt();
 		}
-		
+
 		StringBuffer sb = new StringBuffer();
 		sb.append("[아이콘] 접수 완료 \n\n");
 		if ( roundRequestVO != null ) {
-			if ( "0".equals(startRequestVO.getRcpKind()) ) {
+			if ( "0".equals(startRequestVO.getRcpKind()) ||  "5".equals(startRequestVO.getRcpKind())) { //교참
 				// 아이콘접수일 경우 받는분
 				sb.append("예약자 : "+startRequestVO.getCusReNm()+" \n");
 			} else if ( "1".equals(startRequestVO.getRcpKind()) ) {
@@ -423,9 +429,9 @@ public class ReceiptCompleteMessage {
 				sb.append("픽업희망일 : "+startRequestVO.getPicReqDt()+"\n");
 				sb.append("총합계 : "+startRequestVO.getPdPay()+"원 \n\n");
 			}
-			
+
 		} else {
-			if ( "0".equals(startRequestVO.getRcpKind()) ) {
+			if ( "0".equals(startRequestVO.getRcpKind()) || "5".equals(startRequestVO.getRcpKind())) { // 교참
 				// 아이콘접수일 경우 받는분
 				sb.append("예약자 : "+startRequestVO.getCusReNm()+" \n");
 			} else if ( "1".equals(startRequestVO.getRcpKind()) ) {
@@ -447,7 +453,7 @@ public class ReceiptCompleteMessage {
 				sb.append("픽업희망일 : "+startRequestVO.getPicReqDt()+"\n");
 				sb.append("총합계 : "+startRequestVO.getPdPay()+"원 \n\n");
 			}
-			
+
 		}
 
 		sb.append("결제완료 !\n\n");

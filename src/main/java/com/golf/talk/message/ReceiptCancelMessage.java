@@ -65,7 +65,7 @@ public class ReceiptCancelMessage {
 	}
 	
 	public static String getForUserRound(List<SendRequestVO> list) {
-		if ( "0".equals(list.get(0).getRcpKind()) ||  "3".equals(list.get(0).getRcpKind())) {
+		if ( "0".equals(list.get(0).getRcpKind()) ||  "3".equals(list.get(0).getRcpKind()) || "5".equals(list.get(0).getRcpKind())) { //교참
 			// 관리자 접수, 왕복
 			return makeForUserRoundByIcon(list,list.get(0).getPrdType());
 		} else if ( "1".equals(list.get(0).getRcpKind()) ) {
@@ -187,7 +187,7 @@ public class ReceiptCancelMessage {
 		StringBuffer sb = new StringBuffer();
 		sb.append("[아이콘] 접수 취소 완료 \n\n");
 
-		if ( "0".equals(sendRequestVO.getRcpKind()) ) {
+		if ( "0".equals(sendRequestVO.getRcpKind()) || "5".equals(sendRequestVO.getRcpKind()) ) { //교참
 			// 아이콘접수일 경우 받는분
 			sb.append("예약자 : "+sendRequestVO.getCusReNm()+" \n");
 		} else if ( "1".equals(sendRequestVO.getRcpKind()) ) {
@@ -227,7 +227,7 @@ public class ReceiptCancelMessage {
 		StringBuffer sb = new StringBuffer();
 		sb.append("[아이콘] 접수 취소 완료 \n\n");
 
-		if ( "0".equals(list.get(0).getRcpKind()) ) {
+		if ( "0".equals(list.get(0).getRcpKind()) || "5".equals(list.get(0).getRcpKind())) { //교참
 			// 아이콘접수일 경우 받는분
 			sb.append("예약자 : "+list.get(0).getCusReNm()+" \n");
 		} else if ( "1".equals(list.get(0).getRcpKind()) ) {
@@ -266,7 +266,7 @@ public class ReceiptCancelMessage {
 		sb.append("[아이콘] 접수 취소 완료 \n\n");
 		
 		if ( roundRequestVO != null ) {
-			if ( "0".equals(startRequestVO.getRcpKind()) ) {
+			if ( "0".equals(startRequestVO.getRcpKind()) || "5".equals(startRequestVO.getRcpKind())) { // 교참
 				// 아이콘접수일 경우 받는분
 				sb.append("예약자 : "+startRequestVO.getCusReNm()+" \n");
 			} else if ( "1".equals(startRequestVO.getRcpKind()) ) {
@@ -293,7 +293,7 @@ public class ReceiptCancelMessage {
 			
 			
 		} else {
-			if ( "0".equals(startRequestVO.getRcpKind()) ) {
+			if ( "0".equals(startRequestVO.getRcpKind()) || "5".equals(startRequestVO.getRcpKind())) { //교참
 				// 아이콘접수일 경우 받는분
 				sb.append("예약자 : "+startRequestVO.getCusReNm()+" \n");
 			} else if ( "1".equals(startRequestVO.getRcpKind()) ) {

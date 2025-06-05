@@ -85,7 +85,7 @@
 							<th>업체연락처</th>
 							<td>
 								<c:set var="extCompTelnum" value="${fn:split(vo.extCompTelnum,'-')}" />
-        						
+
         						<select role="extCompTelnum" class="phone">
         						<c:forEach var="l" items="${pList}">
 									<option value="${l}" <c:if test="${extCompTelnum[0] eq l }">selected="selected"</c:if>>${l}</option>
@@ -199,7 +199,7 @@
 							<th>포장상태 <span class="red">*</span></th>
 							<td>
 								<%-- <input type="text" name="pdPack" class="notNull w265"  data-name="포장상태" value="${vo.pdPack}"/> --%>
-								<select name="pdPack" class="notNull w265" data-name="포장상태">								
+								<select name="pdPack" class="notNull w265" data-name="포장상태">
 									<option value="편도" <c:if test="${vo.pdPack eq '편도'}">selected="selected"</c:if>>편도</option>
 									<option value="왕복" <c:if test="${vo.pdPack eq '왕복'}">selected="selected"</c:if>>왕복</option>
 								</select>
@@ -217,8 +217,8 @@
 							<th>보스턴백 수량 <span class="red">*</span></th>
 							<td>
 								<input type="text" name="bostonCnt" id="bostonCnt" class="notNull w265 input onlyNumber" value="${vo.bostonCnt}" data-name="수량" readonly="readonly" /><span class="unit">개</span>							</td>
-						</tr>												
-						
+						</tr>
+
 						<tr>
 							<th>${vo.prdType eq 1 ? '골프백' : vo.prdType eq 2 ? '중고채박스' : '캐리어' } 수량 <span class="red">*</span></th>
 							<td>
@@ -228,7 +228,7 @@
 								<span class="th_fee">기타 운임 <span class="red">*</span></span>
 								<input type="text" class="w265" /><span class="unit">원</span> -->
 							</td>
-						</tr>												
+						</tr>
 						<tr>
 							<th>골프채 수량 <span class="red">*</span></th>
 							<td>
@@ -298,12 +298,12 @@
 </div>
 
 <script type="text/javascript">
-	
+
 	var bostonAmt = 6000;
 	var bostonAmtR = 6000;
 	var bostonDosunAmt = 6000;
 	var bostonDosunAmtR = 6000;
-	
+
 	$(document).ready(function(){
 		/*
 		var uploadFile = $('.fileBox .uploadBtn');
@@ -328,7 +328,7 @@
 			evt.preventDefault();
 			var targetId = "zip"+$(this).attr("role");
 			var searchWord = $("input[role="+targetId+"]").val() == "" ? "" : $("input[role="+targetId+"]").val();
-			window.open("/common/officePopup.do?type1=zipcode&type2="+$(this).attr('role')+"&searchWord="+searchWord, "officeSearch", "top=200, left=100, width=800px, height=480px");
+			window.open("/common/officePopup.do?type1=A&type2="+$(this).attr('role')+"&searchWord="+searchWord, "officeSearch", "top=200, left=100, width=800px, height=480px");
 		});
 
 
@@ -360,7 +360,7 @@
 				curDate.setDate(curDate.getDate());
 				minDate.setDate(minDate.getDate() + (curDate.getDay() > 3 ? 3 : curDate.getDay() == 0 ? 2 : 1));
 			}
-			
+
 			//달력 text,image 클릭 시 분기 처리
 			if ($(this).context.nodeName == "INPUT") {
 				setDatePicker($(this), minDate, curDate, attrFlag);
@@ -387,21 +387,21 @@
 				var uncommaData = uncomma($(this).val());
 				$(this).val(uncommaData);
 			});
-						
+
 			if($("#rcpKindChk").val()=='2'){
 				var pdPay = ${vo.pdPay};
-				
+
 				if(pdPay != $("#pdPayChk").val()){
 					alert("총 합계금액이 맞지 않습니다.");
 					return;
 				}
 			}
-		
+
 			//입력값 체크
 			if(checkData()){
-				
+
 				var queryString = $("form[name=form128]").serialize() ;
-				
+
 				$.ajax({
 					type : 'post',
 					async : false,
@@ -409,10 +409,10 @@
 					data : queryString,
 					dataType : 'json',
 					success : function(data) {
-						
+
 						if (data.sts == 'succ') {
 							var rs = data.rs;
-							
+
 							if (rs == 'yes') {
 								alert('해당 접수건이 수정되었습니다.');
 
@@ -426,13 +426,13 @@
 							else
 								alert('에러가 발생하였습니다.\n관리자에게 문의 바랍니다.(001)');
 						}
-						else 
+						else
 							alert('에러가 발생하였습니다.\n관리자에게 문의 바랍니다.(002)');
 					}
 					,error : function(xhr, status, error) {
 						alert("에러발생 : " + xhr.status + "\n관리자에게 문의 바랍니다.(003)");
 					}
-				});	
+				});
 			}
 		});
 
@@ -461,27 +461,29 @@
 		return returnVal;
 	}
 
-	
+
 	//운임 계산 및 도서산간구분값 적용
 	function searchIsl(){
-		
+
 		let data1 = {
 			    delKind: "${vo.delKind}",
 			    rcpKind: "${vo.rcpKind }",
 			    srType: "${vo.srType }",
 			    sendGolfSeq: $("input[name=sendGolfSeq]").val(),
+			    cusSendZip: $("input[name=cusSendZip]").val(),
 			    cusSendAddr1: $("input[name=cusSendAddr1]").val(),
 			    cusSendAddr2: $("input[name=cusSendAddr2]").val(),
 			    recvGolfSeq: $("input[name=recvGolfSeq]").val(),
+			    cusReZip: $("input[name=cusReZip]").val(),
 			    cusReAddr1: $("input[name=cusReAddr1]").val(),
 			    cusReAddr2: $("input[name=cusReAddr2]").val(),
 			    pdIndivPrice: "${vo.pdIndivPrice }",
 			    pdCnt: $("input[name=pdCnt]").val(),
 			    bostonCnt:  $("input[name=bostonCnt]").val()
 			};
-		
+
 	//	console.log("전송 : "+ JSON.stringify(data1));
-		
+
 		$.ajax({
 			type : 'post',
 			async : false,
@@ -491,18 +493,18 @@
 			contentType: "application/json",
 			success : function(data) {
 				console.log(data)
-				
+
 			$("input[name=pdDosunPay]").val(comma(data.result.pdDosunPay))
 			$("input[name=pdPay]").val(comma(data.result.pdPay))
 			$("input[name=pdDeliPay]").val(comma(data.result.pdDeliPay - $('#iconFee').val()))
-				
-			 
+
+
 			}
 			,error : function(xhr, status, error) {
 				alert("에러발생 : " + xhr.status + "\n관리자에게 문의 바랍니다.(003)");
 			}
-		});	
-		
+		});
+
 		return;
 		/* // 0 = 기본운임, 1 = 1차특판, 2 = 2차특판
 		var amtArray = [[5000, 21000, 20000], [5000, 15000, 15000], [5000, 15000, 15000]];
@@ -521,7 +523,7 @@
 				$(this).next().val("N");
 			}
 		});
-		
+
 		var cnt = new Array;
 		var bostonCnt = new Array;
 		$("input[name=pdCnt]").each(function(){
@@ -532,7 +534,7 @@
 		$("input[name=pdEtcPay]").each(function(){
 			extraPrice.push(($(this).val() != "") ? Number(uncomma($(this).val())) : 0);
 		});
-		
+
 		$("input[name=bostonCnt]").each(function(){
 			bostonCnt.push(($(this).val() != "") ? $(this).val() : 0);
 			console.log(bostonCnt)
@@ -540,7 +542,7 @@
 
 		var delKind = "${vo.delKind}";
 
-		
+
 		//편도
 		if($("input[role=zip1]:eq(1)").val() != "" && $("input[role=zip2]:eq(1)").val() != ""){
 			if(delKind == '1'){
@@ -554,7 +556,7 @@
 			}
 		} */
 	}
-	
+
 	//전화번호 문자열 확인
 	function addTelNum(){
 		var telArr = new Array();
@@ -659,10 +661,10 @@
 	        }
 	    }).open();
 	}
-	
+
 	function numberWithCommas(x) {
 		x = x.replace(/[^0-9]/g,'');   // 입력값이 숫자가 아니면 공백
 		x = x.replace(/,/g,'');          // ,값 공백처리
-		return x.replace(/\B(?=(\d{3})+(?!\d))/g, ","); // 정규식을 이용해서 3자리 마다 , 추가 
+		return x.replace(/\B(?=(\d{3})+(?!\d))/g, ","); // 정규식을 이용해서 3자리 마다 , 추가
 	}
 </script>

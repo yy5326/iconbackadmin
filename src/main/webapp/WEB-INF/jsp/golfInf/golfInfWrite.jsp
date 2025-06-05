@@ -166,7 +166,7 @@
     	//영업소 찾기
 		$(".officeLayer").click(function(evt){
 			evt.preventDefault();
-			window.open("../common/officePopup.do?type1=A&type2="+$(this).attr('role')+"&searchWord="+$("#zipCode").val(), "officeSearch", "top=200, left=100, width=800px, height=480px");    	
+			window.open("/common/officePopup.do?type1=A&type2="+$(this).attr('role')+"&searchWord="+$("#zipCode").val(), "officeSearch", "top=200, left=100, width=800px, height=480px");    	
 		});    	
 	});	
 	
