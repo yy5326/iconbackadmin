@@ -60,7 +60,7 @@ public class AuthenticInterceptor extends HandlerInterceptorAdapter {
 			}	*/
 			
 
-	        if(_globalProperty.getWebMode().equals("op") && !sUrl.contains("/golfApi/")&& !sUrl.contains("/golfCam/")&& !sUrl.contains("/api/")&& !sUrl.contains("/upload/")) {
+	        if(false) {
 	        	//그룹웨어 로그인
 				if(sUrl.contains("/golfLogin.do")) {
 					return true;
