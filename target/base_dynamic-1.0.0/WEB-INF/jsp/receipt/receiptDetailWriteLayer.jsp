@@ -1,0 +1,670 @@
+<%@ page language="java" contentType="text/html;" pageEncoding="UTF-8"%>
+<%@ include file="/WEB-INF/jsp/common/tags.jsp"%>
+
+<script type="text/javascript" src="/common/js/jquery/jquery.ui.datepicker.custom.js"></script>
+<script type="text/javascript" src="/common/js/lib.js"></script>
+<script type="text/javascript" src="/common/js/common.jquery.util.js"></script>
+
+<div class="contents cont_layerDetail">
+	<form name="form128" method="post">
+
+		<input type="hidden" name="rcpInfSeq" value="${vo.rcpInfSeq }">
+		<input type="hidden" name="rcpSeq" value="${vo.rcpSeq }">
+		<input type="hidden" name="rcpNumber" value="${vo.rcpNumber }">
+		<input type="hidden" name="rcpKind" id="rcpKindChk" value="${vo.rcpKind }">
+
+		<div id="original">
+			<h3 class="acen">택배조회 상세보기</h3>
+			<div class="receiver">
+				<p class="type">보내는 분 <span class="red">*</span><span>표시는 필수 입력사항입니다</span></p>
+				<div class="tableBox">
+					<table>
+						<tr>
+							<th>이름 <span class="red">*</span></th>
+							<td>
+								<input type="text" name="cusSendNm" class="notNull w410" data-name="이름" value="${vo.cusSendNm}"/>
+							</td>
+						</tr>
+						<tr>
+							<th>연락처 <span class="red">*</span></th>
+							<td>
+<c:set var="cusSendTelnum" value="${fn:split(vo.cusSendTelnum,'-')}" />
+
+								<select role="ephone1" class="phone">
+								<c:forEach var="l" items="${pList}">
+									<option value="${l}" <c:if test="${cusSendTelnum[0] eq l }">selected="selected"</c:if>>${l}</option>
+								</c:forEach>
+								</select> -
+
+        						<input role="ephone1" type="tel" class="phone" maxlength="4" data-name="기타 연락처" value="${cusSendTelnum[1] }" /> -
+        						<input role="ephone1" type="tel" class="phone" maxlength="4" data-name="기타 연락처" value="${cusSendTelnum[2] }" />
+        						<input type="hidden" role="ephone1" name="cusSendTelnum">
+        					</td>
+						</tr>
+						<tr>
+							<th>골프장 상호</th>
+							<td>
+								<input type="text" role="golfSearch1" name="sendGolfName" class="w360" readonly="readonly" value="${vo.sendGolfName}"/>
+								<input type="hidden" role="golfSearch1" name="sendGolfSeq" class="w360" value="${vo.sendGolfSeq }"/>
+								<a href="javascript:;" role="golfSearch1" class="btn">찾기</a>
+							</td>
+						</tr>
+						<tr>
+							<th rowspan="3" class="address">주소 <span class="red">*</span></th>
+							<td>
+								<input type="text" role="zip1" name="cusSendZip" placeholder="우편번호" readonly="readonly" onclick="javascript:searchPostcode('zip1');" class="notNull" data-name="주소" value="${vo.cusSendZip}"/>
+								<a href="javascript:searchPostcode('zip1');" class="postcode btn">우편번호 검색</a>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<input type="text" role="zip1" name="cusSendAddr1" class="w410" placeholder="기본주소" readonly="readonly" onclick="javascript:searchPostcode('zip1');" value="${vo.cusSendAddr1}"/>
+								<input type="hidden" name="sendIslYn" value="${vo.sendIslYn }"/>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<input type="text" role="zip1" name="cusSendAddr2" class="w410" placeholder="상세주소를 입력해 주세요" data-name="상세주소" value="${vo.cusSendAddr2}"/>
+							</td>
+						</tr>
+						<tr>
+							<th>발송영업소 <span class="red">*</span></th>
+							<td>
+								<input type="text" role="golfSearch1" id="office1" name="brStrNm" class="notNull" data-name="발송영업소" readonly="readonly" value="${vo.brStrNm}"/>
+								<input type="hidden" role="golfSearch1" id="officeCode1" name="brStrCode" value="${vo.brStrCode }"/>
+								<a href="javascript:;" role="1" class="officeLayer btn">찾기</a>
+							</td>
+						</tr>
+						<tr>
+							<th>외부업체</th>
+							<td>
+								<input type="text" name="extComp" value="${vo.extComp}"/>
+							</td>
+						</tr>
+						<tr>
+							<th>업체연락처</th>
+							<td>
+								<c:set var="extCompTelnum" value="${fn:split(vo.extCompTelnum,'-')}" />
+
+        						<select role="extCompTelnum" class="phone">
+        						<c:forEach var="l" items="${pList}">
+									<option value="${l}" <c:if test="${extCompTelnum[0] eq l }">selected="selected"</c:if>>${l}</option>
+								</c:forEach>
+								</select> -
+
+        						<input role="extCompTelnum" type="tel" class="phone" maxlength="4" data-name="기타 연락처" value="${extCompTelnum[1] }" /> -
+        						<input role="extCompTelnum" type="tel" class="phone" maxlength="4" data-name="기타 연락처" value="${extCompTelnum[2] }" />
+        						<input type="hidden" role="extCompTelnum" name="extCompTelnum">
+        					</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div class="sender">
+				<p class="type">받는 분 <span class="red">*</span><span>표시는 필수 입력사항입니다</span></p>
+				<div class="tableBox">
+					<table>
+						<tr>
+							<th>이름 <span class="red">*</span></th>
+							<td><input type="text" name="cusReNm" class="notNull w410" data-name="이름" value="${vo.cusReNm}"/></td>
+						</tr>
+						<tr>
+							<th>연락처 <span class="red">*</span></th>
+							<td>
+<c:set var="cusReTelnum2" value="${fn:split(vo.cusReTelnum2,'-')}" />
+
+								<select role="ephone2" class="phone">
+								<c:forEach var="l" items="${pList}">
+									<option value="${l}" <c:if test="${cusReTelnum2[0] eq l }">selected="selected"</c:if>>${l}</option>
+								</c:forEach>
+								</select> -
+
+        						<input type="tel" role="ephone2" class="phone" maxlength="4" data-name="기타 연락처" value="${cusReTelnum2[1] }"/> -
+        						<input type="tel" role="ephone2" class="phone" maxlength="4" data-name="기타 연락처" value="${cusReTelnum2[2] }"/>
+        						<input type="hidden" role="ephone2" name="cusReTelnum2">
+        					</td>
+						</tr>
+						<tr>
+							<th>골프장 상호 </th>
+							<td>
+								<input type="text" role="golfSearch2" name="recvGolfName" class="w360" data-name="골프장 상호" readonly="readonly" value="${vo.recvGolfName}"/>
+								<input type="hidden" role="golfSearch2" name="recvGolfSeq" class="w360" value="${vo.recvGolfSeq }"/>
+								<a href="javascript:;" role="golfSearch2" class="btn">찾기</a>
+
+								<input type="hidden" id="golfSeq" name="golfSeq" class="w410" value="${vo.recvGolfSeq }"/>
+							</td>
+						</tr>
+						<tr>
+							<th rowspan="3" class="address">주소 <span class="red">*</span></th>
+							<td>
+								<input type="text" role="zip2" name="cusReZip" placeholder="우편번호" readonly="readonly" onclick="javascript:searchPostcode('zip2');" class="notNull" data-name="주소" value="${vo.cusReZip}"/>
+								<a href="javascript:searchPostcode('zip2');" class="postcode btn">우편번호 검색</a>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<input type="text" role="zip2" name="cusReAddr1" class="w410" placeholder="기본주소" readonly="readonly" onclick="javascript:searchPostcode('zip2');" value="${vo.cusReAddr1}"/>
+								<input type="hidden" name="recvIslYn" value="${vo.recvIslYn }"/>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<input type="text" role="zip2" name="cusReAddr2" class="w410" placeholder="상세주소를 입력해 주세요" data-name="상세주소" value="${vo.cusReAddr2}"/>
+							</td>
+						</tr>
+						<tr>
+							<th>도착영업소 <span class="red">*</span></th>
+							<td>
+								<input type="text" role="golfSearch2" id="office2" name="brEndNm" class="notNull" data-name="도착영업소" readonly="readonly"value="${vo.brEndNm}"/>
+								<input type="hidden" role="golfSearch2" id="officeCode2" name="brEndCode" value="${vo.brEndCode }"/>
+								<a href="javascript:;" role="2" class="officeLayer btn">찾기</a>
+
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div class="product_info">
+				<p class="type">물품정보 <span class="red">*</span><span>표시는 필수 입력사항입니다</span></p>
+				<div class="tableBox">
+					<table>
+						<tr>
+							<th>경기일 <span class="red">*</span></th>
+							<td>
+								<input type="text" name="gameDt" class="notNull input datepicker" style="width: 168px;" data-name="경기일" value="${vo.gameDt}" readonly="readonly" />
+								<a class="calendar datepicker" style="cursor: pointer;"></a>
+								<span style="margin-left: 12px;">익일부터 영업일 기준으로 3일 후</span>
+							</td>
+						</tr>
+						<tr>
+							<th>픽업희망일 <span class="red">*</span></th>
+							<td>
+								<input type="text" name="picReqDt" class="notNull input datepicker customPicker1" style="width: 168px;" data-name="픽업희망일" value="${vo.picReqDt}" readonly="readonly"/>
+								<a class="calendar datepicker customPicker1" style="cursor: pointer;"></a>
+								<span style="margin-left: 12px;">익일부터 경기일 포함 영업일 기준으로 3일 전</span>
+							</td>
+						</tr>
+						<tr>
+							<th>품목명 <span class="red">*</span></th>
+							<td>
+								<select name="pdNm" class="notNull w265" data-name="품목명">
+									<option value="국제골프택배기본" <c:if test="${vo.pdNm eq '국제골프택배기본'}">selected="selected"</c:if>>국제골프택배기본</option>
+									<option value="국제골프택배세트" <c:if test="${vo.pdNm eq '국제골프택배세트'}">selected="selected"</c:if>>국제골프택배세트</option>
+									<option value="스마트스코어중고채" <c:if test="${vo.pdNm eq '스마트스코어중고채'}">selected="selected"</c:if>>스마트스코어중고채</option>
+									<option value="아이콘캐리어" <c:if test="${vo.pdNm eq '아이콘캐리어'}">selected="selected"</c:if>>아이콘캐리어</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<th>포장상태 <span class="red">*</span></th>
+							<td>
+								<%-- <input type="text" name="pdPack" class="notNull w265"  data-name="포장상태" value="${vo.pdPack}"/> --%>
+								<select name="pdPack" class="notNull w265" data-name="포장상태">
+									<option value="편도" <c:if test="${vo.pdPack eq '편도'}">selected="selected"</c:if>>편도</option>
+									<option value="왕복" <c:if test="${vo.pdPack eq '왕복'}">selected="selected"</c:if>>왕복</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<th>배송구분 <span class="red">*</span></th>
+							<td>
+								<select name="payType" class="notNull w265" data-name="배송구분">
+									<option value="0" <c:if test="${vo.payType eq '0'}">selected="selected"</c:if>>현불택배</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<th>보스턴백 수량 <span class="red">*</span></th>
+							<td>
+								<input type="text" name="bostonCnt" id="bostonCnt" class="notNull w265 input onlyNumber" value="${vo.bostonCnt}" data-name="수량" readonly="readonly" /><span class="unit">개</span>							</td>
+						</tr>
+
+						<tr>
+							<th>${vo.prdType eq 1 ? '골프백' : vo.prdType eq 2 ? '중고채박스' : '캐리어' } 수량 <span class="red">*</span></th>
+							<td>
+								<input type="text" name="pdCnt" id="pdCnt" class="notNull w265 input onlyNumber" value="${vo.pdCnt}" data-name="수량" readonly="readonly" /><span class="unit">개</span>
+
+								<!-- <a href="#" class="btn">개별단가</a>
+								<span class="th_fee">기타 운임 <span class="red">*</span></span>
+								<input type="text" class="w265" /><span class="unit">원</span> -->
+							</td>
+						</tr>
+						<tr>
+							<th>골프채 수량 <span class="red">*</span></th>
+							<td>
+								<input type="text" name="pdGolfCnt" class="notNull w265 input onlyNumber" value="${vo.pdGolfCnt}" data-name="수량" readonly="readonly" /><span class="unit">개</span>
+							</td>
+						</tr>
+						<tr>
+							<th>할증운임 <span class="red">*</span></th>
+							<td>
+								<input type="text" role="pay" name="pdEtcPay" class="notNull w265 input" readonly="readonly" value="<fmt:formatNumber value="${vo.pdEtcPay}" pattern="#,###"/>" data-name="할증운임" /><span class="unit">원</span>
+							</td>
+						</tr>
+						<tr>
+							<th>배송운임 <span class="red">*</span></th>
+							<td>
+								<input type="text" role="pay" name="pdDeliPay" class="notNull w265 input" readonly="readonly" value="<fmt:formatNumber value="${vo.pdDeliPay}" pattern="#,###"/>" data-name="할증운임" /><span class="unit">원</span>
+							</td>
+						</tr>
+						<tr>
+							<th>도서운임 <span class="red">*</span></th>
+							<td>
+								<input type="text" role="pay" name="pdDosunPay" class="w265 input" readonly="readonly" value="<fmt:formatNumber value="${vo.pdDosunPay}" pattern="#,###"/>" data-name="도서운임" /><span class="unit">원</span>
+							</td>
+						</tr>
+						<tr>
+							<th>아이콘 수수료 <span class="red">*</span></th>
+							<td>
+								<!-- 운임체계 변경 없고 편도/왕복 변경도 없으므로 일단 수수료 변경은 없는 것으로 가정, 표시만 해준다 20200319 -->
+								<input type="text" role="pay" name="iconFee" class="w265 input" readonly="readonly" value="<fmt:formatNumber value="${vo.iconFee}" pattern="#,###"/>" data-name="아이콘 수수료" /><span class="unit">원</span>
+								<input type="hidden"  id="iconFee" value="${vo.iconFee}" />
+							</td>
+						</tr>
+						<tr>
+							<th>총 합계 <span class="red">*</span></th>
+							<td><input type="text" role="pay" name="pdPay" id="pdPayChk" class="w265 input" readonly="readonly" value="<fmt:formatNumber value="${vo.pdPay}" pattern="#,###"/>" data-name="총합계" /><span class="unit">원</span></td>
+						</tr>
+						<tr>
+							<th class="memo">메모</th>
+							<td><textarea name="pdMemo" cols="30" rows="10" class="w410">${vo.pdMemo}</textarea></td>
+						</tr>
+						<!-- <tr>
+							<th>파일 <span class="red">*</span></th>
+							<td>
+								<div class="fileBox">
+									<label for="uploadBtn" class="btn_file upload acen">파일 선택</label>
+									<input type="text" class="fileName" readonly="readonly" placeholder="선택한 파일이 없음" />
+									<input type="file" id="uploadBtn" class="upload uploadBtn" />
+								</div>
+							</td>
+						</tr> -->
+						<tr>
+							<th>운임구분 <span class="red">*</span></th>
+							<td>
+								<input type="text" readonly="readonly" class="w265" value="${vo.payStatName }" />
+								<input type="hidden" name="payStat" readonly="readonly" value="${vo.payStat }" />
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	 </form>
+	<div class="receipt_layer receipt_layer02">
+		<a href="javascript:;" id="doUpdate" class="btn acen">저장</a>
+		<a href="javascript:$.colorbox.close();" class="btn acen cancle">닫기</a>
+	</div>
+</div>
+
+<script type="text/javascript">
+
+	var bostonAmt = 6000;
+	var bostonAmtR = 6000;
+	var bostonDosunAmt = 6000;
+	var bostonDosunAmtR = 6000;
+
+	$(document).ready(function(){
+		/*
+		var uploadFile = $('.fileBox .uploadBtn');
+		uploadFile.on('change', function(){
+			if(window.FileReader){
+				var filename = $(this)[0].files[0].name;
+			} else {
+				var filename = $(this).val().split('/').pop().split('\\').pop();
+			}
+			$(this).siblings('.fileName').val(filename);
+		});
+		*/
+
+
+		//경기일 선택 시 픽업희망일 초기화
+		$("input[name=gameDt]").change(function(){
+			$("input[name=picReqDt]").val("");
+		});
+
+		//영업소 찾기
+		$(".officeLayer").click(function(evt){
+			evt.preventDefault();
+			var targetId = "zip"+$(this).attr("role");
+			var searchWord = $("input[role="+targetId+"]").val() == "" ? "" : $("input[role="+targetId+"]").val();
+			window.open("/common/officePopup.do?type1=A&type2="+$(this).attr('role')+"&searchWord="+searchWord, "officeSearch", "top=200, left=100, width=800px, height=480px");
+		});
+
+
+		//골프장 상호 찾기
+		$("[role^=golfSearch]").not("input[name*=br]").click(function(){
+			window.open("/receipt/receiptGolfPopup.do?type1="+$(this).attr('role'), "officeSearch", "top=200, left=100, width=1200px, height=715px");
+		});
+
+
+		//경기일  지정에 따라서 희망일 범위 지정
+		$("[class*=customPicker]").click(function(){
+			if($("input[name=gameDt]").val() == ""){
+				alert("경기일을 선택해 주십시오.");
+				$("input[name=gameDt]").focus();
+				return;
+			}
+
+			var attrFlag = '${vo.srType }' == 'R' ? false : true;
+			var curDate = $("input[name=gameDt]").datepicker("getDate");
+			var minDate = $("input[name=gameDt]").datepicker("getDate");
+
+
+			//경기일 포함 이전 3일(익일 ~ 경기일포함 영업일 3일 제외)
+			/*
+			if (attrFlag) {
+				curDate.setDate(curDate.getDate() - (curDate.getDay() == 6 ? 4 : curDate.getDay() > 2 ? 3 : 5));
+			//경기일 포함 이후 2일(토일제외)
+			} else {
+				curDate.setDate(curDate.getDate());
+				minDate.setDate(minDate.getDate() + (curDate.getDay() > 3 ? 3 : curDate.getDay() == 0 ? 2 : 1));
+			}
+
+			//달력 text,image 클릭 시 분기 처리
+			if ($(this).context.nodeName == "INPUT") {
+				setDatePicker($(this), minDate, curDate, attrFlag);
+				$(this).focus();
+			} else {
+				$(this).css({cursor : 'pointer'});
+				setDatePicker($(this).prev(), minDate, curDate, attrFlag);
+				$(this).prev().focus();
+			}
+			*/
+		});
+
+
+		// 수정 처리
+		$("#doUpdate").click(function(){
+			if (!confirm('수정하시겠습니까?'))
+				return;
+
+			//전화번호 문자열 확인
+			addTelNum();
+
+			//등록 전 콤마제거
+			$("input[role=pay]").each(function(){
+				var uncommaData = uncomma($(this).val());
+				$(this).val(uncommaData);
+			});
+
+			if($("#rcpKindChk").val()=='2'){
+				var pdPay = ${vo.pdPay};
+
+				if(pdPay != $("#pdPayChk").val()){
+					alert("총 합계금액이 맞지 않습니다.");
+					return;
+				}
+			}
+
+			//입력값 체크
+			if(checkData()){
+
+				var queryString = $("form[name=form128]").serialize() ;
+
+				$.ajax({
+					type : 'post',
+					async : false,
+					url : './receiptUpdateAjax.do',
+					data : queryString,
+					dataType : 'json',
+					success : function(data) {
+
+						if (data.sts == 'succ') {
+							var rs = data.rs;
+
+							if (rs == 'yes') {
+								alert('해당 접수건이 수정되었습니다.');
+
+								$.colorbox({
+									href : './receiptDetail.do?rcpISeq=${vo.rcpInfSeq}',
+									overlayClose: false,
+									width: 1230,
+									height: 820
+								});
+							}
+							else
+								alert('에러가 발생하였습니다.\n관리자에게 문의 바랍니다.(001)');
+						}
+						else
+							alert('에러가 발생하였습니다.\n관리자에게 문의 바랍니다.(002)');
+					}
+					,error : function(xhr, status, error) {
+						alert("에러발생 : " + xhr.status + "\n관리자에게 문의 바랍니다.(003)");
+					}
+				});
+			}
+		});
+
+	});
+
+	//입력값 체크
+	function checkData(){
+		var returnVal = true;
+
+		$(".notNull").each(function(){
+			if ($.trim($(this).val()) == "") {
+	            alert($(this).attr("data-name")+" 항목을 입력해 주세요.");
+
+	            if ($(this).attr("data-name").indexOf("픽업희망일") > -1) {
+	            	$(this).trigger("click");
+	            } else {
+	            	$(this).focus();
+	            }
+
+	            returnVal = false;
+
+	            return false;
+			}
+		});
+
+		return returnVal;
+	}
+
+
+	//운임 계산 및 도서산간구분값 적용
+	function searchIsl(){
+
+		let data1 = {
+			    delKind: "${vo.delKind}",
+			    rcpKind: "${vo.rcpKind }",
+			    srType: "${vo.srType }",
+			    sendGolfSeq: $("input[name=sendGolfSeq]").val(),
+			    cusSendZip: $("input[name=cusSendZip]").val(),
+			    cusSendAddr1: $("input[name=cusSendAddr1]").val(),
+			    cusSendAddr2: $("input[name=cusSendAddr2]").val(),
+			    recvGolfSeq: $("input[name=recvGolfSeq]").val(),
+			    cusReZip: $("input[name=cusReZip]").val(),
+			    cusReAddr1: $("input[name=cusReAddr1]").val(),
+			    cusReAddr2: $("input[name=cusReAddr2]").val(),
+			    pdIndivPrice: "${vo.pdIndivPrice }",
+			    pdCnt: $("input[name=pdCnt]").val(),
+			    bostonCnt:  $("input[name=bostonCnt]").val()
+			};
+
+	//	console.log("전송 : "+ JSON.stringify(data1));
+
+		$.ajax({
+			type : 'post',
+			async : false,
+			url : '/api/kakao/cbReceive/commission',
+			data : JSON.stringify(data1),
+			dataType : 'json',
+			contentType: "application/json",
+			success : function(data) {
+				console.log(data)
+
+			$("input[name=pdDosunPay]").val(comma(data.result.pdDosunPay))
+			$("input[name=pdPay]").val(comma(data.result.pdPay))
+			$("input[name=pdDeliPay]").val(comma(data.result.pdDeliPay - $('#iconFee').val()))
+
+
+			}
+			,error : function(xhr, status, error) {
+				alert("에러발생 : " + xhr.status + "\n관리자에게 문의 바랍니다.(003)");
+			}
+		});
+
+		return;
+		/* // 0 = 기본운임, 1 = 1차특판, 2 = 2차특판
+		var amtArray = [[5000, 21000, 20000], [5000, 15000, 15000], [5000, 15000, 15000]];
+		var amt = amtArray[Number('${vo.fareType}') - 1];
+		var dosun1 = 0, dosun2 = 0;
+		$("input[role=zip1]:eq(1),input[role=zip2]:eq(1)").each(function(idx){
+			if ($(this).val().indexOf("제주") > -1) {
+
+				(idx < 2) ? dosun1 += 1 : dosun2 += 1;
+				$(this).next().val("Y");
+
+			} else if($(this).val().indexOf("전남 여수시 대경도길 111")) {
+				(idx < 2) ? dosun1 += 1 : dosun2 += 1;
+				$(this).next().val("Y");
+			} else {
+				$(this).next().val("N");
+			}
+		});
+
+		var cnt = new Array;
+		var bostonCnt = new Array;
+		$("input[name=pdCnt]").each(function(){
+			cnt.push(($(this).val() != "") ? $(this).val() : 0);
+		});
+
+		var extraPrice = new Array;
+		$("input[name=pdEtcPay]").each(function(){
+			extraPrice.push(($(this).val() != "") ? Number(uncomma($(this).val())) : 0);
+		});
+
+		$("input[name=bostonCnt]").each(function(){
+			bostonCnt.push(($(this).val() != "") ? $(this).val() : 0);
+			console.log(bostonCnt)
+		});
+
+		var delKind = "${vo.delKind}";
+
+
+		//편도
+		if($("input[role=zip1]:eq(1)").val() != "" && $("input[role=zip2]:eq(1)").val() != ""){
+			if(delKind == '1'){
+				$("input[name=pdDosunPay]").val((dosun1 >= 1) ? comma((amt[0] * cnt[0]) + bostonDosunAmt * bostonCnt[0]) : "0");
+				$("input[name=pdPay]").val((dosun1 >= 1) ? comma(((amt[0] * cnt[0]) + (amt[0] + amt[1]) * cnt[0]) + (bostonAmt * bostonCnt[0]) + (bostonDosunAmt * bostonCnt[0]) + extraPrice[0] + Number($('#iconFee').val())) : comma((amt[1] * cnt[0]) + (bostonAmt * bostonCnt[0]) + extraPrice[0] + Number($('#iconFee').val())));
+				$("input[name=pdDeliPay]").val(comma((amt[0] * cnt[0]) + amt[1] * cnt[0] + (bostonAmt * bostonCnt[0]) + (bostonDosunAmt * bostonCnt[0])));
+			}else{
+				$("input[name=pdDosunPay]").val((dosun1 >= 1) ? comma((amt[0] * cnt[0]) + bostonAmt * bostonCnt[0]) : "0");
+				$("input[name=pdPay]").val((dosun1 >= 1) ? comma(((amt[0] * cnt[0]) +(amt[0] + amt[2]) * cnt[0]) + (bostonAmt * bostonCnt[0]) + (bostonDosunAmt * bostonCnt[0]) + extraPrice[0] + Number($('#iconFee').val())) : comma((amt[2] * cnt[0]) + (bostonAmtR * bostonCnt[0]) + extraPrice[0] + Number($('#iconFee').val())));
+				$("input[name=pdDeliPay]").val(comma((amt[0] * cnt[0]) + amt[2] * cnt[0] + (bostonAmtR * bostonCnt[0]) + (bostonDosunAmt * bostonCnt[0])));
+			}
+		} */
+	}
+
+	//전화번호 문자열 확인
+	function addTelNum(){
+		var telArr = new Array();
+		$(".phone").each(function(){
+			telArr.push($(this).attr("role"));
+		});
+		$.unique(telArr);
+		if(telArr.length > 0){
+			for(var i=0; i<telArr.length; i++){
+				var telNum = "";
+				$("[role="+telArr[i]+"]").each(function(idx){
+					if(idx == 3) return false;
+					if($(this).val() != "")
+						telNum += (idx == 0) ? $(this).val() : "-" + $(this).val();
+						//console.log(idx);
+				});
+				//10자리 이상만.. 일단?
+				if(telNum.length > 10) $("input[role="+telArr[i]+"]:last").val(telNum);
+			}
+		}
+	}
+
+
+	//경기일  지정에 따라서 희망일 범위 지정
+	var noSundays = function(date){
+		var day = date.getDay();
+		return [(day != 0 && day != 6)];
+	}
+
+	//경기일  지정에 따라서 희망일 범위 지정
+	var setDatePicker = function(_selObject, m, c, f){
+		if(typeof _selObject !== "undefined" || _selObject !== null || _selObject !== ""){
+			$(_selObject).datepicker("option", "minDate", (f) ? new Date(tomorrowDate()) : c).datepicker("option", "maxDate", (f) ? c : m).datepicker("option", "beforeShowDay",  noSundays);
+		}
+	}
+
+	//익일 확인
+	var tomorrowDate = function() {
+		var rDate = "";
+		var today = new Date();
+		var tomorrow = new Date(today.valueOf() + (24*60*60*1000));
+		var year = tomorrow.getFullYear();
+		var month = tomorrow.getMonth() + 1;
+		var day = tomorrow.getDate();
+		if (day < 10) {
+			day = '0' + day
+		}
+		if (month < 10) {
+			month = '0' + month
+		}
+		rDate = year + '-' + month + '-' + day;
+		return rDate;
+	}
+
+
+
+	//다음주소 입력 창 오픈
+	function searchPostcode(roleName) {
+		new daum.Postcode({
+	        oncomplete: function(data) {
+
+	            var fullAddr = '';
+	            var extraAddr = '';
+
+	            if (data.userSelectedType === 'R') {
+	                fullAddr = data.roadAddress;
+
+	            } else {
+	                fullAddr = data.jibunAddress;
+	            }
+
+	            if(data.userSelectedType === 'R'){
+	                if(data.bname !== ''){
+	                    extraAddr += data.bname;
+	                }
+	                if(data.buildingName !== ''){
+	                    extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+	                }
+	                fullAddr += (extraAddr !== '' ? ' ('+ extraAddr +')' : '');
+	            }
+
+	            //동시 사용 처리
+	            $("input[role="+roleName+"]").each(function(idx){
+					if(idx == 0)
+						$(this).val(data.zonecode);
+					else if(idx == 1)
+						$(this).val(fullAddr);
+					else
+						$(this).val("").focus();
+	            });
+	    		var targetElement = roleName.replace("zip", "golfSearch");
+	    		$("input[role="+targetElement+"]").each(function(idx){
+	    			//if(idx == 0) $(this).val("").prop("readonly", (targetElement == "golfSearch2") ? true : false);
+	    			if(idx == 0) $(this).val("");
+	    			else if(idx == 1) $(this).val("0");
+	    			else if(idx == 2) $(this).val("");
+	    			else $(this).val("");
+	    		});
+
+	            //운임계산
+	            searchIsl();
+	        }
+	    }).open();
+	}
+
+	function numberWithCommas(x) {
+		x = x.replace(/[^0-9]/g,'');   // 입력값이 숫자가 아니면 공백
+		x = x.replace(/,/g,'');          // ,값 공백처리
+		return x.replace(/\B(?=(\d{3})+(?!\d))/g, ","); // 정규식을 이용해서 3자리 마다 , 추가
+	}
+</script>

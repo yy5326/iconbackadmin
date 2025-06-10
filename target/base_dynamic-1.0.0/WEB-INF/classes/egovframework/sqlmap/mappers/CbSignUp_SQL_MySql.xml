@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cbSignUp">
+  <resultMap id="BaseResultMap" type="com.golf.chat.vo.CbSignUpVO">
+    <result column="USER_ID" jdbcType="BIGINT" property="userId" />
+    <result column="USER_TELNUM" jdbcType="VARCHAR" property="userTelNum" />
+    <result column="USER_SYNCED_DATE" jdbcType="TIMESTAMP" property="userSyncedDate" />
+    <result column="USER_REG_DATE" jdbcType="TIMESTAMP" property="userRegDate" />
+  </resultMap>
+  
+  <select id="selectByCnt" parameterType="search" resultType="Integer">
+  	SELECT COUNT(*) CNT
+  	  FROM CB_USER_INFO
+  	 WHERE USER_ID = #{userId,jdbcType=BIGINT}
+  </select>
+  
+  <insert id="insertCbUserInfo" parameterType="com.golf.chat.vo.CbSignUpVO">
+    INSERT INTO CB_USER_INFO
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="userId != null">
+        USER_ID,
+      </if>
+      <if test="userTelNum != null">
+        USER_TELNUM,
+      </if>
+      <if test="userSyncedDate != null">
+        USER_SYNCED_DATE,
+      </if>
+        USER_REG_DATE,
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="userId != null">
+        #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="userTelNum != null">
+        #{userTelNum,jdbcType=VARCHAR},
+      </if>
+      <if test="userSyncedDate != null">
+        #{userSyncedDate,jdbcType=TIMESTAMP},
+      </if>
+      NOW()
+    </trim>
+  </insert>
+  
+  <insert id="insertCbUserInfoLog" parameterType="com.golf.chat.vo.CbSignUpVO">
+    INSERT INTO CB_USER_INFO_LOG
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="userId != null">
+        USER_ID,
+      </if>
+      <if test="userTagArray != null">
+		USER_TAG,
+      </if>
+      <if test="userAgreedDateArray != null">
+        USER_AGREED_DATE
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="userId != null">
+        #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="userTagArray != null">
+        #{userTagArray,jdbcType=VARCHAR},
+      </if>
+      <if test="userAgreedDateArray != null">
+        #{userAgreedDateArray,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  
+  <update id="updateCbUserInfo" parameterType="com.golf.chat.vo.CbSignUpVO">
+  		UPDATE CB_USER_INFO
+  		<set>
+			USER_TELNUM = #{userTelNum,jdbcType=VARCHAR},
+	    </set>
+	    WHERE USER_ID = #{userId,jdbcType=VARCHAR}
+  </update>
+  
+</mapper>

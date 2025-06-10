@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kakao">
+	<resultMap id="BaseResultMap" type="com.golf.talk.vo.KakaoVO">
+			
+		<result column="PHONE_NUMBER" jdbcType="VARCHAR" property="phoneNumber" />
+		<result column="ETC1" jdbcType="VARCHAR" property="etc1" />
+		<result column="TEMPLATE_CODE" jdbcType="VARCHAR" property="templateCode" />
+		<result column="RESPONSE_CODE" jdbcType="INTEGER" property="responseCode" />
+		<result column="SEND_PARAMETERS" jdbcType="VARCHAR" property="sendParameters" />
+		<result column="RESPONSE_JSON" jdbcType="VARCHAR" property="responseJson" />
+		
+		<result column="CLIENT_ID" jdbcType="VARCHAR" property="kakaoInfoVO.clientId" />		
+		<result column="PASSWORD" jdbcType="VARCHAR" property="kakaoInfoVO.password" />
+		<result column="VERSION" jdbcType="VARCHAR" property="kakaoInfoVO.version" />
+		<result column="TOKEN_URL" jdbcType="VARCHAR" property="kakaoInfoVO.tokenUrl"/>
+		<result column="SEND_URL" jdbcType="VARCHAR" property="kakaoInfoVO.sendUrl" />
+		<result column="SENDER_KEY" jdbcType="VARCHAR" property="kakaoInfoVO.senderKey" />
+		<result column="TOKEN" jdbcType="VARCHAR" property="kakaoInfoVO.token" /> 	
+		
+	</resultMap>
+	
+	<select id="selectByTemplateTest"  parameterType="com.golf.talk.vo.KakaoVO" resultMap="BaseResultMap">
+		SELECT B.CLIENT_ID, B.PASSWORD, B.VERSION, B.SENDER_KEY
+		     , B.TEST_TOKEN AS TOKEN, B.TOKEN_URL, B.SEND_URL, A.ETC1, A.SENDER_NO
+             <choose>
+             	<when test="mode == 'local' ">
+             		, A.TEST_TEMPLATE_CODE AS TEMPLATE_CODE		
+		     	</when>
+                <otherwise>
+		     		, A.TEMPLATE_CODE			
+                </otherwise>
+		     </choose>		     	
+		  FROM TEMPLATE A
+		     , KAKAO_INFO B
+		 WHERE A.ETC1 = #{etc1}
+		   AND A.KAKAO_INFO_SQ = B.KAKAO_INFO_SQ 
+	</select>
+		
+	<select id="selectByNewTemplate"  parameterType="com.golf.talk.vo.KakaoVO" resultMap="BaseResultMap">
+		SELECT B.CLIENT_ID, B.PASSWORD, B.VERSION, B.SENDER_KEY
+		     , B.TOKEN, B.TOKEN_URL, B.SEND_URL, A.ETC1, A.SENDER_NO, A.TEMPLATE_CODE AS TEMPLATE_CODE	     	
+		  FROM TEMPLATE A
+		     , KAKAO_INFO B
+		 WHERE A.ETC1 = #{etc1}
+		   AND A.KAKAO_INFO_SQ = B.KAKAO_INFO_SQ 
+	</select>
+		
+	<insert id="insert" parameterType="com.golf.talk.vo.KakaoVO">
+		INSERT INTO KAKAO_SEND(PHONE_NUMBER, ETC1, ETC2, SEND_DT, TEMPLATE_CODE, SEND_PARAMETERS, RESPONSE_CODE) VALUES
+		 (#{phoneNumber},#{etc1},#{etc2},NOW(),#{templateCode}, #{sendParameters}, #{responseCode})
+	</insert>
+	
+</mapper>

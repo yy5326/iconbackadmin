@@ -1,0 +1,25 @@
+<%@ page language="java" contentType="text/html;" pageEncoding="UTF-8"%>
+<%@ include file="/WEB-INF/jsp/common/tags.jsp"%>
+
+<html>
+<head>
+	<title><s:eval expression="@globals['site.baseTitle']" /></title>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<link rel="stylesheet" href="/common/css/common.css" />
+	<link rel="stylesheet" href="/common/css/reset.css" />
+	<link rel="stylesheet" href="/common/css/base.css" />
+	<link rel="stylesheet" href="/common/css/style.css" />
+	<link rel="stylesheet" href="/common/css/jquery/colorbox/colorbox.css" type="text/css" />
+	<link rel="stylesheet" href="/common/SlickGrid-2.4.19/css/smoothness/jquery-ui.css" type="text/css"/>
+
+	<script type="text/javascript" src="/common/js/jquery/jquery-1.11.0.min.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/jquery-migrate-1.4.1.min.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/jquery-ui-1.10.3.custom.min.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/jquery.ui.datepicker.custom.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/jquery.locator.js"></script>
+	<script type="text/javascript" src="/common/js/jquery/colorbox/jquery.colorbox.js"></script>
+
+	<script type="text/javascript" src="/common/js/lib.js"></script>
+    <script type="text/javascript" src="/common/js/common.jquery.util.js"></script>
+</head>
+<body>

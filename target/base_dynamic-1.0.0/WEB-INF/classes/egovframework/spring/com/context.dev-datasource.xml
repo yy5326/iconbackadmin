@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:/egovframework/egovProps/db.properties</value>
+            </list>
+        </property>
+    </bean>
+
+
+	<!--
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+	</bean>
+     -->
+    
+	<!--  
+	<bean id="dataSource" class="org.apache.ibatis.datasource.pooled.PooledDataSource" >
+		<property name="driver" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}"/>
+		<property name="username" value="${jdbc.username}"/>
+		<property name="password" value="${jdbc.password}"/> 
+		<property name="poolMaximumActiveConnections" value="30"/>
+		<property name="poolMaximumIdleConnections" value="5"/>
+		<property name="poolMaximumCheckoutTime" value="2000" />
+	<property name="poolTimeToWait" value="25000" />
+	</bean>
+	-->
+    
+    <!--
+    tomcat-jdbc 사용
+    	- 이슈1 : $tomcat_home/lib 내 ojdbc 필요
+    	- 이슈2 : max connection pool에 빨리 도달함 
+    <bean id="dataSource" class="org.apache.tomcat.jdbc.pool.DataSource">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />        
+		<property name="validationQuery" value="select 1 from dual" />
+		<property name="testWhileIdle" value="true" />
+		<property name="timeBetweenEvictionRunsMillis" value="60000" />
+		<property name="maxActive" value="50" />
+		<property name="maxIdle" value="10" />
+		<property name="maxWait" value="2000" />
+	</bean> 
+	-->
+    
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="validationQuery" value="select 1" />
+		<property name="testWhileIdle" value="true" />
+		<property name="timeBetweenEvictionRunsMillis" value="60000" />
+		<property name="maxActive" value="50" />
+		<property name="maxIdle" value="5" />
+		<property name="maxWait" value="2000" />
+	</bean>
+	
+	
+    
+    <bean id="log4dataSource" class="net.sf.log4jdbc.Log4jdbcProxyDataSource">
+		 <constructor-arg ref="dataSource" />
+		 <property name="logFormatter">
+		 	<bean class="net.sf.log4jdbc.tools.Log4JdbcCustomFormatter">
+		 		<property name="loggingType" value="MULTI_LINE" />
+		   		<property name="sqlPrefix" value="SQL >>>>> " />
+		  	</bean>
+		 </property>
+	</bean>
+	 
+	<!--
+	<bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler" lazy-init="true" />
+	-->
+	
+	<!-- 
+	   sqlMapClient를 선언해야 합니다.
+	   SqlSessionTemplate 의존 주입 버그가 있는 관계로 GeneralDAOImpl에서 코드 주입 
+	-->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+    	<property name="dataSource" ref="log4dataSource" />    	
+    	<property name="mapperLocations">
+    		<list>
+    			<value>classpath:/egovframework/sqlmap/mappers/*_SQL_MySql.xml</value>
+    		</list>
+    	</property>
+    	
+    	<property name="configLocation" value="classpath:/egovframework/sqlmap/config/mysql/mybatis-www-config.xml" />
+  	</bean>
+  	
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="sqlSessionFactory" />
+	</bean>
+	
+	<bean id="dataSource2" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${jdbc2.driverClassName}" />
+		<property name="url" value="${jdbc2.url}" />
+		<property name="username" value="${jdbc2.username}" />
+		<property name="password" value="${jdbc2.password}" />
+		<property name="validationQuery" value="select 1" />
+		<property name="testWhileIdle" value="true" />
+		<property name="timeBetweenEvictionRunsMillis" value="60000" />
+		<property name="maxActive" value="50" />
+		<property name="maxIdle" value="5" />
+		<property name="maxWait" value="2000" />
+	</bean>
+	
+	<bean id="sqlSessionFactory2" class="org.mybatis.spring.SqlSessionFactoryBean">
+    	<property name="dataSource" ref="dataSource2" />  
+    	<property name="mapperLocations">
+    		<list>
+    			<value>classpath:/egovframework/sqlmap/mappers/group_mysql/*_SQL_Mysql.xml</value>
+    		</list>
+    	</property>  	
+    	<property name="configLocation" value="classpath:/egovframework/sqlmap/config/mysql/mybatis-www-config.xml" />
+  	</bean>
+  	
+  	<bean id="sqlSessionTemplate2" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="sqlSessionFactory2" />
+	</bean>
+	
+</beans>
+

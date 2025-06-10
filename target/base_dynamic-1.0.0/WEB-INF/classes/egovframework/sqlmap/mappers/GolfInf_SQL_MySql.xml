@@ -1,0 +1,429 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="golfInf">
+
+  <resultMap id="BaseResultMap" type="com.golf.service.model.GolfInfVO">
+    <id column="GOLF_SEQ" jdbcType="NUMERIC" property="golfSeq" />
+    <result column="GOLF_NAME" jdbcType="VARCHAR" property="golfName" />
+    <result column="GOLF_TELNUM" jdbcType="VARCHAR" property="golfTelnum" />
+    <result column="GOLF_TELNUM2" jdbcType="VARCHAR" property="golfTelnum2" />
+    <result column="ZIP_CODE" jdbcType="VARCHAR" property="zipCode" />
+    <result column="CITY" jdbcType="VARCHAR" property="city" />
+    <result column="GOLF_ADDR1" jdbcType="VARCHAR" property="golfAddr1" />
+    <result column="GOLF_ADDR2" jdbcType="VARCHAR" property="golfAddr2" />
+    <result column="ISL_YN" jdbcType="VARCHAR" property="islYn" />
+    <result column="GOLF_ADDR_LAT" jdbcType="DOUBLE" property="golfAddrLat" />
+    <result column="GOLF_ADDR_LNG" jdbcType="DOUBLE" property="golfAddrLng" />
+    <result column="PIC_OFFICE1" jdbcType="VARCHAR" property="picOffice1" />
+    <result column="PIC_OFFICE_CODE1" jdbcType="VARCHAR" property="picOfficeCode1" />
+    <result column="PIC_OFFICE2" jdbcType="VARCHAR" property="picOffice2" />
+    <result column="PIC_OFFICE_CODE2" jdbcType="VARCHAR" property="picOfficeCode2" />
+    <result column="PIC_OFFICE3" jdbcType="VARCHAR" property="picOffice3" />
+    <result column="PIC_OFFICE_CODE3" jdbcType="VARCHAR" property="picOfficeCode3" />
+    <result column="FEE1" jdbcType="NUMERIC" property="fee1" />
+    <result column="FEE2" jdbcType="NUMERIC" property="fee2" />
+    <result column="FEE3" jdbcType="NUMERIC" property="fee3" />
+    <result column="FEE4" jdbcType="NUMERIC" property="fee4" />
+    <result column="FEE5" jdbcType="NUMERIC" property="fee5" />
+    <result column="FEE6" jdbcType="NUMERIC" property="fee6" />
+    <result column="FEE7" jdbcType="NUMERIC" property="fee7" />
+    <result column="FEE8" jdbcType="NUMERIC" property="fee8" />
+    <result column="FEE9" jdbcType="NUMERIC" property="fee9" />
+    <result column="FEE10" jdbcType="NUMERIC" property="fee10" />
+    <result column="FEE11" jdbcType="NUMERIC" property="fee11" />
+    <result column="FEE12" jdbcType="NUMERIC" property="fee12" />
+    <result column="GOLF_TYPE_CD" jdbcType="VARCHAR" property="golfTypeCd" />
+    <result column="USE_YN" jdbcType="VARCHAR" property="useYn" />
+    <result column="USE_YN_NM" jdbcType="VARCHAR" property="useYnNm" />
+  </resultMap>
+  
+  
+  <sql id="Base_Column_List">
+    GOLF_SEQ, GOLF_NAME, GOLF_TELNUM, GOLF_TELNUM2, ZIP_CODE, CITY, GOLF_ADDR1, GOLF_ADDR2, 
+    ISL_YN, GOLF_ADDR_LAT, GOLF_ADDR_LNG, PIC_OFFICE1, PIC_OFFICE_CODE1, PIC_OFFICE2, 
+    PIC_OFFICE_CODE2, PIC_OFFICE3, PIC_OFFICE_CODE3, FEE1, FEE2, FEE3, FEE4, FEE5, FEE6, FEE7, FEE8, FEE9, FEE10, FEE11, FEE12,
+    GOLF_TYPE_CD, USE_YN, CASE WHEN USE_YN = 'Y' THEN '가능'   WHEN USE_YN = 'N' THEN '불가능' ELSE '확인필요' END USE_YN_NM 
+  </sql>
+  
+  <sql id="whereList">
+      WHERE 1=1
+    
+	  <if test="type1 == 0 ">
+	  	AND GOLF_NAME LIKE '%${searchWord}%'
+	  </if>
+	  <if test="type1 == 1 ">
+	  	AND PIC_OFFICE1 LIKE '%${searchWord}%'
+	  	<!-- AND PIC_OFFICE1 LIKE '%${searchWord}%' OR PIC_OFFICE2 LIKE '%${searchWord}%' OR PIC_OFFICE3 LIKE '%${searchWord}%' -->
+	  </if>
+	  <if test="type1 == 2 ">
+	  	AND (GOLF_ADDR1 LIKE '%${searchWord}%' OR GOLF_ADDR2 LIKE '%${searchWord}%')
+	  </if>
+	  <if test='type2 != null and type2 == "korcham"'>
+	  	AND GOLF_SEQ IN ('158', '164')
+	  </if>
+  </sql>
+  
+  <select id="selectBySearch" parameterType="search" resultMap="BaseResultMap">
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM GOLF_INF
+   <include refid="whereList" />
+   <include refid="paging.bottom" />
+  </select>
+  
+    <select id="selectBySearchAPI" parameterType="search" resultMap="BaseResultMap">
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM GOLF_INF
+   <include refid="whereList" />
+   	AND USE_YN = 'Y'
+   <include refid="paging.bottom" />
+  </select>
+  
+     <select id="selectBySearchAPICount" parameterType="search" resultType="Integer">
+    SELECT 
+   		COUNT(*)
+    FROM GOLF_INF
+   <include refid="whereList" />
+   	AND USE_YN = 'Y'
+  </select>
+  
+  <select id="selectListCount" parameterType="search" resultType="Integer">
+  	SELECT COUNT(*) FROM GOLF_INF 
+   	<include refid="whereList" />
+  </select>
+  	
+  <select id="selectByKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM GOLF_INF
+   WHERE GOLF_SEQ = #{golfSeq,jdbcType=INTEGER}
+  </select>
+  
+  <delete id="deleteGolfInf" parameterType="java.lang.Long">
+    UPDATE GOLF_INF
+       SET USE_YN = 'N'
+     WHERE GOLF_SEQ = #{golfSeq,jdbcType=INTEGER}
+  </delete>
+  
+  
+  <delete id="deleteGolfInfData" parameterType="java.lang.Long">
+     
+     DELETE FROM GOLF_INF 
+     WHERE GOLF_SEQ=#{golfSeq,jdbcType=INTEGER};
+     
+  </delete>
+  
+  <insert id="insertGolfInf" parameterType="com.golf.service.model.GolfInfVO">
+    INSERT INTO GOLF_INF
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			GOLF_SEQ, 
+			<if test="golfName != null">
+				GOLF_NAME, 
+			</if>
+			<if test="golfTelnum != null"> 
+				GOLF_TELNUM, 
+			</if>
+			<if test="golfTelnum2 != null"> 
+	      		GOLF_TELNUM2, 
+      		</if>
+			<if test="zipCode != null"> 
+	      		ZIP_CODE, 
+      		</if>
+			<if test="city != null"> 
+	      		CITY, 
+      		</if> 
+			<if test="golfAddr1 != null">
+	      		GOLF_ADDR1, 
+		    </if>
+			<if test="golfAddr2 != null"> 
+	      		GOLF_ADDR2, 
+		    </if>
+			<if test="islYn != null"> 
+	      		ISL_YN, 
+		    </if> 
+			<if test="golfAddrLat != null">
+	      		GOLF_ADDR_LAT, 
+		    </if>
+			<if test="golfAddrLng != null"> 
+	      		GOLF_ADDR_LNG, 
+		    </if>
+			<if test="picOffice1 != null"> 
+	      		PIC_OFFICE1, 
+		    </if>
+			<if test="picOfficeCode1 != null"> 
+	      		PIC_OFFICE_CODE1, 
+		    </if>
+			<if test="picOffice2 != null"> 
+	      		PIC_OFFICE2, 
+		    </if>
+			<if test="picOfficeCode2 != null"> 
+	      		PIC_OFFICE_CODE2, 
+		    </if>
+			<if test="picOffice3 != null"> 
+	      		PIC_OFFICE3, 
+		    </if>
+			<if test="fee1 != null"> 
+	      		FEE1, 
+		    </if>
+			<if test="fee2 != null"> 
+	      		FEE2, 
+		    </if>
+			<if test="fee3 != null"> 
+	      		FEE3, 
+		    </if>
+			<if test="fee4 != null"> 
+	      		FEE4, 
+		    </if>
+			<if test="fee5 != null"> 
+	      		FEE5, 
+		    </if>
+			<if test="fee6 != null"> 
+	      		FEE6, 
+		    </if>
+			<if test="fee7 != null"> 
+	      		FEE7, 
+		    </if>
+			<if test="fee8 != null"> 
+	      		FEE8, 
+		    </if>
+			<if test="fee9 != null"> 
+	      		FEE9, 
+		    </if>
+			<if test="fee10 != null"> 
+	      		FEE10, 
+		    </if>
+			<if test="fee11 != null"> 
+	      		FEE11, 
+		    </if>
+			<if test="fee12 != null"> 
+	      		FEE12, 
+		    </if>
+			<if test="picOfficeCode3 != null"> 
+	      		PIC_OFFICE_CODE3, 
+		    </if>
+			<if test="golfTypeCd != null"> 
+	      		GOLF_TYPE_CD, 
+		    </if>
+			<if test="useYn != null"> 
+	      		USE_YN
+		    </if>
+      	</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			 (SELECT NEXT VALUE FOR GOLF_SEQ), 
+			<if test="golfName != null">
+			 #{golfName,jdbcType=VARCHAR},
+			 </if>
+			<if test="golfTelnum != null"> 
+			 #{golfTelnum,jdbcType=VARCHAR},
+			 </if>
+			<if test="golfTelnum2 != null"> 
+      		 #{golfTelnum2,jdbcType=VARCHAR},
+      		 </if>
+			<if test="zipCode != null"> 
+      		 #{zipCode,jdbcType=VARCHAR},
+      		 </if>
+			<if test="city != null"> 
+      		 #{city,jdbcType=VARCHAR},
+      		 </if> 
+			<if test="golfAddr1 != null">
+		     #{golfAddr1,jdbcType=VARCHAR},
+		     </if>
+			<if test="golfAddr2 != null"> 
+		     #{golfAddr2,jdbcType=VARCHAR},
+		     </if>
+			<if test="islYn != null"> 
+		     #{islYn,jdbcType=VARCHAR},
+		     </if> 
+			<if test="golfAddrLat != null">
+		     #{golfAddrLat,jdbcType=DOUBLE},
+		     </if>
+			<if test="golfAddrLng != null"> 
+		     #{golfAddrLng,jdbcType=DOUBLE},
+		     </if>
+			<if test="picOffice1 != null"> 
+		     #{picOffice1,jdbcType=VARCHAR},
+		     </if>
+			<if test="picOfficeCode1 != null"> 
+		     #{picOfficeCode1,jdbcType=VARCHAR},
+		     </if>
+			<if test="picOffice2 != null"> 
+		     #{picOffice2,jdbcType=VARCHAR},
+		     </if>
+			<if test="picOfficeCode2 != null"> 
+		     #{picOfficeCode2,jdbcType=VARCHAR},
+		     </if>
+			<if test="picOffice3 != null"> 
+		     #{picOffice3,jdbcType=VARCHAR},
+		     </if>
+			<if test="picOfficeCode3 != null"> 
+		     #{picOfficeCode3,jdbcType=VARCHAR},
+		     </if>
+			<if test="fee1 != null"> 	      		
+		     #{fee1,jdbcType=INTEGER},
+		    </if>
+			<if test="fee2 != null"> 	      		
+		     #{fee2,jdbcType=INTEGER},
+		    </if>
+			<if test="fee3 != null"> 	      		
+		     #{fee3,jdbcType=INTEGER},
+		    </if>
+			<if test="fee4 != null"> 	      		
+		     #{fee4,jdbcType=INTEGER},
+		    </if>
+			<if test="fee5 != null"> 	      		
+		     #{fee5,jdbcType=INTEGER},
+		    </if>
+			<if test="fee6 != null"> 	      		
+		     #{fee6,jdbcType=INTEGER},
+		    </if>
+			<if test="fee7 != null"> 	      		
+		     #{fee7,jdbcType=INTEGER},
+		    </if>
+			<if test="fee8 != null"> 	      		
+		     #{fee8,jdbcType=INTEGER},
+		    </if>
+			<if test="fee9 != null"> 	      		
+		     #{fee9,jdbcType=INTEGER},
+		    </if>
+			<if test="fee10 != null"> 	      		
+		     #{fee10,jdbcType=INTEGER},
+		    </if>
+			<if test="fee11 != null"> 	      		
+		     #{fee11,jdbcType=INTEGER},
+		    </if>
+			<if test="fee12 != null"> 	      		
+		     #{fee12,jdbcType=INTEGER},
+		    </if>
+			<if test="golfTypeCd != null"> 
+		     #{golfTypeCd,jdbcType=VARCHAR},
+		     </if>
+			<if test="useYn != null"> 
+		     'Y'
+		     </if>
+		</trim>
+  </insert>
+  
+  <update id="updateGolfInf" parameterType="com.golf.service.model.GolfInfVO">
+    update GOLF_INF
+    <set>
+      <if test="golfName != null">
+        GOLF_NAME = #{golfName,jdbcType=VARCHAR},
+      </if>
+      <if test="golfTelnum != null">
+        GOLF_TELNUM = #{golfTelnum,jdbcType=VARCHAR},
+      </if>
+      <if test="golfTelnum2 != null">
+        GOLF_TELNUM2 = #{golfTelnum2,jdbcType=VARCHAR},
+      </if>
+      <if test="zipCode != null">
+        ZIP_CODE = #{zipCode,jdbcType=VARCHAR},
+      </if>
+      <if test="city != null">
+        CITY = #{city,jdbcType=VARCHAR},
+      </if>
+      <if test="golfAddr1 != null">
+        GOLF_ADDR1 = #{golfAddr1,jdbcType=VARCHAR},
+      </if>
+      <if test="golfAddr2 != null">
+        GOLF_ADDR2 = #{golfAddr2,jdbcType=VARCHAR},
+      </if>
+      <if test="islYn != null">
+        ISL_YN = #{islYn,jdbcType=VARCHAR},
+      </if>
+      <if test="golfAddrLat != null">
+        GOLF_ADDR_LAT = #{golfAddrLat,jdbcType=DOUBLE},
+      </if>
+      <if test="golfAddrLng != null">
+        GOLF_ADDR_LNG = #{golfAddrLng,jdbcType=DOUBLE},
+      </if>
+      <if test="picOffice1 != null">
+        PIC_OFFICE1 = #{picOffice1,jdbcType=VARCHAR},
+      </if>
+      <if test="picOfficeCode1 != null">
+        PIC_OFFICE_CODE1 = #{picOfficeCode1,jdbcType=VARCHAR},
+      </if>
+      <choose>
+	      <when test="picOffice2 != null">
+	        PIC_OFFICE2 = #{picOffice2,jdbcType=VARCHAR},
+	      </when>
+	      <when test="picOfficeCode2 != null">
+	        PIC_OFFICE_CODE2 = #{picOfficeCode2,jdbcType=VARCHAR},
+	      </when>
+	      <otherwise>
+	      	PIC_OFFICE2 = '',
+	      	PIC_OFFICE_CODE2 = '',
+	      </otherwise>
+      </choose>
+      <choose>
+	      <when test="picOffice3 != null">
+	        PIC_OFFICE3 = #{picOffice3,jdbcType=VARCHAR},
+	      </when>
+	      <when test="picOfficeCode3 != null">
+	        PIC_OFFICE_CODE3 = #{picOfficeCode3,jdbcType=VARCHAR},
+	      </when>
+	      <otherwise>
+	      	PIC_OFFICE3 = '',
+	      	PIC_OFFICE_CODE3 = '',
+	      </otherwise>
+      </choose>
+	  <if test="fee1 != null"> 	      		
+		     FEE1 = #{fee1,jdbcType=INTEGER},
+	  </if>      
+	  <if test="fee2 != null"> 	      		
+		     FEE2 = #{fee2,jdbcType=INTEGER},
+	  </if>      
+	  <if test="fee3 != null"> 	      		
+		     FEE3 = #{fee3,jdbcType=INTEGER},
+	  </if>      
+	  <if test="fee4 != null"> 	      		
+		     FEE4 = #{fee4,jdbcType=INTEGER},
+	  </if>      
+	  <if test="fee5 != null"> 	      		
+		     FEE5 = #{fee5,jdbcType=INTEGER},
+	  </if>      
+	  <if test="fee6 != null"> 	      		
+		     FEE6 = #{fee6,jdbcType=INTEGER},
+	  </if>    
+	  <if test="fee7 != null"> 	      		
+		     FEE7 = #{fee7,jdbcType=INTEGER},
+	  </if>    
+	  <if test="fee8 != null"> 	      		
+		     FEE8 = #{fee8,jdbcType=INTEGER},
+	  </if>    
+	  <if test="fee9 != null"> 	      		
+		     FEE9 = #{fee9,jdbcType=INTEGER},
+	  </if>    
+	  <if test="fee10 != null"> 	      		
+		     FEE10 = #{fee10,jdbcType=INTEGER},
+	  </if>    
+	  <if test="fee11 != null"> 	      		
+		     FEE11 = #{fee11,jdbcType=INTEGER},
+	  </if>    
+	  <if test="fee12 != null"> 	      		
+		     FEE12 = #{fee12,jdbcType=INTEGER},
+	  </if>
+      <if test="golfTypeCd != null">
+        GOLF_TYPE_CD = #{golfTypeCd,jdbcType=VARCHAR},
+      </if>
+      <if test="useYn != null">
+        USE_YN = #{useYn,jdbcType=VARCHAR},
+      </if>
+    </set>
+    WHERE GOLF_SEQ = #{golfSeq,jdbcType=INTEGER}
+  </update>
+
+ <select id="selectBySearchOffice" parameterType="search" resultMap="BaseResultMap">
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM GOLF_INF
+   WHERE PIC_OFFICE_CODE1 IS NULL
+  </select>
+  
+  <update id="updateOfficeCode" parameterType="com.golf.service.model.GolfInfVO">
+    UPDATE GOLF_INF
+       SET PIC_OFFICE_CODE1 = #{picOfficeCode1}
+         , PIC_OFFICE1 = #{picOffice1}
+     WHERE GOLF_SEQ = #{golfSeq}
+  </update>
+</mapper>

@@ -10,5 +10,8 @@
         <module name="base_dynamic" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="iconbackadmin" target="1.5" />
+    </bytecodeTargetLevel>
   </component>
 </project>
