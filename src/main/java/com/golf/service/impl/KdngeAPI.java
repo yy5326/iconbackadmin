@@ -468,7 +468,7 @@ public class KdngeAPI extends BaseServiceImpl{
 	 */
 	public String getApiUrl(String url){
 		StringBuffer sb = new StringBuffer();
-		sb.append(super.getConfig().getWebMode().equals("op") ? "https://ong-api.kdexp.com/" : "https://dev-ong.kdexp.com/").append(url);
+		sb.append(super.getConfig().getWebMode().equals("op") ? "https://ong-api.kdexp.com/" : "https://dev-ong-api.kdexp.com/").append(url);
 		return sb.toString();
 	}
 
