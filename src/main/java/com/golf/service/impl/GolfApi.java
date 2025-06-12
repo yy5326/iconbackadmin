@@ -155,7 +155,7 @@ public class GolfApi extends BaseServiceImpl {
 						logger.info("골프전산 ->> 접수 [상태변경 API]");
 						infVO.setOutApi("http://127.0.0.1:18080/api/update/receiptState/");
 					}else {
-						infVO.setOutApi("https://test.icexp.co.kr/api/update/receiptState/");
+						infVO.setOutApi("http://172.25.0.114:18081/api/update/receiptState/");
 //							infVO.setOutApi("http://localhost:7777/api/update/receiptState/");
 					}
 
