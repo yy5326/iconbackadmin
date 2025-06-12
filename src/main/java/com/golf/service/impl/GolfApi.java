@@ -152,9 +152,10 @@ public class GolfApi extends BaseServiceImpl {
 				if("0".equals(infVO.getRcpKind()) || "5".equals(infVO.getRcpKind())) {
 //					logger.debug("WebMode 모드 : {}" , super.getConfig().getWebMode());
 					if(super.getConfig().getWebMode().equals("op")) {
+						logger.info("골프전산 ->> 접수 [상태변경 API]");
 						infVO.setOutApi("http://127.0.0.1:18080/api/update/receiptState/");
 					}else {
-						infVO.setOutApi("http://211.253.137.125:4000/api/update/receiptState/");
+						infVO.setOutApi("https://test.icexp.co.kr/api/update/receiptState/");
 //							infVO.setOutApi("http://localhost:7777/api/update/receiptState/");
 					}
 
