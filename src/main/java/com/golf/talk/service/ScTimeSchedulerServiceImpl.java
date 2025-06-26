@@ -20,10 +20,12 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,9 +48,10 @@ import egovframework.rte.psl.dataaccess.util.EgovMap;
 import com.golf.service.impl.GolfApi;
 
 @Service("scTimeSchedule")
-public class ScTimeSchedulerServiceImpl {
+@Slf4j
+public class ScTimeSchedulerServiceImpl implements InitializingBean {
 	
-	private static final Logger logger = LoggerFactory.getLogger(KakaoTokenSchedulerServiceImpl.class);
+//	private static final Logger logger = LoggerFactory.getLogger(KakaoTokenSchedulerServiceImpl.class);
 	
 	@Resource(name="globalProperty")
 	GlobalProperty configBean;
@@ -64,7 +67,7 @@ public class ScTimeSchedulerServiceImpl {
 	
 	public void scTime() {
 
-		logger.info("scTime 스케쥴 동작확인");
+		log.info("scTime 스케쥴 동작확인");
 		String rcpNumber = "";
 		
 		try {
@@ -213,5 +216,11 @@ public class ScTimeSchedulerServiceImpl {
 		EgovMap rtnMap = gson.fromJson(sb.toString(), EgovMap.class);
 
 		return rtnMap;
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		// WAS 시작 시 1회 실행
+//		scTime();
 	}
 }
