@@ -78,6 +78,9 @@ public class ScTimeSchedulerServiceImpl {
 	
 			if(apiArray.size()>0) {
 				Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").serializeNulls().create();
+				System.out.println("요청 URL 확인 : " + getApiUrl("GetSCTime") );
+
+
 				EgovMap apiMap = callUrl(getApiUrl("GetSCTime"), gson.toJson(apiArray));
 				List<EgovMap> apiMapList = new ArrayList<EgovMap>();
 				if(apiMap.get("listData") != null && ((List<EgovMap>)apiMap.get("listData")).size()>0) {
