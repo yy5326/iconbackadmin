@@ -63,6 +63,8 @@ public class ScTimeSchedulerServiceImpl {
 	private GolfApi golfApi;
 	
 	public void scTime() {
+
+		logger.info("scTime 스케쥴 동작확인");
 		String rcpNumber = "";
 		
 		try {
