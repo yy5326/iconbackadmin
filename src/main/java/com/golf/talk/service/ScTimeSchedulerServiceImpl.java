@@ -116,7 +116,7 @@ public class ScTimeSchedulerServiceImpl {
 
 	public String getApiUrl(String url){
 		StringBuffer sb = new StringBuffer();
-		sb.append(configBean.getWebMode().equals("op") ? "https://kdapi.kditlab.com:447/RndGolf/" : "https://kdapi.kditlab.com:444/RndGolf/").append(url);
+		sb.append(configBean.getWebMode().equals("op") ? "https://ong-api.kdexp.com/" : "https://dev-ong-api.kdexp.com/").append(url);
 		return sb.toString();
 	}
 	
