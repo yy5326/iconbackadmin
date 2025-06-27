@@ -22,7 +22,7 @@
 	* */1 * * * *			매 1분마다 실행
 	* */10 * * * *			매 10분마다 실행
 	-->
-	<bean id="scTimeSchedule" class="com.golf.talk.service.KakaoTokenSchedulerServiceImpl" init-method="kdUpdateToken" />
+	<bean id="tokenUpdate" class="com.golf.talk.service.KakaoTokenSchedulerServiceImpl" init-method="kdUpdateToken" />
 	<!-- 카카오 알림톡 관련 추가 20210416 -->
 	<task:scheduler id="KakaoTokenSchedulerServiceImpl" pool-size="5" />
 	<task:scheduled-tasks scheduler="KakaoTokenSchedulerServiceImpl">
