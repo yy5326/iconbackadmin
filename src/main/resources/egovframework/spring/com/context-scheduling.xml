@@ -22,14 +22,15 @@
 	* */1 * * * *			매 1분마다 실행
 	* */10 * * * *			매 10분마다 실행
 	-->
+	<bean id="scTimeSchedule" class="com.golf.talk.service.KakaoTokenSchedulerServiceImpl" init-method="kdUpdateToken" />
 	<!-- 카카오 알림톡 관련 추가 20210416 -->
-<!--	<task:scheduler id="KakaoTokenSchedulerServiceImpl" pool-size="5" />-->
-<!--	<task:scheduled-tasks scheduler="KakaoTokenSchedulerServiceImpl">-->
-<!--		&lt;!&ndash;토큰갱신&ndash;&gt;-->
-<!--		&lt;!&ndash; <task:scheduled ref="tokenSchedule" method="kdUpdateToken" cron="* */10 * * * *	" /> &ndash;&gt;-->
-<!--		<task:scheduled ref="tokenSchedule" method="kdUpdateToken" cron="0 0 3,8,13,18,23 * * *	" />-->
-<!--	</task:scheduled-tasks>-->
-<!--	-->
+	<task:scheduler id="KakaoTokenSchedulerServiceImpl" pool-size="5" />
+	<task:scheduled-tasks scheduler="KakaoTokenSchedulerServiceImpl">
+		<!--토큰갱신-->
+		<!-- <task:scheduled ref="tokenSchedule" method="kdUpdateToken" cron="* */10 * * * *	" /> -->
+		<task:scheduled ref="tokenSchedule" method="kdUpdateToken" cron="0 0 3,8,13,18,23 * * *	" />
+	</task:scheduled-tasks>
+
 <!--	&lt;!&ndash; -->
 <!--		카카오 알림톡 관련 추가 20210428-->
 <!--		결제만료 알림톡 전송을 위해 매일 08시 스케줄러 실행-->
