@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN" name="base">
 	 <properties>
-		<property name="log-path">Z:/logs/Golf</property>
+		<property name="log-path">C:/logs/Golf</property>
 	</properties>
                   
 	<!-- Appender, Layout 설정 -->
