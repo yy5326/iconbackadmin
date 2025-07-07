@@ -20,9 +20,11 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import com.golf.service.impl.KdngeAPI;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -64,6 +66,9 @@ public class ScTimeSchedulerServiceImpl implements InitializingBean {
 
 	@Autowired
 	private GolfApi golfApi;
+
+	@Autowired
+	private KdngeAPI kdngeAPI;
 	
 	public void scTime() {
 
@@ -73,44 +78,91 @@ public class ScTimeSchedulerServiceImpl implements InitializingBean {
 		try {
 			List<GolfReceiptInfVO> receiptList = (List<GolfReceiptInfVO>) _gDao.selectList("golfReceiptInf.selectscTimeList", "");
 			
+//			JSONArray apiArray = new JSONArray();
+//			for(int i=0; i<receiptList.size();i++) {
+//				JSONObject requestSearch = new JSONObject();
+//				requestSearch.put("RCP_INF_SEQ", receiptList.get(i).getRcpInfSeq());
+//				requestSearch.put("PD_BARCODE", receiptList.get(i).getPdBarcode());
+//				apiArray.add(requestSearch);
+//
+//				log.info("post 바디 검사 : " + apiArray);
+//			}
+
 			JSONArray apiArray = new JSONArray();
+			JSONObject requestSearch = new JSONObject();
+			JSONParser jsonParser = new JSONParser();
 			for(int i=0; i<receiptList.size();i++) {
-				JSONObject requestSearch = new JSONObject();
-				requestSearch.put("RCP_INF_SEQ", receiptList.get(i).getRcpInfSeq());
-				requestSearch.put("PD_BARCODE", receiptList.get(i).getPdBarcode());
-				apiArray.add(requestSearch);
+				if(receiptList.get(i).getPdBarcode()!=null && receiptList.get(i).getScTime()==null && receiptList.get(i).getRcpInfStat().equals(StatusVO.Delivery.code())) {
+					apiArray.add(receiptList.get(i).getPdBarcode());
+				}
 			}
-	
-			if(apiArray.size()>0) {
+
+			requestSearch.put("prodCodes", jsonParser.parse(apiArray.toString()));
+
+//			log.info("요청 바디 POST : " + requestSearch.toJSONString());
+			if(!"".equals(requestSearch.get("prodCodes"))) {
 				Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").serializeNulls().create();
-				System.out.println("요청 URL 확인 : " + getApiUrl("GetSCTime") );
+				EgovMap apiMap = kdngeAPI.callUrl(kdngeAPI.getApiUrl("api/v1/express/find/delivered"), gson.toJson(requestSearch), "POST");
+
+				if (apiMap.get("listData") != null && ((List<EgovMap>) apiMap.get("listData")).size() > 0) {
+					List<EgovMap> apiMapList = (List<EgovMap>) apiMap.get("listData");
+
+					if (!apiMapList.isEmpty()) {
+
+						for (int i = 0; i < apiMapList.size(); i++) {
+
+							if (apiMapList.get(i).get("prodCode").equals(receiptList.get(i).getPdBarcode())) {
+
+								if (apiMapList.get(i).get("deliDate") != null) {
+									receiptList.get(i).setScTime(apiMapList.get(i).get("deliDate").toString());
+									receiptList.get(i).setRcpInfStat(StatusVO.Complete.code());
+									log.debug("중간확인 {}", receiptList);
+									_gDao.update("golfReceipt.updateGolfInfScTime", receiptList.get(i));
+
+									receiptList.get(i).setCanReason("");
+									golfApi.updateApi(receiptList.get(i), "update_cbag_status");
+
+										//스케줄로 배송완료 체크 시
+										_receiptService.insertGolfShceduleHistory(receiptList.get(i).getRcpNumber(), "배송완료");
 
 
-				EgovMap apiMap = callUrl(getApiUrl("GetSCTime"), gson.toJson(apiArray));
-				List<EgovMap> apiMapList = new ArrayList<EgovMap>();
-				if(apiMap.get("listData") != null && ((List<EgovMap>)apiMap.get("listData")).size()>0) {
-					apiMapList = (List<EgovMap>)apiMap.get("listData");
-				}
-	
-				for(int i = 0; i<apiMapList.size(); i++) {
-					for(int j=0; j<receiptList.size();j++) {
-						if(receiptList.get(j).getRcpInfSeq()==Integer.parseInt(apiMapList.get(i).get("rcpInfSeq").toString())) {
-							if(apiMapList.get(i).get("scTime")!=null) {
-								//update
-								receiptList.get(j).setScTime(apiMapList.get(i).get("scTime").toString());
-								receiptList.get(j).setRcpInfStat(StatusVO.Complete.code());
-								_gDao.update("golfReceipt.updateGolfInfScTime", receiptList.get(j));
-								
-								receiptList.get(j).setCanReason("");
-								golfApi.updateApi(receiptList.get(j), "update_cbag_status");
-								
-								//스케줄로 배송완료 체크 시
-								_receiptService.insertGolfShceduleHistory(receiptList.get(j).getRcpNumber(), "배송완료(스케줄 업데이트)");							
+								}
 							}
+
 						}
+
 					}
+
+
 				}
 			}
+//			for(int i = 0; i<apiMapList.size(); i++) {
+//				for(int j=0; j<receiptList.size();j++) {
+//					if(receiptList.get(j).getRcpInfSeq()==Integer.parseInt(apiMapList.get(i).get("rcpInfSeq").toString())) {
+//						if(apiMapList.get(i).get("scTime")!=null) {
+//							//update
+//							receiptList.get(j).setScTime(apiMapList.get(i).get("scTime").toString());
+//							receiptList.get(j).setRcpInfStat(StatusVO.Complete.code());
+//							_gDao.update("golfReceipt.updateGolfInfScTime", receiptList.get(j));
+//
+//							receiptList.get(j).setCanReason("");
+//							golfApi.updateApi(receiptList.get(j), "update_cbag_status");
+//
+//							//히스토리 등록
+//							if(history.equals("list")) {
+//								_receiptService.insertGolfHistory(receiptList.get(j).getRcpNumber(), "배송완료");
+//							}else {
+//								//스케줄로 배송완료 체크 시
+//								_receiptService.insertGolfShceduleHistory(receiptList.get(j).getRcpNumber(), "배송완료");
+//							}
+//
+//							receiptList.get(j).setScTime(apiMapList.get(i).get("scTime").toString());
+//						}
+//					}
+//				}
+//			}
+//		}
+
 		}catch(Exception e) {
 			System.out.println("scTimeSchedule Exception : " + e);
 		}
@@ -127,7 +179,7 @@ public class ScTimeSchedulerServiceImpl implements InitializingBean {
 		sb.append(configBean.getWebMode().equals("op") ? "https://ong-api.kdexp.com/" : "https://dev-ong-api.kdexp.com/").append(url);
 		return sb.toString();
 	}
-	
+
 	/**
 	 * api주소 분기 처리
 	 * @param urlAddr, param
@@ -142,7 +194,7 @@ public class ScTimeSchedulerServiceImpl implements InitializingBean {
 		}
 
 	}
-	
+
 	public EgovMap gsonCallHttp(String urlAddr, String param) throws Exception{
 
 		HttpURLConnection con;
