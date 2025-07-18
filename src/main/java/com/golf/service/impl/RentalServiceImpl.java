@@ -1,6 +1,7 @@
 package com.golf.service.impl;
 
 import com.golf.chat.vo.CbReceiptInfoVO;
+import com.golf.service.GlobalProperty;
 import com.golf.service.dao.GeneralDAOImpl;
 import com.golf.service.model.*;
 import com.google.gson.Gson;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
@@ -29,6 +31,9 @@ public class RentalServiceImpl extends BaseServiceImpl {
 	private final GeneralDAOImpl _gDao;
 
 	private final KdngeAPI _kdngeApi;
+
+	@Resource(name="globalProperty")
+	GlobalProperty configBean;
 
 
 	/**
@@ -414,7 +419,7 @@ public class RentalServiceImpl extends BaseServiceImpl {
 		if("6".equals(infVO.getRcpKind())) {
 			logger.info("#### IR RCP_KIND: {}, URL_TYPE: {}", infVO.getRcpKind(), type);
 			logger.info("#### IR JSON: {}", new Gson().toJson(infVO));
-			String url = "http://localhost:2222/api/icon-golf/response/"+type;
+			String url = getHost() + "/api/icon-golf/response/"+type;
 			EgovMap apiMap = _kdngeApi.callUrl(url, new Gson().toJson(infVO), "POST");
 			logger.info("#### IR apiMap: {}", new Gson().toJson(apiMap));
 
@@ -422,5 +427,17 @@ public class RentalServiceImpl extends BaseServiceImpl {
 			logger.debug("##### rcpKind: {} - type: {}", infVO.getRcpKind(), type);
 		}
 		logger.debug("########### 아이콘 렌탈 API 호출 ###########");
+	}
+
+
+	public String getHost() {
+		if (configBean.getWebMode().equals("dev"))
+			return "http://211.34.229.132:18087";
+		if (configBean.getWebMode().equals("local"))
+			return "http://localhost:2222";
+		else if (configBean.getWebMode().equals("op"))
+			return "";
+		else
+			return "";
 	}
 }
