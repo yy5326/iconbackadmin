@@ -195,6 +195,8 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 	private int rcpAirSeq; //인천공항용
 	private String rcpType; //인천공항용
 
+	private Long irOrderNo; //아이콘렌탈용
+
 	/*
 	public String getCusReTelnum() {
 		return this.getCusReTelnumNo().getNo();

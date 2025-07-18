@@ -1,19 +1,11 @@
 package com.golf.service.impl;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.poi.util.SystemOutLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,13 +21,8 @@ import com.golf.service.model.GolfReceiptPayVO;
 import com.golf.service.model.StatusPayVO;
 import com.golf.service.model.StatusVO;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import egovframework.rte.psl.dataaccess.util.EgovMap;
 
 import com.golf.service.model.GolfHistoryVO;
-import com.golf.service.dao.GeneralDAOImpl;
-import com.golf.service.impl.GolfApi;
 
 /**
  * 골프택배 접수 서비스
@@ -49,6 +36,9 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 
 	@Autowired
 	private GolfApi golfApi;
+
+	@Autowired
+	private RentalServiceImpl rentalServiceImpl;
 
 	/**
 	 * 골프택배 접수
@@ -167,6 +157,9 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 				getDAO().update("golfReceiptPay.updateSelective", payVO);
 				//api 전송
 				golfApi.updateApi(infVo, "update_receipt");
+
+				// 아이콘 렌탈 GolfReceiptInfVO
+				rentalServiceImpl.updateApi(infVo, "update");
 
 				//히스토리 등록
 				insertGolfHistory(String.valueOf(infVo.getRcpNumber()), historyMemo);
@@ -359,7 +352,7 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 		}
 
 		//히스토리 등록 및 API 전송
-		if("2".equals(rcpKind) || "0".equals(rcpKind) || "5".equals(rcpKind)) { // 교참추가..
+		if("2".equals(rcpKind) || "0".equals(rcpKind) || "5".equals(rcpKind) ||  "6".equals(rcpKind) ) { // 교참추가..
 
 			GolfReceiptInfVO api =  (GolfReceiptInfVO)getDAO().selectOne("golfReceiptInf.selectDetailByRcpNumber", infVo.getRcpNumber());
 
@@ -410,6 +403,9 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 				// 2025.05.21 updateApi() 스마트스코어 전용 API 아님. 아이콘택배 상태변경 API도 포함됨.
 				// 선택취소, 픽업취소의 경우 여기 안오고,  express/regno/cancels 호출하는듯
 				golfApi.updateApi(api, "update_cbag_status");
+
+				// 아이콘 렌탈 접수상태변경
+				rentalServiceImpl.updateApi(api, "status");
 			}
 
 			insertGolfHistoryArr(infVo.getRcpNumberArray(), historyMemo);

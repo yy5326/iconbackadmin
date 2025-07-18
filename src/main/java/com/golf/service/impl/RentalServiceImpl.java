@@ -1,55 +1,34 @@
-package com.golf.chat.service;
+package com.golf.service.impl;
 
-import com.golf.chat.vo.CbCommonVO;
-import com.golf.chat.vo.CbGolfInfoVo;
 import com.golf.chat.vo.CbReceiptInfoVO;
 import com.golf.service.dao.GeneralDAOImpl;
-import com.golf.service.impl.BaseServiceImpl;
-import com.golf.service.impl.GolfReceiptServiceImpl;
-import com.golf.service.impl.KdngeAPI;
 import com.golf.service.model.*;
-import com.golf.talk.service.SendTalkServiceImpl;
-import com.golf.util.EgovMapDeserializer;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import egovframework.rte.psl.dataaccess.util.EgovMap;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.annotation.Resource;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Service("RentalApiService")
-public class RentalApiServiceImpl extends BaseServiceImpl {
+@Slf4j
+@Service("RentalService")
+@RequiredArgsConstructor
+public class RentalServiceImpl extends BaseServiceImpl {
 
-	private static final Logger logger = LoggerFactory.getLogger(RentalApiServiceImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(RentalServiceImpl.class);
 
-	@Autowired
-	private GeneralDAOImpl _gDao;
+	private final GeneralDAOImpl _gDao;
 
-	@Resource
-	KdngeAPI _kdngeApi;
-
-
+	private final KdngeAPI _kdngeApi;
 
 
 	/**
@@ -62,8 +41,6 @@ public class RentalApiServiceImpl extends BaseServiceImpl {
 		// 접수상태(0:골프접수, 1:픽업요청, 2:택배접수, 3:배송완료, 4:접수대기(카카오접수), 7:골프취소, 8:픽업취소, 9:택배취소)
 		String rcpInfStat = "0";
 		String payStat = "0";
-		String kakaoPayStat = "READY";
-		String kakaoPayMessage = "결제요청";
 
 		if (list != null || !list.isEmpty()) {
 			GolfReceiptMstVO mstVO = new GolfReceiptMstVO();
@@ -74,6 +51,7 @@ public class RentalApiServiceImpl extends BaseServiceImpl {
 			mstVO.setUseYn("Y");
 			mstVO.setGameDt(list.get(0).getGameDt()); // 라운딩 시작일
 			mstVO.setGameEndDt(list.get(0).getGameEndDt()); // 라운딩 종료일
+
 
 			// 골프 접수 등록 GOLF_RECEIPT_MST
 			_gDao.insert("golfReceipt.insertReceiptMst", mstVO);
@@ -87,6 +65,8 @@ public class RentalApiServiceImpl extends BaseServiceImpl {
 			for ( CbReceiptInfoVO cbReceiptInfoVo : list ){
 
 				GolfReceiptInfVO receiptInfVO = new GolfReceiptInfVO();
+
+				receiptInfVO.setRcpInfStat(rcpInfStat);
 				receiptInfVO.setRcpSeq(rcpSeq);
 				receiptInfVO.setSrType(cbReceiptInfoVo.getSrType());
 				receiptInfVO.setPayType("0"); // 배송지불타입(현불)
@@ -135,13 +115,15 @@ public class RentalApiServiceImpl extends BaseServiceImpl {
 				_gDao.insert("golfReceipt.insertReceiptInfChat", receiptInfVO);
 				receiptList.add(receiptInfVO);
 
+				// 결제완료
+				if("2".equals(cbReceiptInfoVo.getPayStat())){
+					payStat = "1";
+				}
+
 				//결제금액
 				GolfReceiptPayVO payVO = new GolfReceiptPayVO();
 				payVO.setPayAmt(receiptInfVO.getPdPay());
 				payVO.setRcpInfSeq(receiptInfVO.getRcpInfSeq());
-				payVO.setUserId(cbReceiptInfoVo.getUserId());
-				payVO.setKakaoPayStat(kakaoPayStat);
-				payVO.setKakaoPayMessage(kakaoPayMessage);
 				payVO.setPayStat(payStat); // 결제상태 - 입금대기
 
 
@@ -240,6 +222,11 @@ public class RentalApiServiceImpl extends BaseServiceImpl {
 		return golfInfVo;
 	}
 
+	// 골프장 정보 조회
+	public GolfInfVO getGolfInfo(Long golfSeq) {
+		return (GolfInfVO) _gDao.selectByKey("golfInf.selectByKey", golfSeq);
+	}
+
 	/**
 	 * 도서산간구분, 운임계산
 	 * 0 = 기본운임, 1 = 스코어운임, 2 = 특판가
@@ -266,7 +253,7 @@ public class RentalApiServiceImpl extends BaseServiceImpl {
 		// ---- 왕복 ----
 		if ("2".equals(cbReceiptInfoVo.getDelKind())) {
 			// 운임 계산
-			pdDosunPay = calculateDosunPay(receiptInfVO, cbReceiptInfoVo, amtArray[0]);
+			pdDosunPay = calculateDosunPay(receiptInfVO, amtArray[0]);
 			
 			// 배송비 계산
 			pdDeliPay = calculateDeliveryPay(amtArray[2], cbReceiptInfoVo.getPdCnt());
@@ -275,10 +262,10 @@ public class RentalApiServiceImpl extends BaseServiceImpl {
 			iconPay = calculateIconFee(cbReceiptInfoVo, sendGolfInfVo, recvGolfInfVo);
 
 			// 할증 운임
-			extraPrice = _kdngeApi.getExtraPrice(cbReceiptInfoVo.getPdIndivPrice());
+			extraPrice = getExtraPrice(cbReceiptInfoVo.getPdIndivPrice());
 
 			// 총 운임 계산
-			pdPay = calculateTotalPay(pdDosunPay, pdDeliPay, iconPay, extraPrice, cbReceiptInfoVo.getPdCnt(), amtArray[0]);
+			pdPay = calculateTotalPay(pdDosunPay, pdDeliPay, iconPay, extraPrice, cbReceiptInfoVo.getPdCnt());
 		}else{
 			// 아이콘 렌탈은 왕복만 운행.
 			// ---- 편도 ----
@@ -291,31 +278,30 @@ public class RentalApiServiceImpl extends BaseServiceImpl {
 		receiptInfVO.setPdEtcPay(extraPrice);      // 할증 운임
 		receiptInfVO.setPdPay(pdPay);              // 총 운임
 
+		logger.debug("receiptInfVO {}", receiptInfVO.toString());
+
 		// 보스턴백 사용 x 할인가 x
 	}
 
 	// 총 운임 계산
-	private int calculateTotalPay(int pdDosunPay, int pdDeliPay, int iconPay, int extraPrice, int pdCnt, int dosunAmt) {
+	public int calculateTotalPay(int pdDosunPay, int pdDeliPay, int iconPay, int extraPrice, int pdCnt) {
 		int totalPay = 0;
 
 		// 도서산간이 있을 경우 도서운임과 배송비를 합산하여 계산
 		totalPay = pdDosunPay + pdDeliPay + iconPay + extraPrice;
 
-		// 도서산간이 있는 경우, 도서운임과 배송비를 수량에 맞게 곱산
-		if (pdDosunPay > 0) {
-			totalPay += (pdDosunPay * pdCnt);
-		} else {
-			// 도서산간이 아닐 경우 기본 배송비만 적용
-			totalPay += (pdDeliPay * pdCnt);
-		}
-
-		totalPay += dosunAmt;
+		logger.debug("pdDosunPay {}", pdDosunPay);
+		logger.debug("pdDeliPay {}", pdDeliPay);
+		logger.debug("iconPay {}", iconPay);
+		logger.debug("extraPrice {}", extraPrice);
+		logger.debug("pdCnt {}", pdCnt);
+		logger.debug("totalPay {}", totalPay);
 
 		return totalPay;
 	}
 
 	// 도서산간 금액
-	private int calculateDosunPay(GolfReceiptInfVO receiptInfVO, CbReceiptInfoVO cbReceiptInfoVo, int dosunAmt) {
+	public int calculateDosunPay(GolfReceiptInfVO receiptInfVO, int dosunAmt) {
 		int dosunCount = 0;
 
 		// 보내는 사람 주소가 도서산간인지 확인
@@ -335,7 +321,7 @@ public class RentalApiServiceImpl extends BaseServiceImpl {
 			dosunCount += 1;
 		}
 
-		return (dosunCount >= 1 ? cbReceiptInfoVo.getPdCnt() * dosunAmt : 0);
+		return (dosunCount >= 1 ? receiptInfVO.getPdCnt() * dosunAmt : 0);
 	}
 
 	// 제주포함여부
@@ -343,8 +329,13 @@ public class RentalApiServiceImpl extends BaseServiceImpl {
 		return address != null && address.contains("제주");
 	}
 
+	// 할증 운임가
+	public int getExtraPrice(String pdIndivPrice){
+		return _kdngeApi.getExtraPrice(pdIndivPrice);
+	}
+
 	// 배달비 계산 ( 골프백 수 * 금액 )
-	private int calculateDeliveryPay(int deliveryAmt, int pdCnt) {
+	public int calculateDeliveryPay(int deliveryAmt, int pdCnt) {
 		return deliveryAmt * pdCnt;
 	}
 
@@ -372,13 +363,13 @@ public class RentalApiServiceImpl extends BaseServiceImpl {
 		}
 
 		// 왕복금액
-		sumIconFee = calculateIconFeeByKind(sendGolfFee, recvGolfFee, pdCnt, 8000); 
+		sumIconFee = calculateIconFeeByKind(sendGolfFee, recvGolfFee, pdCnt, 4500);
 
 		return sumIconFee;
 	}
 
-	// 수수료 계산 왕복 8000, 편도 4500
-	private int calculateIconFeeByKind(int sendGolfFee, int recvGolfFee, int pdCnt, int defaultFee) {
+	// 수수료 계산 편도 8000, 왕복 1차 4500, 왕복 2차 4500
+	public int calculateIconFeeByKind(int sendGolfFee, int recvGolfFee, int pdCnt, int defaultFee) {
 		int sumIconFee = 0;
 		if (sendGolfFee == 0 && recvGolfFee == 0) {
 			sumIconFee = defaultFee * pdCnt;
@@ -415,4 +406,21 @@ public class RentalApiServiceImpl extends BaseServiceImpl {
 		_gDao.insert("golfHistory.insertHistory", golfHistoryVO);
 	}
 
+
+	// 아이콘 렌탈 상태전달 API 호출
+	public void updateApi(GolfReceiptInfVO infVO, String type) throws Exception {
+		// 아이콘 렌탈의 경우에만 호출
+		logger.debug("########### 아이콘 렌탈 API 호출 ###########");
+		if("6".equals(infVO.getRcpKind())) {
+			logger.info("#### IR RCP_KIND: {}, URL_TYPE: {}", infVO.getRcpKind(), type);
+			logger.info("#### IR JSON: {}", new Gson().toJson(infVO));
+			String url = "http://localhost:2222/api/icon-golf/response/"+type;
+			EgovMap apiMap = _kdngeApi.callUrl(url, new Gson().toJson(infVO), "POST");
+			logger.info("#### IR apiMap: {}", new Gson().toJson(apiMap));
+
+		}else{
+			logger.debug("##### rcpKind: {} - type: {}", infVO.getRcpKind(), type);
+		}
+		logger.debug("########### 아이콘 렌탈 API 호출 ###########");
+	}
 }
