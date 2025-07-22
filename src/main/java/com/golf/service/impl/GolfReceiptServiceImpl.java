@@ -394,14 +394,17 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 
 			// 2025.04.23 스마스스토어 취소제외
 			String rcpInfStat = infVo.getRcpInfStat(); // 접수 상태코드
-			boolean isNotCancelStatus = // 취소코드가 아니면!
-			        !StatusVO.ReceiptCancel.code().equals(rcpInfStat) // 골프취소 7
-			        && !StatusVO.PickupCancel.code().equals(rcpInfStat) // 픽업취소 8
-			        && !StatusVO.DeliveryCancel.code().equals(rcpInfStat); // 택배취소 9
-			if (!"2".equals(rcpKind) && isNotCancelStatus) {
-				// 외주 업체 api
-				// 2025.05.21 updateApi() 스마트스코어 전용 API 아님. 아이콘택배 상태변경 API도 포함됨.
-				// 선택취소, 픽업취소의 경우 여기 안오고,  express/regno/cancels 호출하는듯
+			// 취소 상태인지 여부 (7: 골프취소, 8: 픽업취소, 9: 택배취소)
+			boolean isCancelStatus =
+					StatusVO.ReceiptCancel.code().equals(rcpInfStat)  // 7
+					|| StatusVO.PickupCancel.code().equals(rcpInfStat)   // 8
+					|| StatusVO.DeliveryCancel.code().equals(rcpInfStat); // 9
+
+			// 스마트스코어(rcpKind: 2)이면서 취소 상태 코드면 외부 API 호출 금지
+			boolean callExternalApi = !("2".equals(rcpKind) && isCancelStatus);
+
+			if (callExternalApi) {
+				// 외주 업체 상태 변경 API
 				golfApi.updateApi(api, "update_cbag_status");
 
 				// 아이콘 렌탈 접수상태변경
