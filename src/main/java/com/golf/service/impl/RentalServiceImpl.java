@@ -1,6 +1,7 @@
 package com.golf.service.impl;
 
 import com.golf.chat.vo.CbReceiptInfoVO;
+import com.golf.model.RentalHistoryVO;
 import com.golf.service.GlobalProperty;
 import com.golf.service.dao.GeneralDAOImpl;
 import com.golf.service.model.*;
@@ -8,6 +9,7 @@ import com.google.gson.Gson;
 import egovframework.rte.psl.dataaccess.util.EgovMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.util.SystemOutLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -413,20 +416,48 @@ public class RentalServiceImpl extends BaseServiceImpl {
 
 
 	// 아이콘 렌탈 상태전달 API 호출
-	public void updateApi(GolfReceiptInfVO infVO, String type) throws Exception {
-		// 아이콘 렌탈의 경우에만 호출
+	public void updateApi(GolfReceiptInfVO infVO, String type) {
 		logger.debug("########### 아이콘 렌탈 API 호출 ###########");
-		if("6".equals(infVO.getRcpKind())) {
-			logger.info("#### IR RCP_KIND: {}, URL_TYPE: {}", infVO.getRcpKind(), type);
-			logger.info("#### IR JSON: {}", new Gson().toJson(infVO));
-			String url = getHost() + "/api/icon-golf/response/"+type;
+
+		if (!"6".equals(infVO.getRcpKind())) {
+			logger.debug("##### rcpKind: {} - type: {}", infVO.getRcpKind(), type);
+			return;
+		}
+
+		logger.info("#### IR RCP_KIND: {}, URL_TYPE: {}", infVO.getRcpKind(), type);
+		logger.info("#### IR JSON: {}", new Gson().toJson(infVO));
+
+		String url = getHost() + "/api/icon-golf/response/" + type;
+
+		try {
 			EgovMap apiMap = _kdngeApi.callUrl(url, new Gson().toJson(infVO), "POST");
 			logger.info("#### IR apiMap: {}", new Gson().toJson(apiMap));
 
-		}else{
-			logger.debug("##### rcpKind: {} - type: {}", infVO.getRcpKind(), type);
+			String statusStr = String.valueOf(apiMap.get("code"));
+			String message = String.valueOf(apiMap.get("message"));
+
+			if (!"200".equals(statusStr)) {
+				EgovMap resultMap = (EgovMap) apiMap.get("result");
+
+				String rcpInfSeq = String.valueOf(resultMap.get("rcpInfSeq"));
+				String rcpSeq = String.valueOf(resultMap.get("rcpSeq"));
+				String errorType = String.valueOf(resultMap.get("type"));
+
+				saveFailLog(infVO, errorType, message, rcpInfSeq, rcpSeq);
+			}
+
+		} catch (Exception e) {
+			logger.error("### IR API 호출 예외 발생: {}", e.getMessage(), e);
+			saveFailLog(
+					infVO,
+					type,
+					"EXCEPTION",
+					String.valueOf(infVO.getRcpInfSeq()),
+					String.valueOf(infVO.getRcpSeq())
+			);
 		}
-		logger.debug("########### 아이콘 렌탈 API 호출 ###########");
+
+		logger.debug("########### 아이콘 렌탈 API 호출 끝 ###########");
 	}
 
 
@@ -439,5 +470,16 @@ public class RentalServiceImpl extends BaseServiceImpl {
 			return "";
 		else
 			return "";
+	}
+	private void saveFailLog(GolfReceiptInfVO infVO, String type, Object message, String rcpInfSeq, String rcpSeq) {
+		RentalHistoryVO  rentalHistoryVO = new RentalHistoryVO ();
+		rentalHistoryVO.setRcpInfSeq(Integer.parseInt(rcpInfSeq));
+		rentalHistoryVO.setRcpSeq(Integer.parseInt(rcpSeq));
+		rentalHistoryVO.setType(type);
+		rentalHistoryVO.setOrderStatCd(infVO.getRcpInfStat());
+		rentalHistoryVO.setMessage(String.valueOf(message));
+		logger.debug("########### 접속불가 ###########", rentalHistoryVO);
+		_gDao.insert("golfHistory.insertFailApiLog", rentalHistoryVO);
+
 	}
 }

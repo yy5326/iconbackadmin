@@ -392,24 +392,24 @@
 			}
 		});
 
-		var isCheck = false;
-		if(retData != "success"){
-			if(retData == "error1"){
-				alert("픽업요청은 골프접수 단계에서만 가능합니다.");
-			}else if(retData == "error3"){
-				alert("결제완료는 골프접수 단계에서만 가능합니다.");
-			}else if(retData == "error4"){
-				alert("결제취소는 골프취소,픽업취소,택배취소 단계에서만 가능합니다.");
-			}else if(retData == "error2"){
-				alert("취소는 접수대기, 골프접수 또는 픽업요청 단계에서만 가능합니다.");
-			}else if(retData == "error5"){
-				alert("픽업요청은 결제가 완료되어야 가능합니다.");
-			}else if(retData == "error6"){
-				alert("골프접수는 접수대기 단계에서만 가능합니다.");
-			}
-		}else{
-			isCheck = true;
-		}
+		// var isCheck = false;
+		// if(retData != "success"){
+		// 	if(retData == "error1"){
+		// 		alert("픽업요청은 골프접수 단계에서만 가능합니다.");
+		// 	}else if(retData == "error3"){
+		// 		alert("결제완료는 골프접수 단계에서만 가능합니다.");
+		// 	}else if(retData == "error4"){
+		// 		alert("결제취소는 골프취소,픽업취소,택배취소 단계에서만 가능합니다.");
+		// 	}else if(retData == "error2"){
+		// 		alert("취소는 접수대기, 골프접수 또는 픽업요청 단계에서만 가능합니다.");
+		// 	}else if(retData == "error5"){
+		// 		alert("픽업요청은 결제가 완료되어야 가능합니다.");
+		// 	}else if(retData == "error6"){
+		// 		alert("골프접수는 접수대기 단계에서만 가능합니다.");
+		// 	}
+		// }else{
+		var isCheck = true;
+		// }
 		return isCheck;
 	}
 
