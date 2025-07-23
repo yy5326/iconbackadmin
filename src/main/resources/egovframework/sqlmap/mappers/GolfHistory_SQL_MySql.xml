@@ -73,4 +73,27 @@
 			)
 	 	</foreach>
 	</insert>
+
+	<insert id="insertFailApiLog"
+			parameterType="com.golf.model.RentalHistoryVO"
+			useGeneratedKeys="true"
+			keyProperty="rentalNo">
+		INSERT INTO GOLF_RENTAL_FAIL_LOG (
+			RCP_INF_SEQ,
+			RCP_SEQ,
+			ORDER_NO,
+			TYPE,
+			ORDER_STAT_CD,
+			MESSAGE,
+			REG_DTTM
+		) VALUES (
+					 #{rcpInfSeq},
+					 #{rcpSeq},
+					 #{orderNo},
+					 #{type},
+					 #{orderStatCd},
+					 #{message},
+					 NOW()
+				 )
+	</insert>
 </mapper>
