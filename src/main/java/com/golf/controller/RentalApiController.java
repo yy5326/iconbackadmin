@@ -42,11 +42,8 @@ public class RentalApiController extends PrtController {
     RentalServiceImpl rentalServiceImpl;
     @Resource
     CbReceiveServiceImpl _receiveService;
-    @Resource
-    SendTalkServiceImpl _sendTalkService;
 
     private static final Logger logger = LoggerFactory.getLogger(RentalApiController.class);
-
 
 
     @PostMapping("/receiptProcConfirm/{orderNo}")
@@ -149,20 +146,29 @@ public class RentalApiController extends PrtController {
         return responseObj;
     }
 
-    @PostMapping("/receiptSync")
+    @GetMapping("/test")
     @ApiOperation(value = "아이콘렌탈 ", notes = "<DR-3>")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "확인 성공", response = CbReceiveResultVO.class),
             @ApiResponse(code = 311, message = "잘못된 파라메터")
     })
-    public JSONObject receiptSync(@RequestBody List<Integer> rcpInfSeqs) {
+//    public JSONObject receiptSync(@RequestBody List<Integer> rcpInfSeqs) throws Exception {
+    public JSONObject test() throws Exception {
         JSONObject responseObj = new JSONObject();
         responseObj.put("httpStatus", "OK");
-        logger.debug("rcpInfSeqs {}", new Gson().toJson(rcpInfSeqs));
+//        logger.debug("rcpInfSeqs {}", new Gson().toJson(rcpInfSeqs));
+        GolfReceiptInfVO vo = new GolfReceiptInfVO();
+        vo.setRcpKind("6");
+        vo.setRcpInfSeq(62);
+        vo.setRcpSeq(34);
+        vo.setRcpNumber("GF2025072362");
+
+        rentalServiceImpl.updateApi(vo,"test");
+
         return responseObj;
     }
 
-        @PostMapping("/getExtraPrice")
+    @PostMapping("/getExtraPrice")
     @ApiOperation(value = "골프 운임비 확인", notes = "<DR-3>")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "확인 성공", response = CbReceiveResultVO.class),
