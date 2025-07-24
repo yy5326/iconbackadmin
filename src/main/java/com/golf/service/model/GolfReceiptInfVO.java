@@ -197,6 +197,7 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 
 	private Long irOrderNo; //아이콘렌탈용
 
+	private String type;
 	/*
 	public String getCusReTelnum() {
 		return this.getCusReTelnumNo().getNo();
