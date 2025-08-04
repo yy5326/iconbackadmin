@@ -444,6 +444,14 @@ public class RentalServiceImpl extends BaseServiceImpl {
 				String errorType = String.valueOf(resultMap.get("type"));
 
 				saveFailLog(infVO, errorType, message, rcpInfSeq, rcpSeq);
+			}else{
+				saveFailLog(
+						infVO,
+						type,
+						"EXCEPTION",
+						String.valueOf(infVO.getRcpInfSeq()),
+						String.valueOf(infVO.getRcpSeq())
+				);
 			}
 
 		} catch (Exception e) {
