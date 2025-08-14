@@ -51,8 +51,8 @@
 
 	<task:scheduler id="GolfFailApiLogSchedulerServiceImpl" pool-size="1" />
 	<task:scheduled-tasks scheduler="GolfFailApiLogSchedulerServiceImpl">
-		<!-- 매일 00:30에 실행 -->
-		<task:scheduled ref="golfFailApiLogSchedule" method="insertFailApiLogs" cron="* */30 * * * *" />
+		<!-- 30분 마다 실행 -->
+		<task:scheduled ref="golfFailApiLogSchedule" method="insertFailApiLogs" fixed-rate="1800000" />
 	</task:scheduled-tasks>
 	
  	<!-- Activates @Scheduled and @Async annotations for scheduling --> 
