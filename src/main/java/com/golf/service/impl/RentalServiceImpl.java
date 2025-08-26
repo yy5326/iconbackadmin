@@ -471,11 +471,12 @@ public class RentalServiceImpl extends BaseServiceImpl {
 
 	public String getHost() {
 		if (configBean.getWebMode().equals("dev"))
-			return "http://211.34.229.132:18087";
+//			return "http://211.34.229.132:18087";
+			return "http://dev.1con-rental.co.kr:40081";
 		if (configBean.getWebMode().equals("local"))
 			return "http://localhost:2222";
 		else if (configBean.getWebMode().equals("op"))
-			return "";
+			return "https://1con-rental.co.kr";
 		else
 			return "";
 	}
