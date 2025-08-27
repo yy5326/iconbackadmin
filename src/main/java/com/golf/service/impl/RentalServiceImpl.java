@@ -432,10 +432,11 @@ public class RentalServiceImpl extends BaseServiceImpl {
 		try {
 			EgovMap apiMap = _kdngeApi.callUrl(url, new Gson().toJson(infVO), "POST");
 			logger.info("#### IR apiMap: {}", new Gson().toJson(apiMap));
-			// ex) {"listData":[{"orderNo":2025082682000002,"rcpInfStat":"1","rcpInfSeq":15114,"rcpNumber":"GF2025082615114","rcpSeq":15107}]}
 
 			List<EgovMap> listData = (List<EgovMap>) apiMap.get("listData");
+
 			if (listData != null && !listData.isEmpty()) {
+
 				EgovMap resultMap = listData.get(0);
 
 				String orderNo = String.valueOf(resultMap.get("orderNo"));
@@ -444,16 +445,20 @@ public class RentalServiceImpl extends BaseServiceImpl {
 				String rcpNumber = String.valueOf(resultMap.get("rcpNumber"));
 				String rcpInfStat = String.valueOf(resultMap.get("rcpInfStat"));
 
-				logger.info("#### 렌탈 상태변경 완료 - orderNo: {}, rcpSeq: {}, rcpInfSeq: {}, rcpNumber: {}, rcpInfStat: {}"
-						, orderNo, rcpSeq, rcpInfSeq, rcpNumber, rcpInfStat);
-			}else{
-				logger.info("#### 렌탈 상태변경 실패 - listData 없음. apiMap={}", apiMap);
-				saveFailLog(infVO, type, "listData 없음", String.valueOf(infVO.getRcpInfSeq()), String.valueOf(infVO.getRcpSeq()));
+				logger.info("#### 렌탈 상태변경 완료 - orderNo: {}, rcpSeq: {}, rcpInfSeq: {}, rcpNumber: {}, rcpInfStat: {}",
+						orderNo, rcpSeq, rcpInfSeq, rcpNumber, rcpInfStat);
+
+			} else {
+				saveFailLog(infVO, type, "EXCEPTION",
+						String.valueOf(infVO.getRcpInfSeq()), String.valueOf(infVO.getRcpSeq()));
 			}
+
 		} catch (Exception e) {
 			logger.error("### IR API 호출 예외 발생: {}", e.getMessage(), e);
-			saveFailLog(infVO, type, "EXCEPTION", String.valueOf(infVO.getRcpInfSeq()), String.valueOf(infVO.getRcpSeq()));
+			saveFailLog(infVO, type, "EXCEPTION",
+					String.valueOf(infVO.getRcpInfSeq()), String.valueOf(infVO.getRcpSeq()));
 		}
+
 		logger.debug("########### 아이콘 렌탈 API 호출 끝 ###########");
 	}
 
@@ -469,15 +474,17 @@ public class RentalServiceImpl extends BaseServiceImpl {
 		else
 			return "";
 	}
-	private void saveFailLog(GolfReceiptInfVO infVO, String type, Object message, String rcpInfSeq, String rcpSeq) {
-		RentalHistoryVO  rentalHistoryVO = new RentalHistoryVO ();
-		rentalHistoryVO.setRcpInfSeq(Integer.parseInt(rcpInfSeq));
-		rentalHistoryVO.setRcpSeq(Integer.parseInt(rcpSeq));
+	private void saveFailLog(GolfReceiptInfVO infVO, String type, Object message, String rcpInfSeqStr, String rcpSeqStr) {
+		RentalHistoryVO rentalHistoryVO = new RentalHistoryVO();
+
+		rentalHistoryVO.setRcpInfSeq(rcpInfSeqStr != null ? Long.parseLong(rcpInfSeqStr) : 0L);
+		rentalHistoryVO.setRcpSeq(rcpSeqStr != null ? Long.parseLong(rcpSeqStr) : 0L);
+
 		rentalHistoryVO.setType(type);
 		rentalHistoryVO.setOrderStatCd(infVO.getRcpInfStat());
 		rentalHistoryVO.setMessage(String.valueOf(message));
-		logger.debug("########### 접속불가 ###########", rentalHistoryVO);
-		_gDao.insert("golfHistory.insertFailApiLog", rentalHistoryVO);
 
+		logger.debug("#### 실패 API 로그 기록: {}", new Gson().toJson(rentalHistoryVO));
+		_gDao.insert("golfHistory.insertFailApiLog", rentalHistoryVO);
 	}
 }
