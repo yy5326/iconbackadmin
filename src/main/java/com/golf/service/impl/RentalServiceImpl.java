@@ -432,39 +432,28 @@ public class RentalServiceImpl extends BaseServiceImpl {
 		try {
 			EgovMap apiMap = _kdngeApi.callUrl(url, new Gson().toJson(infVO), "POST");
 			logger.info("#### IR apiMap: {}", new Gson().toJson(apiMap));
+			// ex) {"listData":[{"orderNo":2025082682000002,"rcpInfStat":"1","rcpInfSeq":15114,"rcpNumber":"GF2025082615114","rcpSeq":15107}]}
 
-			String statusStr = String.valueOf(apiMap.get("code"));
-			String message = String.valueOf(apiMap.get("message"));
+			List<EgovMap> listData = (List<EgovMap>) apiMap.get("listData");
+			if (listData != null && !listData.isEmpty()) {
+				EgovMap resultMap = listData.get(0);
 
-			if (!"200".equals(statusStr)) {
-				EgovMap resultMap = (EgovMap) apiMap.get("result");
-
-				String rcpInfSeq = String.valueOf(resultMap.get("rcpInfSeq"));
+				String orderNo = String.valueOf(resultMap.get("orderNo"));
 				String rcpSeq = String.valueOf(resultMap.get("rcpSeq"));
-				String errorType = String.valueOf(resultMap.get("type"));
+				String rcpInfSeq = String.valueOf(resultMap.get("rcpInfSeq"));
+				String rcpNumber = String.valueOf(resultMap.get("rcpNumber"));
+				String rcpInfStat = String.valueOf(resultMap.get("rcpInfStat"));
 
-				saveFailLog(infVO, errorType, message, rcpInfSeq, rcpSeq);
+				logger.info("#### 렌탈 상태변경 완료 - orderNo: {}, rcpSeq: {}, rcpInfSeq: {}, rcpNumber: {}, rcpInfStat: {}"
+						, orderNo, rcpSeq, rcpInfSeq, rcpNumber, rcpInfStat);
 			}else{
-				saveFailLog(
-						infVO,
-						type,
-						"EXCEPTION",
-						String.valueOf(infVO.getRcpInfSeq()),
-						String.valueOf(infVO.getRcpSeq())
-				);
+				logger.info("#### 렌탈 상태변경 실패 - listData 없음. apiMap={}", apiMap);
+				saveFailLog(infVO, type, "listData 없음", String.valueOf(infVO.getRcpInfSeq()), String.valueOf(infVO.getRcpSeq()));
 			}
-
 		} catch (Exception e) {
 			logger.error("### IR API 호출 예외 발생: {}", e.getMessage(), e);
-			saveFailLog(
-					infVO,
-					type,
-					"EXCEPTION",
-					String.valueOf(infVO.getRcpInfSeq()),
-					String.valueOf(infVO.getRcpSeq())
-			);
+			saveFailLog(infVO, type, "EXCEPTION", String.valueOf(infVO.getRcpInfSeq()), String.valueOf(infVO.getRcpSeq()));
 		}
-
 		logger.debug("########### 아이콘 렌탈 API 호출 끝 ###########");
 	}
 

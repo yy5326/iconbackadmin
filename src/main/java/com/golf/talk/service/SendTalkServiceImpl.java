@@ -510,6 +510,10 @@ public class SendTalkServiceImpl {
         List<KakaoVO> result = new ArrayList<KakaoVO>();
 
         for ( SendRequestVO sendRequestVO : list ) {
+			// 렌탈이면 패스
+			logger.debug("1 카카오 알림톡 타입: {}", sendRequestVO.getRcpKind());
+			if("6".equals(sendRequestVO.getRcpKind())) continue;
+
         	KakaoVO kakaoVO = new KakaoVO();
         	kakaoVO.setKakaoInfoVO(new KakaoInfoVO());
     		kakaoVO.getKakaoInfoVO().setMode(server);
@@ -609,6 +613,10 @@ public class SendTalkServiceImpl {
         List<KakaoVO> result = new ArrayList<KakaoVO>();
 
         for ( SendRequestVO sendRequestVO : list ) {
+			// 렌탈이면 패스
+			logger.debug("2 카카오 알림톡 타입: {}", sendRequestVO.getRcpKind());
+			if("6".equals(sendRequestVO.getRcpKind())) continue;
+
         	KakaoVO kakaoVO = new KakaoVO();
         	kakaoVO.setKakaoInfoVO(new KakaoInfoVO());
     		kakaoVO.getKakaoInfoVO().setMode(server);
