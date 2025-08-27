@@ -449,14 +449,13 @@ public class RentalServiceImpl extends BaseServiceImpl {
 						orderNo, rcpSeq, rcpInfSeq, rcpNumber, rcpInfStat);
 
 			} else {
-				saveFailLog(infVO, type, "EXCEPTION",
-						String.valueOf(infVO.getRcpInfSeq()), String.valueOf(infVO.getRcpSeq()));
+				logger.info("#### 렌탈 상태변경 실패 - listData 없음. apiMap={}", apiMap);
+				saveFailLog(infVO, type, "EXCEPTION", infVO.getRcpInfSeq(), infVO.getRcpSeq());
 			}
 
 		} catch (Exception e) {
 			logger.error("### IR API 호출 예외 발생: {}", e.getMessage(), e);
-			saveFailLog(infVO, type, "EXCEPTION",
-					String.valueOf(infVO.getRcpInfSeq()), String.valueOf(infVO.getRcpSeq()));
+			saveFailLog(infVO, type, "EXCEPTION", infVO.getRcpInfSeq(), infVO.getRcpSeq());
 		}
 
 		logger.debug("########### 아이콘 렌탈 API 호출 끝 ###########");
@@ -474,11 +473,11 @@ public class RentalServiceImpl extends BaseServiceImpl {
 		else
 			return "";
 	}
-	private void saveFailLog(GolfReceiptInfVO infVO, String type, Object message, String rcpInfSeqStr, String rcpSeqStr) {
+	private void saveFailLog(GolfReceiptInfVO infVO, String type, Object message, int rcpInfSeq, int rcpSeq) {
 		RentalHistoryVO rentalHistoryVO = new RentalHistoryVO();
 
-		rentalHistoryVO.setRcpInfSeq(rcpInfSeqStr != null ? Long.parseLong(rcpInfSeqStr) : 0L);
-		rentalHistoryVO.setRcpSeq(rcpSeqStr != null ? Long.parseLong(rcpSeqStr) : 0L);
+		rentalHistoryVO.setRcpInfSeq(rcpInfSeq);
+		rentalHistoryVO.setRcpSeq(rcpSeq);
 
 		rentalHistoryVO.setType(type);
 		rentalHistoryVO.setOrderStatCd(infVO.getRcpInfStat());
