@@ -408,6 +408,7 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 				golfApi.updateApi(api, "update_cbag_status");
 
 				// 아이콘 렌탈 접수상태변경
+				api.setRcpInfStat(rcpInfStat); //안담길래 별도로 추가함.
 				rentalServiceImpl.updateApi(api, "status");
 			}
 
