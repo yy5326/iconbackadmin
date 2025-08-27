@@ -473,7 +473,7 @@ public class RentalServiceImpl extends BaseServiceImpl {
 		else
 			return "";
 	}
-	private void saveFailLog(GolfReceiptInfVO infVO, String type, Object message, int rcpInfSeq, int rcpSeq) {
+	private void saveFailLog(GolfReceiptInfVO infVO, String type, String message, int rcpInfSeq, int rcpSeq) {
 		RentalHistoryVO rentalHistoryVO = new RentalHistoryVO();
 
 		rentalHistoryVO.setRcpInfSeq(rcpInfSeq);
@@ -481,7 +481,7 @@ public class RentalServiceImpl extends BaseServiceImpl {
 
 		rentalHistoryVO.setType(type);
 		rentalHistoryVO.setOrderStatCd(infVO.getRcpInfStat());
-		rentalHistoryVO.setMessage(String.valueOf(message));
+		rentalHistoryVO.setMessage(message);
 
 		logger.debug("#### 실패 API 로그 기록: {}", new Gson().toJson(rentalHistoryVO));
 		_gDao.insert("golfHistory.insertFailApiLog", rentalHistoryVO);
