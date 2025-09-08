@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -512,7 +513,9 @@ public class SendTalkServiceImpl {
         for ( SendRequestVO sendRequestVO : list ) {
 			// 렌탈이면 패스
 			logger.debug("1 카카오 알림톡 타입: {}", sendRequestVO.getRcpKind());
-			if("6".equals(sendRequestVO.getRcpKind())) continue;
+
+			boolean rentalFlag = Arrays.asList("6", "7", "8").contains(sendRequestVO.getRcpKind());
+			if(rentalFlag) continue;
 
         	KakaoVO kakaoVO = new KakaoVO();
         	kakaoVO.setKakaoInfoVO(new KakaoInfoVO());
@@ -615,7 +618,8 @@ public class SendTalkServiceImpl {
         for ( SendRequestVO sendRequestVO : list ) {
 			// 렌탈이면 패스
 			logger.debug("2 카카오 알림톡 타입: {}", sendRequestVO.getRcpKind());
-			if("6".equals(sendRequestVO.getRcpKind())) continue;
+			boolean rentalFlag = Arrays.asList("6", "7", "8").contains(sendRequestVO.getRcpKind());
+			if(rentalFlag) continue;
 
         	KakaoVO kakaoVO = new KakaoVO();
         	kakaoVO.setKakaoInfoVO(new KakaoInfoVO());

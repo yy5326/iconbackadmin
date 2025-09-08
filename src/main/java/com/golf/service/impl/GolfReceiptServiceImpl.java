@@ -1,6 +1,7 @@
 package com.golf.service.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -351,8 +352,10 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 			}
 		}
 
+		boolean rentalFlag = Arrays.asList("6", "7", "8").contains(rcpKind); // 렌탈 웹 모바일 기타
+
 		//히스토리 등록 및 API 전송
-		if("2".equals(rcpKind) || "0".equals(rcpKind) || "5".equals(rcpKind) ||  "6".equals(rcpKind) ) { // 교참추가..
+		if("2".equals(rcpKind) || "0".equals(rcpKind) || "5".equals(rcpKind) ||  rentalFlag ) { // 교참추가..
 
 			GolfReceiptInfVO api =  (GolfReceiptInfVO)getDAO().selectOne("golfReceiptInf.selectDetailByRcpNumber", infVo.getRcpNumber());
 

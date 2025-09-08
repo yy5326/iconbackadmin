@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -419,7 +420,8 @@ public class RentalServiceImpl extends BaseServiceImpl {
 	public void updateApi(GolfReceiptInfVO infVO, String type) {
 		logger.debug("########### 아이콘 렌탈 API 호출 ###########");
 
-		if (!"6".equals(infVO.getRcpKind())) {
+		boolean rentalFlag = Arrays.asList("6", "7", "8").contains(infVO.getRcpKind());
+		if (!rentalFlag) { // 렌탈코드가 아니면 리턴
 			logger.debug("##### rcpKind: {} - type: {}", infVO.getRcpKind(), type);
 			return;
 		}
