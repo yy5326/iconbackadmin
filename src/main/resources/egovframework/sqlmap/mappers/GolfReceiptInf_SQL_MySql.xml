@@ -95,6 +95,9 @@
    		 WHEN A.RCP_KIND ='3' THEN '현대C'
    		 WHEN A.RCP_KIND ='4' THEN '롯데R'
    		 WHEN A.RCP_KIND ='5' THEN '코참'
+   		 WHEN A.RCP_KIND ='6' THEN '렌탈(W)'
+   		 WHEN A.RCP_KIND ='7' THEN '렌탈(M)'
+   		 WHEN A.RCP_KIND ='8' THEN '렌탈(E)'
    		 ELSE '알수없음' END RCP_KIND_NAME, RCP_KIND,
    	CUS_RECEIPT_NM, CUS_RECEIPT_TELNUM
 
