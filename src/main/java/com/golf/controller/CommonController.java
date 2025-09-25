@@ -1,17 +1,13 @@
 package com.golf.controller;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 //API관련
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.security.cert.X509Certificate;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,13 +18,13 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import com.golf.service.impl.RentalServiceImpl;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
@@ -47,12 +43,10 @@ import com.golf.service.model.StatusPayVO;
 import com.golf.service.model.StatusVO;
 import com.golf.service.model.search.GolfReceiptSearchVO;
 import com.golf.talk.service.SendTalkServiceImpl;
-import com.golf.service.model.GolfHistoryVO;
 import com.golf.util.EgovMapDeserializer;
 import com.golf.util.StringUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
 
 import egovframework.rte.psl.dataaccess.util.EgovMap;
 import com.golf.service.impl.GolfApi;
@@ -78,6 +72,9 @@ public class CommonController extends PrtController {
 
 	@Autowired
 	private GolfApi golfApi;
+
+	@Autowired
+	private RentalServiceImpl rentalServiceImpl;
 
 	@Autowired
 	private KdngeAPI kdngeApi;
@@ -358,6 +355,10 @@ public class CommonController extends PrtController {
 
 								receiptList.get(i).setCanReason("");
 								golfApi.updateApi(receiptList.get(i), "update_cbag_status");
+
+
+								// 아이콘 렌탈 GolfReceiptInfVO
+								rentalServiceImpl.updateApi(receiptList.get(i), "status");
 
 								//히스토리 등록
 								if (history.equals("list")) {

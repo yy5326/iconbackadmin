@@ -153,4 +153,6 @@ public @Data class CbReceiptInfoVO {
 	private int rcpSeqNo; //그룹
 	private String rcpType; //구분
 
+	/* 아이콘 렌탈용 결제여부 확인 전달값 */
+	private String payStat; // 결제상태 (0: 입금대기, 1: 결제완료, 9: 결제취소)
 }

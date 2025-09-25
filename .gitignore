@@ -1,2 +1,9 @@
 /.idea/
 /target/
+/out/
+
+
+*.class
+/src/main/webapp/WEB-INF/classes/
+/src/main/webapp/WEB-INF/*.war
+/src/main/webapp/base_dynamic-1.0.0..war

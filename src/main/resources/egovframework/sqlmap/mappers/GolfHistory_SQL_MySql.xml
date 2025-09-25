@@ -73,4 +73,55 @@
 			)
 	 	</foreach>
 	</insert>
+
+	<insert id="insertFailApiLog"
+			parameterType="com.golf.model.RentalHistoryVO"
+			useGeneratedKeys="true"
+			keyProperty="rentalNo">
+		INSERT INTO GOLF_RENTAL_FAIL_LOG (
+			RCP_INF_SEQ,
+			RCP_SEQ,
+			ORDER_NO,
+			TYPE,
+			ORDER_STAT_CD,
+			MESSAGE,
+			REG_DTTM
+		) VALUES (
+					 #{rcpInfSeq},
+					 #{rcpSeq},
+					 #{orderNo},
+					 #{type},
+					 #{orderStatCd},
+					 #{message},
+					 NOW()
+				 )
+			ON DUPLICATE KEY UPDATE
+								 ORDER_NO = #{orderNo},
+								 TYPE = #{type},
+								 ORDER_STAT_CD = #{orderStatCd},
+								 MESSAGE = #{message},
+								 REG_DTTM = NOW()
+	</insert>
+	<update id="updateFailHistory" parameterType="com.golf.service.model.GolfReceiptPayVO">
+		UPDATE GOLF_RENTAL_FAIL_LOG
+		SET
+			MESSAGE = 'SUCCESS',
+			REG_DTTM = NOW()
+		WHERE RCP_INF_SEQ = #{rcpInfSeq} AND RCP_SEQ = #{rcpSeq}
+	</update>
+	<select id="selectFailLogList" resultType="com.golf.service.model.GolfReceiptInfVO">
+		WITH FAIL_LOGS AS (
+			SELECT
+				A.*,
+				B.TYPE, B.ORDER_NO, B.MESSAGE, B.ORDER_STAT_CD, B.REG_DTTM,
+				ROW_NUMBER() OVER (PARTITION BY A.RCP_INF_SEQ, A.RCP_SEQ ORDER BY B.REG_DTTM DESC) AS RN
+			FROM GOLF_RECEIPT_INF A
+					 INNER JOIN GOLF_RENTAL_FAIL_LOG B
+								ON A.RCP_INF_SEQ = B.RCP_INF_SEQ AND A.RCP_SEQ = B.RCP_SEQ
+			WHERE B.MESSAGE != 'SUCCESS'
+			)
+		SELECT *
+		FROM FAIL_LOGS
+		WHERE RN = 1;
+	</select>
 </mapper>
