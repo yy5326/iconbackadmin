@@ -69,7 +69,7 @@ public class PayRequestMessage {
 		sb.append("(물품가액에 따른 추가할증 "+sendRequestVO.getPdEtcPay()+"원 포함금액입니다)\n\n");
 
 		sb.append("내용 확인 후 아래 번호로 카드번호 전달 시 예약 완료 됩니다. \n");
-		sb.append("*카드번호 16자리와 유효기간 010-4763-0961로 문자보내주시면 됩니다. \n\n");
+		sb.append("*카드번호 16자리와 유효기간 010-4763-0983로 문자보내주시면 됩니다. \n\n");
 		sb.append("*계좌이체 필요시 1544-3044로 연락주셔야 하며, 할인적용은 불가합니다. \n");
 
 		return sb.toString();
@@ -178,7 +178,7 @@ public class PayRequestMessage {
 		sb.append("\n결제계좌 : 농협 3010266187691 아이콘(주)\n");
 		sb.append("내용 확인 후 위의 결제 계좌로 총 결제 금액 입금 시 예약 완료 됩니다. \n");
 		sb.append("*카드결제를 원하시면 카드번호 16자리와 유효기간 \n");
-		sb.append("010-4763-0961로 문자보내주시면 됩니다.\n");
+		sb.append("010-4763-0983로 문자보내주시면 됩니다.\n");
 
 		return sb.toString();
 	}
@@ -270,7 +270,7 @@ public class PayRequestMessage {
 		sb.append("(물품가액에 따른 추가할증 "+sumEtcPay+"원 포함금액입니다)\n\n");
 
 		sb.append("내용 확인 후 아래 번호로 카드번호 전달 시 예약 완료 됩니다. \n");
-		sb.append("*카드번호 16자리와 유효기간 010-4763-0961로 문자보내주시면 됩니다. \n\n");
+		sb.append("*카드번호 16자리와 유효기간 010-4763-0983로 문자보내주시면 됩니다. \n\n");
 		sb.append("*계좌이체 필요시 1544-3044로 연락주셔야 하며, 할인적용은 불가합니다. \n");
 
 		return sb.toString();
@@ -340,7 +340,7 @@ public class PayRequestMessage {
 		sb.append("결제계좌 : 농협 3010266187691 아이콘(주)\n");
 		sb.append("내용 확인 후 위의 결제 계좌로 총 결제 금액 입금 시 예약 완료 됩니다. \n");
 		sb.append("*카드결제를 원하시면 카드번호 16자리와 유효기간 \n");
-		sb.append("010-4763-0961로 문자보내주시면 됩니다.\n");
+		sb.append("010-4763-0983로 문자보내주시면 됩니다.\n");
 
 		return sb.toString();
 	}
@@ -436,7 +436,7 @@ public class PayRequestMessage {
 		sb.append("(물품가액에 따른 추가할증 "+sumEtcPay+"원 포함금액입니다)\n\n");
 
 		sb.append("내용 확인 후 아래 번호로 카드번호 전달 시 예약 완료 됩니다. \n");
-		sb.append("*카드번호 16자리와 유효기간 010-4763-0961로 문자보내주시면 됩니다. \n\n");
+		sb.append("*카드번호 16자리와 유효기간 010-4763-0983로 문자보내주시면 됩니다. \n\n");
 		sb.append("*계좌이체 필요시 1544-3044로 연락주셔야 하며, 할인적용은 불가합니다. \n");
 
 		return sb.toString();
@@ -549,7 +549,7 @@ public class PayRequestMessage {
 		sb.append("\n결제계좌 : 농협 3010266187691 아이콘(주)\n");
 		sb.append("내용 확인 후 위의 결제 계좌로 총 결제 금액 입금 시 예약 완료 됩니다. \n");
 		sb.append("*카드결제를 원하시면 카드번호 16자리와 유효기간 \n");
-		sb.append("010-4763-0961로 문자보내주시면 됩니다.\n");
+		sb.append("010-4763-0983로 문자보내주시면 됩니다.\n");
 
 		return sb.toString();
 	}
