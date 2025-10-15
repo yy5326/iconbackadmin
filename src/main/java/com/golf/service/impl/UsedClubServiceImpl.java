@@ -76,6 +76,9 @@ public class UsedClubServiceImpl extends BaseServiceImpl {
 	
 	@Resource
 	SendTalkServiceImpl _sendTalkService;
+
+    @Autowired
+    private KdngeAPI kdngeApi;
 	
 	public int golfCnt(CbCommonVO cbCommon) throws Exception {
 		// TODO Auto-generated method stub
@@ -423,9 +426,11 @@ public class UsedClubServiceImpl extends BaseServiceImpl {
 		GolfInfVO recvGolfInfVo = null;
 		
 		GolfInfVO infVO = new GolfInfVO();
-		infVO.setType1("A");
+        infVO.setType1("zipcode");
+//		infVO.setType1("A");
 		infVO.setKeyword(cbReceiptInfoVO.getCusSendZip());
-		Map<String, String> branchMap = getBranchInfo(infVO);
+
+		Map<String, String> branchMap = kdngeApi.getBranchInfo(infVO);
 		logger.info("보내는분 도착영업소 : "+branchMap.get("brCode")+","+branchMap.get("brNm"));
 		receiptInfVO.setBrStrCode(branchMap.get("brCode"));
 		receiptInfVO.setBrStrNm(branchMap.get("brNm"));
