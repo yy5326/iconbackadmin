@@ -21,6 +21,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import com.golf.service.impl.KdngeAPI;
+import com.golf.service.impl.RentalServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -69,6 +70,9 @@ public class ScTimeSchedulerServiceImpl implements InitializingBean {
 
 	@Autowired
 	private KdngeAPI kdngeAPI;
+
+	@Autowired
+	private RentalServiceImpl rentalServiceImpl;
 	
 	public void scTime() {
 
@@ -122,7 +126,11 @@ public class ScTimeSchedulerServiceImpl implements InitializingBean {
 									receiptList.get(i).setCanReason("");
 									golfApi.updateApi(receiptList.get(i), "update_cbag_status");
 
-										//스케줄로 배송완료 체크 시
+									// 아이콘 렌탈 GolfReceiptInfVO
+									rentalServiceImpl.updateApi(receiptList.get(i), "status");
+
+
+									//스케줄로 배송완료 체크 시
 										_receiptService.insertGolfShceduleHistory(receiptList.get(i).getRcpNumber(), "배송완료");
 
 
