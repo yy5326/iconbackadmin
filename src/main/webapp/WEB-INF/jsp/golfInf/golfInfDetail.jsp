@@ -57,6 +57,7 @@
 
 <script type="text/javascript">
 	/* 골프장관리_레이어02 */
+    /*tes tset*/
 	$(document).ready(function(){
 		_initPageLoad();
 
