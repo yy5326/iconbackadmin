@@ -180,7 +180,7 @@ public class PayRequestMessage {
 		sb.append("\n결제계좌 : 농협 3010266187691 아이콘(주)\n");
 		sb.append("내용 확인 후 위의 결제 계좌로 총 결제 금액 입금 시 예약 완료 됩니다. \n");
 		sb.append("*카드결제를 원하시면 카드번호 16자리와 유효기간 \n");
-		sb.append("010-4763-0961로 문자보내주시면 됩니다.\n");
+		sb.append("010-4763-0983로 문자보내주시면 됩니다.\n");
 
 		return sb.toString();
 	}
