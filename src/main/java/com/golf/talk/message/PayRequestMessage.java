@@ -124,12 +124,14 @@ public class PayRequestMessage {
 			}
 			sb.append("성함 : "+sendRequestVO.getReceiver()+"\n");
 			sb.append("전화번호 : "+sendRequestVO.getReceiverNum()+"\n");
-			sb.append(itemName+"수량 : "+sendRequestVO.getPdCnt()+"\n");
+//			sb.append(itemName+"수량 : "+sendRequestVO.getPdCnt()+"\n"); // 캐리어 배송일경우 캐리어와 수량사이에 공백이 있어서 주석처리
 			if(prdType == 5 ) {
-				sb.append("캐리어 수량 : "+sendRequestVO.getBoxCnt()+"\n");
-			}else if(prdType != 3 ) {
-				sb.append("보스턴백수량 : "+sendRequestVO.getBoston()+"\n");
-			}
+				sb.append(itemName+"수량 : "+sendRequestVO.getBoxCnt()+"\n");
+			}else if(prdType == 3 ) {
+                sb.append(itemName+" 수량 : "+sendRequestVO.getPdCnt()+"\n");
+            }else if(prdType != 3 ) {
+                sb.append("보스턴백수량 : " + sendRequestVO.getBoston() + "\n");
+            }
 			sb.append("픽업지 : "+sendRequestVO.getCusSendAddr()+"\n");
 			sb.append("도착지 : "+sendRequestVO.getCusReAddr()+"\n");
 
@@ -178,7 +180,7 @@ public class PayRequestMessage {
 		sb.append("\n결제계좌 : 농협 3010266187691 아이콘(주)\n");
 		sb.append("내용 확인 후 위의 결제 계좌로 총 결제 금액 입금 시 예약 완료 됩니다. \n");
 		sb.append("*카드결제를 원하시면 카드번호 16자리와 유효기간 \n");
-		sb.append("010-4763-0983로 문자보내주시면 됩니다.\n");
+		sb.append("010-4763-0961로 문자보내주시면 됩니다.\n");
 
 		return sb.toString();
 	}
