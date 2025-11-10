@@ -126,7 +126,7 @@ public class PayRequestMessage {
 			sb.append("전화번호 : "+sendRequestVO.getReceiverNum()+"\n");
 			sb.append(itemName+"수량 : "+sendRequestVO.getPdCnt()+"\n");
 			if(prdType == 5 ) {
-				sb.append("캐리어수량 : "+sendRequestVO.getBoxCnt()+"\n");
+				sb.append("캐리어 수량 : "+sendRequestVO.getBoxCnt()+"\n");
 			}else if(prdType != 3 ) {
 				sb.append("보스턴백수량 : "+sendRequestVO.getBoston()+"\n");
 			}
