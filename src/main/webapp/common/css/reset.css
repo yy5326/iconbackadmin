@@ -1,5 +1,7 @@
 ﻿@charset "utf-8";
 
+@import url("./jquery/fakeLoader/fakeLoader.css");
+
 /* @font-face { font-family: 'NanumGothic';
 src: url('/font/NanumGothic.eot');
 src: url('/font/NanumGothic.eot') format('embedded-opentype'),
@@ -9,8 +11,6 @@ url('/font/NanumGothic.woff') format('woff');} */
 @font-face{font-family:ngeot; src:url(/common/font/NanumGothic.eot)}
  
 body{font-family: NanumGothic,나눔고딕, ngwoff, ngeot, dotum , sans-serif;}
-
-@import url("./jquery/fakeLoader/fakeLoader.css");
 
 * {margin:0; padding:0;}
 ul, dl {list-style:none;}
@@ -59,7 +59,7 @@ input[type="button"],input[type="submit"]{
 	-webkit-transition:0.3s all;
 	-moz-transition:0.3s all;
 	-o-transition:0.3s all;
-	-ms-transition:0.3s all;}
+	-ms-transition:0.3s all;
 }
 
 form legend, table caption{text-indent: -9999px;}

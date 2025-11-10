@@ -87,7 +87,7 @@ public class PayRequestMessage {
 			itemName = "캐리어";
 
 			sb.append("[아이콘] "+ serviceName +"접수 내역 및 결제 안내\n\n");
-			sb.append("안녕하세요. "+sendRequestVO.getCusReNm()+" 고객님 캐리어 편도 접수가 승인되었습니다. \n");
+			sb.append("안녕하세요. "+sendRequestVO.getCusReNm()+" 고객님 캐리어  편도 접수가 승인되었습니다. \n");
 		}else if(prdType == 5) {
 			serviceName = "인천공항 배송";
 			itemName = "골프백";
