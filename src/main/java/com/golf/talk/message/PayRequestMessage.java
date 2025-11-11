@@ -125,10 +125,13 @@ public class PayRequestMessage {
 			sb.append("성함 : "+sendRequestVO.getReceiver()+"\n");
 			sb.append("전화번호 : "+sendRequestVO.getReceiverNum()+"\n");
 //			sb.append(itemName+"수량 : "+sendRequestVO.getPdCnt()+"\n"); // 캐리어 배송일경우 캐리어와 수량사이에 공백이 있어서 주석처리
+            if(prdType == 3 ) {
+                sb.append(itemName + " 수량 : " + sendRequestVO.getPdCnt() + "\n");
+            }else{
+                sb.append(itemName+"수량 : "+sendRequestVO.getPdCnt()+"\n");
+            }
             if(prdType == 5 ) {
-                sb.append(itemName+"수량 : "+sendRequestVO.getBoxCnt()+"\n");
-            }else if(prdType == 3 ) {
-                sb.append(itemName+" 수량 : "+sendRequestVO.getPdCnt()+"\n");
+                sb.append("캐리어수량 : "+sendRequestVO.getBoxCnt()+"\n");
             }else if(prdType != 3 ) {
                 sb.append("보스턴백수량 : " + sendRequestVO.getBoston() + "\n");
             }
