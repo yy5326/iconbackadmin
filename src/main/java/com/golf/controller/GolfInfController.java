@@ -85,7 +85,8 @@ public class GolfInfController extends PrtController {
 		if(result.hasErrors())
 			return super.setBindingResult(result, model);
 
-		if(!(_globalProperty.getWebMode().equals("op")) && !("superUser_092_02".equals(session.getAttribute("partner")))) {
+//		if(!(_globalProperty.getWebMode().equals("op")) && !("superUser_092_02".equals(session.getAttribute("partner")))) {
+		if(!("superUser_092_02".equals(session.getAttribute("partner")))) {
 			return "redirect:/receipt/" + session.getAttribute("partner") +"/receiptList.do";
 		} else {
 			if (search.getRecordCount() < 20)
