@@ -127,7 +127,7 @@ public @Data class CbReceiptInfoVO {
 	private String rcpNumber; // 챗봇접수번호(편도-접수번호, 왕복-그룹번호)
 
 	@ApiParam(value="접수구분(0 : 관리자, 1 : 챗봇, 2 : 어플, 3 : 현대카드)")
-	@ApiModelProperty(position = 28, notes = "접수구분(0 : 관리자, 1 : 챗봇, 2 : 어플, 3 : 현대카드)")
+	@ApiModelProperty(position = 28, notes = "접수구분(0 : 관리자, 1 : 챗봇, 2 : 어플, 3 : 현대카드, 5:, 6:팬스타크루즈)")
 	private String rcpKind; // 챗봇접수번호(편도-접수번호, 왕복-그룹번호)
 
 	@ApiParam(value="보스턴백수량")

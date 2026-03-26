@@ -149,8 +149,15 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					kakaoPayMessage = "결제요청";
 				}
 
-				//스마트 스코어 일때 접수상태 골프접수
-				if("2".equals(cbReceiptInfoVo.getRcpKind()) || "0".equals(cbReceiptInfoVo.getRcpKind()) || "3".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind())){
+                if("6".equals(cbReceiptInfoVo.getRcpKind())) {
+                    company = "팬스타크루즈";
+                    payStat = "0";
+                    kakaoPayStat = "READY";
+                    kakaoPayMessage = "결제요청";
+                }
+
+				//스마트 스코어 일때 접수상태 골프접수,20260326 팬스타크루즈 추가
+				if("2".equals(cbReceiptInfoVo.getRcpKind()) || "0".equals(cbReceiptInfoVo.getRcpKind()) || "3".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind())|| "6".equals(cbReceiptInfoVo.getRcpKind())){
 					receiptInfVO.setRcpInfStat("0");
 				}else{
 					receiptInfVO.setRcpInfStat(rcpInfStat);
@@ -160,8 +167,8 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				receiptInfVO.setPayType("0"); // 배송지불타입(현불)
 				receiptInfVO.setPdNm("국제골프택배기본");
 				// 241120 보스턴백수량 1개이상일시 국제골프택배세트로 고정
-				// 20250521 교참 추가
-				if(("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind()))
+				// 20250521 교참 추가,20260326 팬스타크루즈 추가
+				if(("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind()) || "6".equals(cbReceiptInfoVo.getRcpKind()))
 						&& cbReceiptInfoVo.getBostonCnt() > 0) {
 					receiptInfVO.setPdNm("국제골프택배세트");
 				}
@@ -400,51 +407,6 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 	public void searchIsl(GolfReceiptInfVO receiptInfVO, CbReceiptInfoVO cbReceiptInfoVo, GolfInfVO sendGolfInfVo, GolfInfVO recvGolfInfVo) {
 		// 0 = 기본운임, 1 = 스코어운임, 2 = 특판가
-		// 챗봇 한정 - 운임체계(기본운임)
-		// var amtArray = [[5000, 21000, 20000], [5000, 15000, 15000], [5000, 15000, 15000]];
-		// var amt = amtArray[$("#fareType option").index($("#fareType option:selected"))];
-		// var dosun1 = 0, dosun2 = 0;
-
-		// 우편번호, 주소, 상세주소(화면에는 왕복까지 고려하여 zip1,2,3,4까지 검색했음) 중 하나라도 제주라는 문자열이 있으면 도서산간으로 판단
-		/*$("input[role=zip1]:eq(1),input[role=zip2]:eq(1),input[role=zip3]:eq(1),input[role=zip4]:eq(1)").each(function(idx){
-			if($(this).val().indexOf("제주") > -1){
-				(idx < 2) ? dosun1 += 1 : dosun2 += 1;
-				$(this).next().val("Y");
-			}else{
-				$(this).next().val("N");
-			}
-		});*/
-
-		// 챗봇시 수량을 개별로 입력할 수 없으므로 이 부분은 배열이 필요없음
-		/*var cnt = new Array;
-		$("input[name$=pdCnt]").each(function(){
-			cnt.push(($(this).val() != "") ? $(this).val() : 0);
-		});
-		var extraPrice = new Array;
-		$("input[name$=pdEtcPay]").each(function(){
-			extraPrice.push(($(this).val() != "") ? Number(uncomma($(this).val())) : 0);
-		});*/
-
-		//편도
-		/*if($("input[name=delKind]:checked").val() == "1"){
-			if($("input[role=zip1]:eq(1)").val() != "" && $("input[role=zip2]:eq(1)").val() != ""){
-				$("input[name$=pdDosunPay]:first").val((dosun1 == 1) ? comma(amt[0] * cnt[0]) : "0");
-				$("input[name$=pdPay]:first").val((dosun1 == 1) ? comma(((amt[0] + amt[1]) * cnt[0]) + extraPrice[0]) : comma((amt[1] * cnt[0]) + extraPrice[0] + Number($('#iconFee0').val())));
-				$("input[name$=pdDeliPay]:first").val(comma(amt[1] * cnt[0]));
-			}*/
-		//왕복
-		/*}else{
-			if($("input[role=zip1]:eq(1)").val() != "" && $("input[role=zip2]:eq(1)").val() != ""){
-				$("input[name$=pdDosunPay]:first").val((dosun1 == 1) ? comma(amt[0] * cnt[0]) : "0");
-				$("input[name$=pdPay]:first").val((dosun1 == 1) ? comma(((amt[0] + amt[2]) * cnt[0]) + extraPrice[0]) : comma((amt[2] * cnt[0]) + extraPrice[0] + Number($('#iconFee0').val())));
-				$("input[name$=pdDeliPay]:first").val(comma(amt[2] * cnt[0]));
-			}
-			if($("input[role=zip3]:eq(1)").val() != "" && $("input[role=zip4]:eq(1)").val() != ""){
-				$("input[name$=pdDosunPay]:last").val((dosun2 == 1) ? comma(amt[0] * cnt[1]) : "0");
-				$("input[name$=pdPay]:last").val((dosun2 == 1) ? comma(((amt[0] + amt[2]) * cnt[1]) + extraPrice[1]) : comma((amt[2] * cnt[1]) + extraPrice[1] + Number($('#iconFee1').val())));
-				$("input[name$=pdDeliPay]:last").val(comma(amt[2] * cnt[1]));
-			}
-		}*/
 
 		int amtArray[] = {5000, 21000, 20000};
 		int dosun1 = 0; int dosun2 = 0;
@@ -460,9 +422,12 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		int bostonCnt = 0;
 		int hdCardDiscount_OneWay = 4000;
 		int hdCardDiscount_Round = 1000;
+        //팬스타크루즈 할인금액
+        int panstarDiscount_GolfBag = 3000;
+        int panstarDiscount_BostonBag = 2000;
 
-		//스마트스코어
-		if("2".equals(cbReceiptInfoVo.getRcpKind()) || "0".equals(cbReceiptInfoVo.getRcpKind()) ||  "3".equals(cbReceiptInfoVo.getRcpKind())  ||  "4".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind())) {
+		//스마트스코어,20260326 팬스타크루즈 추가
+		if("2".equals(cbReceiptInfoVo.getRcpKind()) || "0".equals(cbReceiptInfoVo.getRcpKind()) ||  "3".equals(cbReceiptInfoVo.getRcpKind())  ||  "4".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind()) || "6".equals(cbReceiptInfoVo.getRcpKind())) {
 			bostonCnt = cbReceiptInfoVo.getBostonCnt();
 		}
 
@@ -530,6 +495,11 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			if("3".equals(cbReceiptInfoVo.getRcpKind())) {
 				receiptInfVO.setDiscount(pdPay - discount);
 			}
+
+            // 편도일경우 discout값을 0으로해서 할인금액 표시안되도록
+            if("6".equals(cbReceiptInfoVo.getRcpKind())) {
+                receiptInfVO.setDiscountTotal(0);
+            }
 		} else {
 			// 왕복일 경우
 			if ( "S".equals(cbReceiptInfoVo.getSrType()) ) {
@@ -666,6 +636,16 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			if("3".equals(cbReceiptInfoVo.getRcpKind())) {
 				receiptInfVO.setDiscount(pdPay - (hdCardDiscount_Round * cbReceiptInfoVo.getPdCnt()));
 			}
+            //20260326 팬스타크루즈 추가(할인금액계산)
+            if("6".equals(cbReceiptInfoVo.getRcpKind())){
+
+                //보스턴백
+                int bostonBagDiscount = cbReceiptInfoVo.getBostonCnt()>=1? panstarDiscount_BostonBag : 0;
+                // 골프백
+                int golfBagDiscount = cbReceiptInfoVo.getPdCnt() >= 1? panstarDiscount_GolfBag : 0;
+
+                receiptInfVO.setDiscountTotal(bostonBagDiscount+golfBagDiscount);
+            }
 		}
 
 		receiptInfVO.setPdDosunPay(pdDosunPay);
@@ -730,8 +710,9 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		int recvApiGolfFee = 0;
 		int recvApiBostonFee = 0;
 
+        //20260326 팬스타크루즈 추가
 		if("2".equals(cbReceiptInfoVo.getRcpKind()) || "0".equals(cbReceiptInfoVo.getRcpKind()) || "3".equals(cbReceiptInfoVo.getRcpKind()) || "4".equals(cbReceiptInfoVo.getRcpKind())
-				|| "5".equals(cbReceiptInfoVo.getRcpKind())) { //스마트스코어 + 교참추가
+				|| "5".equals(cbReceiptInfoVo.getRcpKind()) || "6".equals(cbReceiptInfoVo.getRcpKind())) { //스마트스코어 + 교참추가
 			bostonCnt = cbReceiptInfoVo.getBostonCnt();
 		}
 
