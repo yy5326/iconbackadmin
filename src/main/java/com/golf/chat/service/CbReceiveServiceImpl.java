@@ -149,7 +149,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					kakaoPayMessage = "결제요청";
 				}
 
-                if("6".equals(cbReceiptInfoVo.getRcpKind())) {
+                if("9".equals(cbReceiptInfoVo.getRcpKind())) {
                     company = "팬스타크루즈";
                     payStat = "0";
                     kakaoPayStat = "READY";
@@ -157,7 +157,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
                 }
 
 				//스마트 스코어 일때 접수상태 골프접수,20260326 팬스타크루즈 추가
-				if("2".equals(cbReceiptInfoVo.getRcpKind()) || "0".equals(cbReceiptInfoVo.getRcpKind()) || "3".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind())|| "6".equals(cbReceiptInfoVo.getRcpKind())){
+				if("2".equals(cbReceiptInfoVo.getRcpKind()) || "0".equals(cbReceiptInfoVo.getRcpKind()) || "3".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind())|| "9".equals(cbReceiptInfoVo.getRcpKind())){
 					receiptInfVO.setRcpInfStat("0");
 				}else{
 					receiptInfVO.setRcpInfStat(rcpInfStat);
@@ -168,7 +168,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				receiptInfVO.setPdNm("국제골프택배기본");
 				// 241120 보스턴백수량 1개이상일시 국제골프택배세트로 고정
 				// 20250521 교참 추가,20260326 팬스타크루즈 추가
-				if(("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind()) || "6".equals(cbReceiptInfoVo.getRcpKind()))
+				if(("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind()) || "9".equals(cbReceiptInfoVo.getRcpKind()))
 						&& cbReceiptInfoVo.getBostonCnt() > 0) {
 					receiptInfVO.setPdNm("국제골프택배세트");
 				}
@@ -206,7 +206,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				// 접수자이름
 				receiptInfVO.setCusReceiptNm(cbReceiptInfoVo.getCusReceiptNm());
 				// 접수자전화번호
-				receiptInfVO.setCusReceiptTelNum(cbReceiptInfoVo.getCusReceiptTelNum());
+ 				receiptInfVO.setCusReceiptTelNum(cbReceiptInfoVo.getCusReceiptTelNum());
 				receiptInfVO.setPrdType(1);
 
 				//인천공항 구분용 preInsertReceiptInfo 함수 호출전.
@@ -315,7 +315,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			}
 
 			// 교참 추가
-			if("0".equals(list.get(0).getRcpKind()) || "3".equals(list.get(0).getRcpKind()) || "5".equals(list.get(0).getRcpKind())){
+			if("0".equals(list.get(0).getRcpKind()) || "3".equals(list.get(0).getRcpKind()) || "5".equals(list.get(0).getRcpKind())|| "9".equals(list.get(0).getRcpKind())){
 
 				if(!"A".equals(list.get(0).getRcpType())){
 					// 아이콘 프로젝트 접수시 결제정보 전송하려면 사용
@@ -427,7 +427,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
         int panstarDiscount_BostonBag = 2000;
 
 		//스마트스코어,20260326 팬스타크루즈 추가
-		if("2".equals(cbReceiptInfoVo.getRcpKind()) || "0".equals(cbReceiptInfoVo.getRcpKind()) ||  "3".equals(cbReceiptInfoVo.getRcpKind())  ||  "4".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind()) || "6".equals(cbReceiptInfoVo.getRcpKind())) {
+		if("2".equals(cbReceiptInfoVo.getRcpKind()) || "0".equals(cbReceiptInfoVo.getRcpKind()) ||  "3".equals(cbReceiptInfoVo.getRcpKind())  ||  "4".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind()) || "9".equals(cbReceiptInfoVo.getRcpKind())) {
 			bostonCnt = cbReceiptInfoVo.getBostonCnt();
 		}
 
@@ -497,7 +497,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			}
 
             // 편도일경우 discout값을 0으로해서 할인금액 표시안되도록
-            if("6".equals(cbReceiptInfoVo.getRcpKind())) {
+            if("9".equals(cbReceiptInfoVo.getRcpKind())) {
                 receiptInfVO.setDiscountTotal(0);
             }
 		} else {
@@ -637,7 +637,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				receiptInfVO.setDiscount(pdPay - (hdCardDiscount_Round * cbReceiptInfoVo.getPdCnt()));
 			}
             //20260326 팬스타크루즈 추가(할인금액계산)
-            if("6".equals(cbReceiptInfoVo.getRcpKind())){
+            if("9".equals(cbReceiptInfoVo.getRcpKind())){
 
                 //보스턴백
                 int bostonBagDiscount = cbReceiptInfoVo.getBostonCnt()>=1? panstarDiscount_BostonBag : 0;
@@ -712,7 +712,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
         //20260326 팬스타크루즈 추가
 		if("2".equals(cbReceiptInfoVo.getRcpKind()) || "0".equals(cbReceiptInfoVo.getRcpKind()) || "3".equals(cbReceiptInfoVo.getRcpKind()) || "4".equals(cbReceiptInfoVo.getRcpKind())
-				|| "5".equals(cbReceiptInfoVo.getRcpKind()) || "6".equals(cbReceiptInfoVo.getRcpKind())) { //스마트스코어 + 교참추가
+				|| "5".equals(cbReceiptInfoVo.getRcpKind()) || "9".equals(cbReceiptInfoVo.getRcpKind())) { //스마트스코어 + 교참추가
 			bostonCnt = cbReceiptInfoVo.getBostonCnt();
 		}
 
