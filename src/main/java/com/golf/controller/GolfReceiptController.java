@@ -180,7 +180,8 @@ public class GolfReceiptController extends PrtController {
 			type6.add(new StringPair("스마트", "2"));
 			type6.add(new StringPair("현대C", "3"));
 			type6.add(new StringPair("롯데R", "4"));
-			
+			type6.add(new StringPair("팬스타", "9"));
+
 			model.addAttribute("search", search);
 			model.addAttribute("statsMap", statsMap);
 	
