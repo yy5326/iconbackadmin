@@ -537,10 +537,10 @@ public class PayRequestMessage {
 			sb.append("골프백수량 : "+startRequestVO.getPdCnt()+"\n");
 			sb.append("보스턴백수량 : "+startRequestVO.getBoston()+"\n\n");
 
+            int sumPay = startRequestVO.getPdPay()+roundRequestVO.getPdPay();
 			if(startRequestVO.getBoston() > 0) { // 241127 보스턴수량
-				sb.append("총 결제 금액 : "+startRequestVO.getPdDiscount()+"원 \n");
+				sb.append("총 결제 금액 : "+sumPay+"원 \n");
 			}else {
-				int sumPay = startRequestVO.getPdPay()+roundRequestVO.getPdPay();
 				sb.append("총 결제 금액 : "+sumPay+"원 \n");
 			}
 			int sumEtcPay = startRequestVO.getPdEtcPay()+roundRequestVO.getPdEtcPay();
