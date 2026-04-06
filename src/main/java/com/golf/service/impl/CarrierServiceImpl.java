@@ -152,8 +152,15 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 					kakaoPayMessage = "결제요청";
 				}
 
+                if("9".equals(cbReceiptInfoVO.getRcpKind())) { // 결제 상태 - 팬스타크루즈
+                    company = "팬스타크루즈";
+                    payStat = "0";
+                    kakaoPayStat = "READY";
+                    kakaoPayMessage = "결제요청";
+                }
+
 				//스마트 스코어 일때 접수상태 골프접수
-				if("2".equals(cbReceiptInfoVO.getRcpKind()) || "0".equals(cbReceiptInfoVO.getRcpKind()) || "3".equals(cbReceiptInfoVO.getRcpKind())){
+				if("2".equals(cbReceiptInfoVO.getRcpKind()) || "0".equals(cbReceiptInfoVO.getRcpKind()) || "3".equals(cbReceiptInfoVO.getRcpKind()) || "9".equals(cbReceiptInfoVO.getRcpKind())){
 					receiptInfVO.setRcpInfStat("0");
 				}else{
 					receiptInfVO.setRcpInfStat(rcpInfStat);
@@ -240,6 +247,13 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 					receiptInfVO.setIconFee(iconPay < 0 ? 0 : iconPay);
 					receiptInfVO.setPdPay(receiptInfVO.getPdPay() + carrAddPay);
 				}
+
+                if(("9".equals(receiptInfVO.getRcpKind()))){//팬스타그루즈 할인금액적용
+                    int carrierDiscount = 3000 * receiptInfVO.getPdCnt()/2;
+                    if("2".equals(receiptInfVO.getDelKind())){//왕복만
+                        receiptInfVO.setPdPay(receiptInfVO.getPdPay()-carrierDiscount);
+                    }
+                }
 
 				logger.debug("챗봇 골프접수 데이터");
 				logger.debug("-->"+new Gson().toJson(receiptInfVO));

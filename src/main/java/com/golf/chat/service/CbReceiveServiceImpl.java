@@ -242,7 +242,14 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					}
 					receiptInfVO.setIconFee(iconPay < 0 ? 0 : iconPay);
 					receiptInfVO.setPdPay(receiptInfVO.getPdPay()-discount);
-				}
+				}else if(("9".equals(cbReceiptInfoVo.getRcpKind()))){//팬스타그루즈 할인금액적용
+                    int bostonDiscount = 2000 * cbReceiptInfoVo.getBostonCnt();
+                    int golfBagDiscount = 3000 * cbReceiptInfoVo.getPdCnt();
+                    int totalDiscount = (bostonDiscount + golfBagDiscount)/2;
+                    if("2".equals(cbReceiptInfoVo.getDelKind())){//왕복만
+                        receiptInfVO.setPdPay(receiptInfVO.getPdPay()-totalDiscount);
+                    }
+                }
 
 				/**
 				 * 2025.01.22
