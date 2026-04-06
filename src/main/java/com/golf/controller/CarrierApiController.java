@@ -204,6 +204,8 @@ public class CarrierApiController extends PrtController  {
 				data.put("pdDeliPay", (receiptInfVO.getPdDeliPay() + receiptInfVO.getIconFee()) *2);
 				data.put("pdEtcPay", receiptInfVO.getPdEtcPay() * 2);
 				data.put("pdPay", receiptInfVO.getPdPay() * 2);
+                data.put("discount",receiptInfVO.getDiscount());
+                data.put("discountTotal",receiptInfVO.getDiscountTotal());
 			}else {
 				data.put("pdDosunPay", receiptInfVO.getPdDosunPay());
 				data.put("pdDeliPay", receiptInfVO.getPdDeliPay() + receiptInfVO.getIconFee());
