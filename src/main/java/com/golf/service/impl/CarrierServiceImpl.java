@@ -621,8 +621,9 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 		if("2".equals(receiptInfVO.getDelKind())) {
             // 왕복일 경우에 팬스타 크루즈의 경우 3000원 할인
             if("9".equals(cbReceiptInfoVO.getRcpKind())){
-                receiptInfVO.setDiscountTotal(3000);
-                receiptInfVO.setDiscount(pdPay - 3000);
+                int totalDiscount = 3000*cbReceiptInfoVO.getPdCnt();
+                receiptInfVO.setDiscountTotal(totalDiscount);
+                receiptInfVO.setDiscount(pdPay - totalDiscount);
             }
 			pdDosunPay = pdDosunPay/2;
 			pdDeliPay = pdDeliPay/2;

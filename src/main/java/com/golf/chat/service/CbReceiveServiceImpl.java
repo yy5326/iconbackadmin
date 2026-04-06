@@ -647,9 +647,9 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
             if("9".equals(cbReceiptInfoVo.getRcpKind())){
 
                 //보스턴백
-                int bostonBagDiscount = cbReceiptInfoVo.getBostonCnt()>=1? panstarDiscount_BostonBag : 0;
+                int bostonBagDiscount = cbReceiptInfoVo.getBostonCnt()>=1? panstarDiscount_BostonBag*cbReceiptInfoVo.getBostonCnt() : 0;
                 // 골프백
-                int golfBagDiscount = cbReceiptInfoVo.getPdCnt() >= 1? panstarDiscount_GolfBag : 0;
+                int golfBagDiscount = cbReceiptInfoVo.getPdCnt() >= 1? panstarDiscount_GolfBag*cbReceiptInfoVo.getPdCnt() : 0;
 
                 receiptInfVO.setDiscountTotal(bostonBagDiscount+golfBagDiscount);
             }
