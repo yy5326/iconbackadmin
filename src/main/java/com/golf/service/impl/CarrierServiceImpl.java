@@ -293,7 +293,7 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 				insertGolfHistory(String.valueOf(receiptInfVO.getRcpNumber()), historyMemo);
 			}
 
-			if("0".equals(list.get(0).getRcpKind()) || "3".equals(list.get(0).getRcpKind())){
+			if("0".equals(list.get(0).getRcpKind()) || "3".equals(list.get(0).getRcpKind()) || "9".equals(list.get(0).getRcpKind())){
 
 				if(!"A".equals(list.get(0).getRcpType())){
 					// 아이콘 프로젝트 접수시 결제정보 전송하려면 사용

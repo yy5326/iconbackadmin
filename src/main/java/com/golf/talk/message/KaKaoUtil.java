@@ -50,7 +50,7 @@ public class KaKaoUtil {
 
 	public static void getTempleteForEtc(String etc, SendRequestVO sendVo) {
 		// 결제 완료, 알림톡 유저, 편도 + 교참
-		if ( "0".equals(sendVo.getRcpKind()) || "5".equals(sendVo.getRcpKind())) {
+		if ( "0".equals(sendVo.getRcpKind()) || "5".equals(sendVo.getRcpKind()) || "9".equals(sendVo.getRcpKind() )) {
 			// 아이콘 접수 템플릿
 			sendVo.setEtc1(etc+"_icon");
 
