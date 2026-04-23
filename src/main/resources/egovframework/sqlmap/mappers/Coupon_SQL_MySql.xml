@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="coupon">
+
+    <sql id="whereList">
+        WHERE 1=1
+        <if test="partnerSeq != null and partnerSeq > 0">
+            AND A.PARTNER_SEQ = #{partnerSeq}
+        </if>
+        <if test="useYn != null and useYn != ''">
+            AND A.USE_YN = #{useYn}
+        </if>
+        <if test="couponName != null and couponName != ''">
+            AND A.COUPON_NAME LIKE CONCAT('%', #{couponName}, '%')
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND DATE(A.REG_DATE) >= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND DATE(A.REG_DATE) <![CDATA[<=]]> #{endDate}
+        </if>
+    </sql>
+
+    <select id="selectCouponList" parameterType="com.golf.service.model.CouponVO" resultType="java.util.HashMap">
+        SELECT
+        A.COUPON_SEQ AS couponSeq,
+        A.PARTNER_SEQ AS partnerSeq,
+        A.PARTNER_NAME AS partnerName, A.COUPON_NAME AS couponName,
+        A.DISCOUNT_TYPE AS discountType,
+        A.DISCOUNT_VALUE AS discountValue,
+        A.ISSUE_COUNT AS issueCount,
+        (SELECT COUNT(*) FROM GOLF_COUPON_DTL WHERE COUPON_SEQ = A.COUPON_SEQ AND IS_USED = 'Y') AS usedCount,
+        A.START_DATE AS startDate,
+        A.END_DATE AS endDate,
+        A.USE_YN AS useYn,
+        A.REG_USER AS regUser,
+        A.REG_DATE AS regDate
+        FROM GOLF_COUPON_MST A
+        <include refid="whereList" />
+        ORDER BY A.COUPON_SEQ DESC
+        <include refid="paging.bottom" />
+    </select>
+
+    <select id="selectCouponListCnt" parameterType="com.golf.service.model.CouponVO" resultType="int">
+        SELECT COUNT(*)
+        FROM GOLF_COUPON_MST A
+        <include refid="whereList" />
+    </select>
+
+    <insert id="insertCouponMaster" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="couponSeq">
+        INSERT INTO GOLF_COUPON_MST
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="partnerSeq != null">PARTNER_SEQ,</if>
+            <if test="partnerName != null">PARTNER_NAME,</if> <if test="couponName != null">COUPON_NAME,</if>
+            <if test="discountType != null">DISCOUNT_TYPE,</if>
+            <if test="discountValue != null">DISCOUNT_VALUE,</if>
+            <if test="issueCount != null">ISSUE_COUNT,</if>
+            <if test="startDate != null">START_DATE,</if>
+            <if test="endDate != null">END_DATE,</if>
+            USE_YN,
+            <if test="regUser != null">REG_USER,</if>
+            REG_DATE
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="partnerSeq != null">#{partnerSeq},</if>
+            <if test="partnerName != null">#{partnerName},</if> <if test="couponName != null">#{couponName},</if>
+            <if test="discountType != null">#{discountType},</if>
+            <if test="discountValue != null">#{discountValue},</if>
+            <if test="issueCount != null">#{issueCount},</if>
+            <if test="startDate != null">#{startDate},</if>
+            <if test="endDate != null">#{endDate},</if>
+            'Y',
+            <if test="regUser != null">#{regUser},</if>
+            NOW()
+        </trim>
+    </insert>
+
+    <insert id="insertCouponDetailBulk" parameterType="java.util.List">
+        INSERT INTO GOLF_COUPON_DTL (
+        COUPON_CODE, COUPON_SEQ, IS_USED, REG_DATE
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.couponCode}, #{item.couponSeq}, 'N', NOW())
+        </foreach>
+    </insert>
+
+</mapper>

@@ -45,6 +45,7 @@
 						<li><a href="/receipt/receiptList.do" class="hmenu">택배조회</a></li>
 						<li><a href="#" class="hmenu">정산</a></li>
 						<li><a href="/golfInf/golfInfList.do" class="hmenu">골프장관리</a></li>
+                        <li><a href="/coupon/couponList.do" class="hmenu">제휴쿠폰관리</a></li>
 					</ul>
 				</div>
 			</div>
