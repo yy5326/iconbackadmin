@@ -6,9 +6,63 @@
 			<form action="receiptProcConfirm.do" method="post">
 				<div id="original">
 					<div class="receiver">
+<c:if test="${partner != 'zimcarry_111'}">
 						<p class="type">보내는 분 <span class="red">*</span><span>표시는 필수 입력사항입니다</span></p>
+</c:if>
 						<div class="tableBox">
 							<table>
+                                <c:choose>
+                                    <c:when test="${partner == 'zimcarry_111'}">
+                                        <%--<tr>
+                                            <th>운임체계</th>
+                                            <td>
+                                                <select id="fareType" name="fareType" class="w265">
+                                                    <option value="1">기본운임</option>
+                                                    <option value="2">스코어운임</option>
+                                                    <option value="3">특판가</option>
+                                                </select>
+                                            </td>
+                                        </tr>--%>
+                                        <c:choose>
+                                            <c:when test="${partner == 'zimcarry_111'}">
+                                                <tr>
+                                                    <th>운임체계</th>
+                                                    <td>
+                                                        <select id="fareType" name="fareType" class="w265">
+                                                            <option value="1">인천공항 출발</option>
+                                                            <option value="2">인천공항 도착</option>
+                                                            <option value="3">운임체계 3</option>
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <tr>
+                                                    <th>운임체계</th>
+                                                    <td>
+                                                        <select id="fareType" name="fareType" class="w265">
+                                                            <option value="1">기본운임</option>
+                                                            <option value="2">스코어운임</option>
+                                                            <option value="3">특판가</option>
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                            </c:otherwise>
+                                        </c:choose>
+                                        <tr style="display:none;">
+                                            <td colspan="2">
+                                                <input type="hidden" name="list[0].cusSendNm" value="아이콘"/>
+                                                <input type="hidden" id="office1" name="list[0].brStrNm" value="김포고촌토탈운송서비스"/>
+                                                <input type="hidden" id="officeCode1" name="list[0].brStrCode" value="02138"/>
+                                                <input type="hidden" name="list[0].cusSendZip" value="10121">
+                                                <input type="hidden" name="list[0].cusSendAddr1" value="경기도 김포시 고촌읍 전호리 745">
+                                                <input type="hidden" name="list[0].cusSendAddr2" value=" ">
+                                                <input type="hidden" name="list[0].srType" value="S"/>
+                                                <input type="hidden" name="list[0].cusSendTelnum" id="real_cusSendTelnum" value="">
+                                            </td>
+                                        </tr>
+                                    </c:when>
+                                    <c:otherwise>
 								<tr>
 									<th>운임체계</th>
 									<td>
@@ -100,6 +154,8 @@
 		        						<input type="hidden" role="ecphone" name="list[0].extCompTelnum">
 		        					</td>
 								</tr>
+                                    </c:otherwise>
+                                </c:choose>
 							</table>
 						</div>
 					</div>
@@ -110,6 +166,7 @@
 								<tr>
 									<th>이름 <span class="red">*</span></th>
 									<td><input type="text" name="list[0].cusReNm" class="notNull w410"  data-name="이름"/></td>
+                                    <input type="hidden" name="list[0].cusReNm" id="real_cusReNm" class="notNull" data-name="이름"/>
 								</tr>
 								<tr>
 									<th>연락처 <span class="red">*</span></th>
@@ -150,14 +207,22 @@
 										<input type="text" role="zip2" name="list[0].cusReAddr2" class="w586" placeholder="상세주소를 입력해 주세요" data-name="상세주소"/>
 									</td>
 								</tr>
-								<tr>
+								<%--<tr>
 									<th>도착영업소 <span class="red">*</span></th>
 									<td>
 										<input type="text" role="golfSearch2" id="office2" name="list[0].brEndNm" class="notNull" data-name="도착영업소" readonly="readonly"/>
 										<input type="hidden" role="golfSearch2" id="officeCode2" name="list[0].brEndCode"/>
 										<a href="javascript:;" role="2" class="officeLayer btn">찾기</a>
 									</td>
-								</tr>
+								</tr>--%>
+                                <tr <c:if test="${partner == 'zimcarry_111'}">style="display:none;"</c:if>>
+                                    <th>도착영업소 <span class="red">*</span></th>
+                                    <td>
+                                        <input type="text" role="golfSearch2" id="office2" name="list[0].brEndNm" class="notNull" data-name="도착영업소" readonly="readonly"/>
+                                        <input type="hidden" role="golfSearch2" id="officeCode2" name="list[0].brEndCode"/>
+                                        <a href="javascript:;" role="2" class="officeLayer btn">찾기</a>
+                                    </td>
+                                </tr>
 							</table>
 						</div>
 					</div>
@@ -165,14 +230,21 @@
 						<p class="type">물품정보 <span class="red">*</span><span>표시는 필수 입력사항입니다</span></p>
 						<div class="tableBox">
 							<table>
-								<tr>
+								<%--<tr>
 									<th>경기일 <span class="red">*</span></th>
 									<td>
 										<input type="text" name="gameDt" class="notNull input datepicker" style="width:90px;" data-name="경기일" minDate="0" readonly="readonly"/>
 										<a class="calendar datepicker" style="cursor: pointer;"></a>
 										<!-- <span>&nbsp;&nbsp;(익일부터 영업일 기준으로 3일 후)</span> -->
 									</td>
-								</tr>
+								</tr>--%>
+                                <tr>
+                                    <th>${partner == 'zimcarry_111' ? '접수일' : '경기일'} <span class="red">*</span></th>
+                                    <td>
+                                        <input type="text" name="gameDt" class="notNull input datepicker" style="width:90px;" data-name="접수일" readonly="readonly"/>
+                                        <a class="calendar datepicker" style="cursor: pointer;"></a>
+                                    </td>
+                                </tr>
 								<tr>
 									<th>픽업희망일 <span class="red">*</span></th>
 									<td>
@@ -181,7 +253,7 @@
 										<!-- <span>&nbsp;&nbsp;(익일부터 경기일 포함 영업일 기준으로 3일 전)</span> -->
 									</td>
 								</tr>
-								<tr>
+								<%--<tr>
 									<th>품목명 <span class="red">*</span></th>
 									<td>
 										<select name="list[0].pdNm" class="notNull w265" data-name="품목명">
@@ -189,8 +261,24 @@
 											<option value="국제골프택배세트">국제골프택배세트</option>
 										</select>
 									</td>
-								</tr>
-								<tr>
+								</tr>--%>
+                                <tr id="row_pdNm">
+                                    <th>품목명 <span class="red">*</span></th>
+                                    <td>
+                                        <select name="list[0].pdNm" id="zimcarry_pdNm" class="notNull w265" data-name="품목명">
+                                            <c:choose>
+                                                <c:when test="${partner == 'zimcarry_111'}">
+                                                    <option value="">선택하세요</option>
+                                                    <option value="인천공항골프백">인천공항골프백</option>
+                                                    <option value="인천공항캐리어">인천공항캐리어</option>
+                                                    <option value="인천공항보스턴백">인천공항보스턴백</option>
+                                                </c:when>
+                                                <c:otherwise>...</c:otherwise>
+                                            </c:choose>
+                                        </select>
+                                    </td>
+                                </tr>
+								<%--<tr>
 									<th>포장상태 <span class="red">*</span></th>
 									<td>
 										<!-- <input type="text" name="list[0].pdPack" class="notNull w410"  data-name="포장상태"/> -->
@@ -203,22 +291,38 @@
 											<option value="왕복">왕복</option>
 										</select>
 									</td>
-								</tr>
-								<tr>
+								</tr>--%>
+                                <tr <c:if test="${partner == 'zimcarry_111'}">style="display:none;"</c:if>>
+                                    <th>포장상태 <span class="red">*</span></th>
+                                    <td>
+                                        <select id="list[0].pdPack" name="list[0].pdPack" class="notNull w265">
+                                            <option value="편도" selected>편도</option>
+                                        </select>
+                                    </td>
+                                </tr>
+								<%--<tr>
 									<th>배송구분 <span class="red">*</span></th>
 									<td>
 										<select name="list[0].payType" class="notNull w265" data-name="배송구분">
 											<option value="0">현불택배</option>
 										</select>
 									</td>
-								</tr>
-								<tr>
+								</tr>--%>
+                                <tr <c:if test="${partner == 'zimcarry_111'}">style="display:none;"</c:if>>
+                                    <th>배송구분 <span class="red">*</span></th>
+                                    <td>
+                                        <select name="list[0].payType" class="notNull w265">
+                                            <option value="0" selected>현불택배</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr id="row_bostonCnt" style="display:none;">
 									<th>보스턴백 수량 <span class="red onlyNumber">*</span></th>
 									<td>
 										<input type="text" name="list[0].bostonCnt" id="bostonCnt0" class="notNull w265 input onlyNumber" value="1" data-name="수량"/><span class="unit">개</span>
 									</td>
 								</tr>
-								<tr>
+								<%--<tr>
 									<th>골프백 수량 <span class="red onlyNumber">*</span></th>
 									<td>
 										<input type="text" name="list[0].pdCnt" id="pdCnt0" class="notNull w265 input onlyNumber" value="1" data-name="수량"/><span class="unit">개</span>
@@ -227,8 +331,33 @@
 										<input type="text" role="pay" name="list[0].pdEtcPay" class="w265" readonly="readonly"/><span class="unit">원</span>
 										<input type="hidden" name="list[0].pdIndivPrice" class="notNull" data-name="개별단가"/>
 									</td>
-								</tr>
-								<tr>
+								</tr>--%>
+                                <tr id="row_pdCnt" style="display:none;">
+                                    <th>골프백 수량 <span class="red onlyNumber">*</span></th>
+                                    <td>
+                                        <input type="text" name="list[0].pdCnt" id="pdCnt0" class="notNull w265 input onlyNumber" value="1"/>
+                                        <c:if test="${partner != 'zimcarry_111'}">
+                                            <a href="javascript:;" role="openPriceLayer1" class="btn unitPrice">개별단가</a>
+                                        </c:if>
+                                        <input type="hidden" name="list[0].pdIndivPrice" value="${partner == 'zimcarry_111' ? '200' : ''}"/>
+                                    </td>
+                                </tr>
+                                <tr id="row_carrierCnt" style="display:none;">
+                                    <th>캐리어 수량 <span class="red onlyNumber">*</span></th>
+                                    <td><input type="text" name="list[0].carrierCnt" id="carrierCnt0" class="w265 input onlyNumber" value="0"/><span class="unit">개</span></td>
+                                </tr>
+                                <c:if test="${partner == 'zimcarry_111'}">
+                                    <style>
+                                        /* 할증, 도서, 배송, 수수료 행 숨김 */
+                                        tr:has(input[name$='pdEtcPay']),
+                                        tr:has(input[name$='pdDosunPay']),
+                                        tr:has(input[name$='pdDeliPay']),
+                                        tr:has(input[id^='iconFee']) {
+                                            display: none !important;
+                                        }
+                                    </style>
+                                </c:if>
+                                <tr <c:if test="${partner == 'zimcarry_111'}">style="display:none;"</c:if>>
 									<th>골프채 수량 <span class="red">*</span></th>
 									<td>
 										<input type="text" name="list[0].pdGolfCnt" class="notNull w265 input onlyNumber" value="1" data-name="수량"/><span class="unit">개</span>
@@ -274,10 +403,14 @@
 										</div>
 									</td>
 								</tr> -->
-								<tr>
+								<%--<tr>
 									<th>운임구분 <span class="red">*</span></th>
 									<td><input type="text" readonly="readonly" class="w265" placeholder="입금대기" /></td>
-								</tr>
+								</tr>--%>
+                                <tr>
+                                    <th>운임구분 <span class="red">*</span></th>
+                                    <td><input type="text" readonly="readonly" class="w265" placeholder="${partner == 'zimcarry_111' ? '결제완료' : '입금대기'}" /></td>
+                                </tr>
 							</table>
 						</div>
 					</div>
@@ -599,7 +732,65 @@
 
 <script type="text/javascript">
 	$(document).ready(function(){
-		
+
+        var partner = "${partner}";
+
+        if(partner === 'zimcarry_111') {
+            // [1] 오늘 날짜 계산
+            var today = new Date();
+            var yyyy = today.getFullYear();
+            var mm = String(today.getMonth() + 1).padStart(2, '0');
+            var dd = String(today.getDate()).padStart(2, '0');
+            var todayStr = yyyy + "-" + mm + "-" + dd;
+
+            // [2] 시간 체크 (시연용: 경고만 띄우고 버튼은 살려둠)
+            var hours = today.getHours();
+            var minutes = today.getMinutes();
+            var isAfterDeadline = (hours > 15 || (hours === 15 && minutes >= 30));
+
+            // 접수일 및 픽업희망일 기본 세팅 (무조건 오늘 날짜)
+            $("input[name=gameDt]").val(todayStr);
+            $("input[name='list[0].picReqDt']").val(todayStr);
+
+            if(isAfterDeadline) {
+                // 운영 시에는 막아야 하지만, 시연용이므로 console이나 토스트 메시지로 대체 가능
+                console.log("운영 환경이었다면 15:30 마감 로직이 작동했을 시간입니다.");
+                // alert("당일 접수는 마감되었으나 시연을 위해 활성화 상태를 유지합니다."); // 필요시 주석 해제
+            }
+
+            // [3] 연락처 실시간 연동 (받는 분 -> 보내는 분 히든필드)
+            $(document).on("input change", "[role='ephone2']", function() {
+                var telParts = [];
+                $("[role='ephone2']").each(function() {
+                    if($(this).val() != "") telParts.push($(this).val());
+                });
+                if(telParts.length >= 3) {
+                    $("#real_cusSendTelnum").val(telParts.join("-"));
+                }
+            });
+
+            // [4] 품목명 선택 제어 및 수량 초기화
+            $("#zimcarry_pdNm").on("change", function() {
+                var val = $(this).val();
+                $("#row_pdCnt, #row_carrierCnt, #row_bostonCnt").hide().find("input").val(0);
+
+                if(val === "인천공항골프백") {
+                    $("#row_pdCnt").show().find("input").val(1);
+                } else if(val === "인천공항캐리어") {
+                    $("#row_carrierCnt").show().find("input").val(1);
+                } else if(val === "인천공항보스턴백") {
+                    $("#row_bostonCnt").show().find("input").val(1);
+                }
+                searchIsl();
+            });
+
+            // [5] 고정값 및 초기화
+            $("#oneWay").prop("checked", true);
+            $("input[name=delKind]").attr("disabled", true);
+            $("#office2").val("도착지 확인필요");
+            $("#officeCode2").val("00000");
+        }
+
 		//새로고침 또는 페이지 이동 시 확인
 	    $(window).on("beforeunload", function(){
 	        return "입력사항이 저장되지 않을 수 있습니다.\n저장하고 넘어가시겠습니까?";
@@ -1023,6 +1214,14 @@
 		var amtArray = [[5000, 21000, 20000, 6000, 6000, 6000], [5000, 15000, 15000, 6000, 6000, 6000], [5000, 15000, 15000, 6000, 6000, 6000]]; //이 부분 변경 시 golfReceiptInf.selectByKakaoHistory 쿼리 수정 (배송운임 변경관련)
 		var amt = amtArray[$("#fareType option").index($("#fareType option:selected"))];
 		var dosun1 = 0, dosun2 = 0;
+
+        var cnt = [];
+        var bostonCnt = [];
+        var carrierCnt = []; // 추가
+
+        $("input[name$=pdCnt]").each(function(){ cnt.push($(this).val() || 0); });
+        $("input[name$=bostonCnt]").each(function(){ bostonCnt.push($(this).val() || 0); });
+        $("input[name$=carrierCnt]").each(function(){ carrierCnt.push($(this).val() || 0); }); // 추가
 		
 		$("input[role=zip1]:eq(1),input[role=zip2]:eq(1),input[role=zip3]:eq(1),input[role=zip4]:eq(1)").each(function(idx){
 			if($(this).val().indexOf("제주") > -1){
