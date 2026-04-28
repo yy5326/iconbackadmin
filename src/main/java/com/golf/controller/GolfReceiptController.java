@@ -97,7 +97,9 @@ public class GolfReceiptController extends PrtController {
 		if(!(_globalProperty.getWebMode().equals("op"))) {
 			return "redirect:/receipt/" + session.getAttribute("partner") +"/receiptList.do";
 		} else {
-			
+			if(!"superUser_092_02".equals(session.getAttribute("partner"))) {
+                return "redirect:/receipt/" + session.getAttribute("partner") +"/receiptList.do";
+            }
 		
 		
 			if (search.getRecordCount() < 20)
@@ -176,10 +178,10 @@ public class GolfReceiptController extends PrtController {
 			// 등록구분 상태
 			List<StringPair> type6 = new ArrayList<StringPair>();
 			type6.add(new StringPair("아이콘", "0"));
-			type6.add(new StringPair("카카오", "1"));
+//			type6.add(new StringPair("카카오", "1"));
 			type6.add(new StringPair("스마트", "2"));
 			type6.add(new StringPair("현대C", "3"));
-			type6.add(new StringPair("롯데R", "4"));
+//			type6.add(new StringPair("롯데R", "4"));
 			type6.add(new StringPair("팬스타", "9"));
 
 			model.addAttribute("search", search);
@@ -215,15 +217,16 @@ public class GolfReceiptController extends PrtController {
 		// 첫자리 : RcpKind , 두번쨰 : 연동방식(0:api 1:view 9:super) , 세번째 : 구현단계(0:개발, 1:테스트, 2:운영)
 			case "superUser_092_02" : search.setType6(""); // 아이콘 및 슈퍼유저
 				break;
-			case "kakao_102" : search.setType6("1"); // 카카오챗봇
-				break;
+//			case "kakao_102" : search.setType6("1"); // 카카오챗봇
+//				break;
 			case "score_202" : search.setType6("2"); // 스마트스코어
 				break;
 			case "hyundaiCard_311" : search.setType6("3"); // 현대카드
 				break;
-			case "lotteRent_401" : search.setType6("4"); // 롯데렌터카
-				break;
-				
+//			case "lotteRent_401" : search.setType6("4"); // 롯데렌터카
+//				break;
+            case "zimcarry_111" : search.setType6("4"); // 롯데렌터카
+                break;
 			default : search.setType6("99");
 				break;
 		}
@@ -338,7 +341,9 @@ public class GolfReceiptController extends PrtController {
 	public String GolfReceiptWrite(GolfReceiptSearchVO search, BindingResult result, Model model) throws Exception {
 		if(result.hasErrors())
 			return super.setBindingResult(result, model);
-		
+		if(session.getAttribute("partner") != null) {
+            return "redirect:/receipt/" + session.getAttribute("partner") +"/receiptWrite.do";
+        }
 		if(!(_globalProperty.getWebMode().equals("op")) && !("superUser_092_02".equals(session.getAttribute("partner")))) {
 			return "redirect:/receipt/" + session.getAttribute("partner") +"/receiptList.do";
 		} else {
@@ -349,6 +354,29 @@ public class GolfReceiptController extends PrtController {
 			return "/receipt/receiptWrite";
 		}
 	}
+
+    /**
+     * 파트너 택배접수 뷰
+     * @param vo
+     * @param result
+     * @param model
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/{partner}/receiptWrite.do")
+    public String PartnerGolfReceiptWrite(@PathVariable String partner, GolfReceiptSearchVO search, BindingResult result, Model model) throws Exception {
+        if(result.hasErrors()) {
+            return super.setBindingResult(result, model);
+        }
+            //국번 폰번호 불러오기
+            model.addAttribute("phoneList", StringUtil.getMobilePhoneList());
+            model.addAttribute("search", search);
+            model.addAttribute("partner", partner);
+
+            return "/receipt/receiptWrite";
+
+    }
 	
 	/**
 	 * 택배접수 복사뷰

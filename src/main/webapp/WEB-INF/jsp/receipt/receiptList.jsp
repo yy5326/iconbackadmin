@@ -10,11 +10,16 @@
 				<div class="left">
 					<!-- <a href="#" class="search_btn" style="margin-left: 0;">입금대기</a> -->
 					<!-- <a href="#" class="search_btn" style="margin-left: 0;">결제취소</a> -->
-					<a href="javascript:;" onclick="javascript:setGolfDeliveryCancel();" class="search_btn" class="chk" style="margin-left: 0;">선택취소</a>
-					<a href="javascript:setGolfDeliveryPayment('완료');" class="search_btn">결제완료</a>
-					<a href="javascript:setGolfDeliveryPayment('취소');" class="search_btn">결제취소</a>
+                    <c:if test="${partner != 'zimcarry_111'}">
+                        <a href="javascript:;" onclick="javascript:setGolfDeliveryCancel();" class="search_btn" class="chk" style="margin-left: 0;">선택취소</a>
+                        <a href="javascript:setGolfDeliveryPayment('완료');" class="search_btn">결제완료</a>
+                        <a href="javascript:setGolfDeliveryPayment('취소');" class="search_btn">결제취소</a>
+                    </c:if>
 					<a href="javascript:setGolfDelivery();" class="search_btn">픽업요청</a>
 					<a href="javascript:setGolfWait();" class="search_btn">골프접수</a>
+                    <c:if test="${partner == 'zimcarry_111'}">
+                        <a href="#" class="search_btn">송장출력</a>
+                    </c:if>
 				</div>
 				<div class="right">
 					<a class="search_btn" href="javascript:$.Nav('excel','./receiptListExcel.do');">엑셀저장</a>
