@@ -27,4 +27,6 @@ public @Data class GolfReceiptMstVO implements GeneralModel {
 	private String useYn;
 	//경기종료일
 	private String gameEndDt;
+	//제휴사
+	private String partner;
 }

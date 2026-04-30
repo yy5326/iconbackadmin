@@ -49,73 +49,73 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 	 */
 	public void insertReceipt(GolfReceiptMstVO mstVO, List<GolfReceiptInfVO> list) throws Exception {
 
-		//접수 등록
+		// 1. 접수 마스터 등록
 		getDAO().insert("golfReceipt.insertReceiptMst", mstVO);
 
-		//물품 접수 등록
 		if(list != null){
-
-			// 왕복일시 2차 왕복건에 데이터가 null, 1차로 구분.
 			String rcpKind = list.get(0).getRcpKind();
 
 			for(GolfReceiptInfVO receiptInfVO : list){
 
-				/**
-				 * 2024.12.02 SG 보스턴백 수량에 따른 할인가
-				 * 골프택배 (전산) 수기 입력 접수시, 3000원 할인적용.
-				 * 편도 /왕복 3000
-				 * FareType : 1 기본운임
-				 * RcpKind : 0 (모바일, 웹)
-				 * DelKind : 1 편도, 2 왕복
-				 * + 교참추가
-				 */
-				if (("0".equals(rcpKind) || "5".equals(rcpKind)) && "1".equals(mstVO.getFareType())) {
-					if (receiptInfVO.getBostonCnt() > 0
-							&& receiptInfVO.getPdCnt() > 0) {
+				// [보정] 짐캐리가 아닐 때만 기존의 할인 로직 수행
+				if (!"zimcarry_111".equals(mstVO.getPartner())) {
+					// 중복 if문 하나로 정리
+					if (("0".equals(rcpKind) || "5".equals(rcpKind)) && "1".equals(mstVO.getFareType())) {
+						if (receiptInfVO.getBostonCnt() > 0 && receiptInfVO.getPdCnt() > 0) {
+							int bostonDiscount = 3000;
+							int discount = bostonDiscount * receiptInfVO.getBostonCnt();
+							int pdPay = receiptInfVO.getPdPay();
+							int iconPay = receiptInfVO.getIconFee();
 
-						int bostonDiscount = 3000;
-						int discount = bostonDiscount * receiptInfVO.getBostonCnt();
-						int pdPay = receiptInfVO.getPdPay();
-						int iconPay = receiptInfVO.getIconFee();
+							if(receiptInfVO.getBostonCnt() > receiptInfVO.getPdCnt()) {
+								discount = bostonDiscount * receiptInfVO.getPdCnt();
+							}
 
-						//매칭된 수만큼 할인
-				        if(receiptInfVO.getBostonCnt() > receiptInfVO.getPdCnt()) {
-				          discount = bostonDiscount * receiptInfVO.getPdCnt();
-	                    }
-
-						if ("1".equals(mstVO.getDelKind())) { // 편도
-							iconPay = iconPay - discount;
-							receiptInfVO.setDiscount(pdPay-discount); //알림 발송 총합
-						} else if ("2".equals(mstVO.getDelKind())) { // 왕복
-							receiptInfVO.setDiscount((pdPay*2)-discount); //알림 발송 총합
-							discount = discount/2;
-							iconPay = iconPay - discount;
+							if ("1".equals(mstVO.getDelKind())) { // 편도
+								iconPay = iconPay - discount;
+								receiptInfVO.setDiscount(pdPay - discount);
+							} else if ("2".equals(mstVO.getDelKind())) { // 왕복
+								receiptInfVO.setDiscount((pdPay * 2) - discount);
+								discount = discount / 2;
+								iconPay = iconPay - discount;
+							}
+							receiptInfVO.setIconFee(iconPay < 0 ? 0 : iconPay);
+							receiptInfVO.setPdPay(receiptInfVO.getPdPay() - discount);
 						}
-						receiptInfVO.setIconFee(iconPay < 0 ? 0 : iconPay);
-						receiptInfVO.setPdPay(receiptInfVO.getPdPay() - discount);
 					}
 				}
 
+				// 2. 물품 상세 정보 등록
 				getDAO().insert("golfReceipt.insertReceiptInf", receiptInfVO);
 
-				//결제금액
+				// 3. 결제 및 히스토리 정보 세팅
 				GolfReceiptPayVO payVO = new GolfReceiptPayVO();
+				payVO.setRcpInfSeq(receiptInfVO.getRcpInfSeq());
+				payVO.setPayAmt(receiptInfVO.getPdPay());
 
 				String historyMemo = "아이콘 택배접수 편도";
-				payVO.setOrderId(receiptInfVO.getRcpNumber());
-				payVO.setRcpInfSeq(receiptInfVO.getRcpInfSeq());
+				String orderId = receiptInfVO.getRcpNumber(); // 기본값: 접수번호
 
-				if(receiptInfVO.getSrType()!=null) {
-					if(receiptInfVO.getSrType().equals("S")) {
-						historyMemo = "아이콘 택배접수 왕복1차";
-					}else if(receiptInfVO.getSrType().equals("R")) {
-						historyMemo = "아이콘 택배접수 왕복2차";
+				// [분기 처리] 짐캐리 vs 일반
+				if ("zimcarry_111".equals(mstVO.getPartner())) {
+					historyMemo = "짐캐리 제휴사 접수";
+					orderId = "GRP" + mstVO.getRcpSeq(); // 짐캐리도 GRP 형태를 사용한다면 유지
+				} else {
+					// 일반 접수 로직
+					if(receiptInfVO.getSrType() != null) {
+						if(receiptInfVO.getSrType().equals("S")) {
+							historyMemo = "아이콘 택배접수 왕복1차";
+						} else if(receiptInfVO.getSrType().equals("R")) {
+							historyMemo = "아이콘 택배접수 왕복2차";
+						}
+						orderId = "GRP" + mstVO.getRcpSeq();
 					}
-					payVO.setOrderId("GRP"+mstVO.getRcpSeq());
 				}
-				payVO.setPayAmt(receiptInfVO.getPdPay());
+
+				payVO.setOrderId(orderId);
+
+				// 4. 결제 정보 및 히스토리 저장
 				getDAO().insert("golfReceiptPay.insertReceiptPay", payVO);
-				//히스토리 등록
 				insertGolfHistory(String.valueOf(receiptInfVO.getRcpNumber()), historyMemo);
 			}
 		}

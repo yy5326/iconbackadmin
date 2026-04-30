@@ -13,13 +13,10 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,12 +27,9 @@ import com.golf.model.common.StringPair;
 import com.golf.service.GlobalProperty;
 import com.golf.service.dao.GeneralDAOImpl;
 import com.golf.service.impl.GolfReceiptServiceImpl;
-import com.golf.service.model.GolfFileVO;
 import com.golf.service.model.GolfInfVO;
 import com.golf.service.model.GolfReceiptInfVO;
-import com.golf.service.model.GolfReceiptInfVOList;
 import com.golf.service.model.GolfReceiptMstVO;
-import com.golf.service.model.GroupVO;
 import com.golf.service.model.StatusPayVO;
 import com.golf.service.model.StatusVO;
 import com.golf.service.model.search.GolfReceiptSearchVO;
@@ -44,11 +38,8 @@ import com.golf.talk.vo.SendRequestVO;
 import com.golf.util.ExcelDownloadUtil;
 import com.golf.util.StringUtil;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
-import egovframework.rte.psl.dataaccess.util.EgovMap;
-
-import com.golf.controller.CommonController;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * 골프택배 컨트롤러
@@ -464,6 +455,52 @@ public class GolfReceiptController extends PrtController {
 		return new Gson().toJson("true");
 	}
 
+	/**
+	 * 제휴사 택배접수 등록 처리
+	 * @param vo
+	 * @param result
+	 * @param model
+	 * @param request
+	 * @return
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/partnerReceiptProc.do", method=RequestMethod.POST)
+	public String PartnerReceiptProc(GolfReceiptMstVO mstVO, GolfReceiptInfVO listVO, RedirectAttributes rttr) throws Exception {
+		try {
+			if ("zimcarry_111".equals(mstVO.getPartner())) {
+				mstVO.setDelKind("1");
+				listVO.getList().get(0).setCusSendNm("아이콘");
+				listVO.getList().get(0).setSrType("S");
+			}
+
+			_receiptService.insertReceipt(mstVO, listVO.getList());
+
+			try {
+				_sendTalkService.sendPayRequest(listVO.getList(), mstVO);
+			} catch (Exception e) {
+				logger.error("알림톡 발송 실패: " + e.getMessage());
+			}
+
+			rttr.addFlashAttribute("saveMsg", "정상적으로 접수되었습니다.");
+
+			// [수정] 파트너 코드가 있으면 해당 경로를 유지하도록 리다이렉트 경로 변경
+			if (mstVO.getPartner() != null && !mstVO.getPartner().isEmpty()) {
+				return "redirect:/receipt/" + mstVO.getPartner() + "/receiptWrite.do";
+			}
+
+			return "redirect:/receipt/receiptWrite.do";
+
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			rttr.addFlashAttribute("saveMsg", "저장에 실패하였습니다.");
+
+			if (mstVO.getPartner() != null && !mstVO.getPartner().isEmpty()) {
+				return "redirect:/receipt/" + mstVO.getPartner() + "/receiptWrite.do";
+			}
+			return "redirect:/receipt/receiptWrite.do";
+		}
+	}
 
 	/**
 	 * 택배조회 상세보기

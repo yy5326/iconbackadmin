@@ -4,11 +4,12 @@
 
 		<div class="contents">
 			<form action="receiptProcConfirm.do" method="post">
+                <input type="hidden" name="partner" value="${partner}" />
 				<div id="original">
 					<div class="receiver">
-<c:if test="${partner != 'zimcarry_111'}">
-						<p class="type">보내는 분 <span class="red">*</span><span>표시는 필수 입력사항입니다</span></p>
-</c:if>
+                        <c:if test="${partner != 'zimcarry_111'}">
+						    <p class="type">보내는 분 <span class="red">*</span><span>표시는 필수 입력사항입니다</span></p>
+                        </c:if>
 						<div class="tableBox">
 							<table>
                                 <c:choose>
@@ -25,6 +26,7 @@
                                         </tr>--%>
                                         <c:choose>
                                             <c:when test="${partner == 'zimcarry_111'}">
+                                                <input type="hidden" name="delKind" value="1" />
                                                 <tr>
                                                     <th>운임체계</th>
                                                     <td>
@@ -166,7 +168,7 @@
 								<tr>
 									<th>이름 <span class="red">*</span></th>
 									<td><input type="text" name="list[0].cusReNm" class="notNull w410"  data-name="이름"/></td>
-                                    <input type="hidden" name="list[0].cusReNm" id="real_cusReNm" class="notNull" data-name="이름"/>
+                                    <%--<input type="hidden" name="list[0].cusReNm" id="real_cusReNm" data-name="이름"/>--%>
 								</tr>
 								<tr>
 									<th>연락처 <span class="red">*</span></th>
@@ -273,7 +275,11 @@
                                                     <option value="인천공항캐리어">인천공항캐리어</option>
                                                     <option value="인천공항보스턴백">인천공항보스턴백</option>
                                                 </c:when>
-                                                <c:otherwise>...</c:otherwise>
+                                                <c:otherwise>
+                                                    <%-- 기존 옵션 추가 --%>
+                                                    <option value="국제골프택배기본">국제골프택배기본</option>
+                                                    <option value="국제골프택배세트">국제골프택배세트</option>
+                                                </c:otherwise>
                                             </c:choose>
                                         </select>
                                     </td>
@@ -319,7 +325,7 @@
                                 <tr id="row_bostonCnt" style="display:none;">
 									<th>보스턴백 수량 <span class="red onlyNumber">*</span></th>
 									<td>
-										<input type="text" name="list[0].bostonCnt" id="bostonCnt0" class="notNull w265 input onlyNumber" value="1" data-name="수량"/><span class="unit">개</span>
+										<input type="text" name="list[0].bostonCnt" id="bostonCnt0" class="notNull w265 input onlyNumber" value="0" data-name="수량"/><span class="unit">개</span>
 									</td>
 								</tr>
 								<%--<tr>
@@ -335,7 +341,7 @@
                                 <tr id="row_pdCnt" style="display:none;">
                                     <th>골프백 수량 <span class="red onlyNumber">*</span></th>
                                     <td>
-                                        <input type="text" name="list[0].pdCnt" id="pdCnt0" class="notNull w265 input onlyNumber" value="1"/>
+                                        <input type="text" name="list[0].pdCnt" id="pdCnt0" class="notNull w265 input onlyNumber" value="0"/>
                                         <c:if test="${partner != 'zimcarry_111'}">
                                             <a href="javascript:;" role="openPriceLayer1" class="btn unitPrice">개별단가</a>
                                         </c:if>
@@ -360,7 +366,7 @@
                                 <tr <c:if test="${partner == 'zimcarry_111'}">style="display:none;"</c:if>>
 									<th>골프채 수량 <span class="red">*</span></th>
 									<td>
-										<input type="text" name="list[0].pdGolfCnt" class="notNull w265 input onlyNumber" value="1" data-name="수량"/><span class="unit">개</span>
+										<input type="text" name="list[0].pdGolfCnt" class="notNull w265 input onlyNumber" value="0" data-name="수량"/><span class="unit">개</span>
 									</td>
 								</tr>
 								<tr>
@@ -514,7 +520,7 @@
 							<tr>
 								<th>연락처 <span class="red">*</span></th>
 								<td>
-									
+
 									<select role="ephone4" class="phone">
 									<c:forEach var="list" items="${phoneList}">
 										<option value="${list}">${list}</option>
@@ -612,7 +618,7 @@
 									</select>
 								</td>
 							</tr>
-							
+
 							<tr>
 								<th>보스턴백 수량 <span class="red onlyNumber">*</span></th>
 								<td>
@@ -729,11 +735,25 @@
 		<!-- 개별단가 레이어 -->
 	</div>
 </body>
-
+<script type="text/javascript">
+    var gContextPath = "${pageContext.request.contextPath}";
+    if(gContextPath === "/") gContextPath = "";
+</script>
 <script type="text/javascript">
 	$(document).ready(function(){
 
         var partner = "${partner}";
+        var saveMsg = "${saveMsg}";
+        if(saveMsg !== ""){
+            alert(saveMsg);
+        }
+
+        var urlParams = new URLSearchParams(window.location.search);
+        if(urlParams.get('msg') === 'success'){
+            alert("접수가 정상적으로 완료되었습니다.");
+        } else if(urlParams.get('msg') === 'fail'){
+            alert("접수 처리 중 오류가 발생했습니다.");
+        }
 
         if(partner === 'zimcarry_111') {
             // [1] 오늘 날짜 계산
@@ -775,20 +795,21 @@
                 $("#row_pdCnt, #row_carrierCnt, #row_bostonCnt").hide().find("input").val(0);
 
                 if(val === "인천공항골프백") {
-                    $("#row_pdCnt").show().find("input").val(1);
+                    $("#row_pdCnt").show().find("input").val(0);
                 } else if(val === "인천공항캐리어") {
-                    $("#row_carrierCnt").show().find("input").val(1);
+                    $("#row_carrierCnt").show().find("input").val(0);
                 } else if(val === "인천공항보스턴백") {
-                    $("#row_bostonCnt").show().find("input").val(1);
+                    $("#row_bostonCnt").show().find("input").val(0);
                 }
                 searchIsl();
             });
 
             // [5] 고정값 및 초기화
             $("#oneWay").prop("checked", true);
-            $("input[name=delKind]").attr("disabled", true);
             $("#office2").val("도착지 확인필요");
             $("#officeCode2").val("00000");
+            $("input[name$='pdEtcPay'], input[name$='pdDosunPay'], input[name$='pdDeliPay'], input[name$='pdPay']").val(0);
+            $("input[name$='iconFee']").val(0);
         }
 
 		//새로고침 또는 페이지 이동 시 확인
@@ -855,7 +876,7 @@
 			var minDate = $("input[name=gameDt]").datepicker("getDate");
 
 			//경기일 포함 이전 3일(익일 ~ 경기일포함 영업일 3일 제외)
-			
+
 			if(attrFlag){
 				curDate.setDate(curDate.getDate() - (curDate.getDay() == 6 ? 4 : curDate.getDay() > 2 ? 3 : 5));
 			//경기일 포함 이후 6일
@@ -878,7 +899,7 @@
 
 		//라디오버튼 편도/왕복 클릭 시 이벤트
 		$("input[name=delKind]").click(function(){
-			
+
 			// 왕복 배송지 레이어 show / hide
 			if($(this).prop("id") == "oneWay"){
 				$("#rotate").hide();
@@ -889,17 +910,17 @@
 				$("input[name$=srType]").removeAttr("disabled");
 				$("#rotate :input").removeAttr("disabled");
 			}
-			
+
 			// 물품 정보 하위 포장상태를 선택값 동기화 세팅
-			if($(this).prop("id") == "oneWay"){				
+			if($(this).prop("id") == "oneWay"){
 				//$("input[id^=pdPackOneWay]").prop("checked", true);
 				$("select[name$=pdPack]").val("편도").prop("selected", true);
-				
+
 			}else{
 				//$("input[id^=pdPackBack]").prop("checked", true);
 				$("select[name$=pdPack]").val("왕복").prop("selected", true);
-			}				
-			
+			}
+
 			//운임계산
 			searchIsl();
 		});
@@ -951,14 +972,14 @@
 				});
 
 				$("select[name$=pdNm]:last").val($("select[name$=pdNm]:first").val());
-				
+
 				// 아이콘 수수료 왕복 세팅
 				iconFee3 = iconFee2;
 				iconFee4 = iconFee1;
-				
+
 				//운임계산
-	            searchIsl();				
-				
+	            searchIsl();
+
 			}else{
 				$("#rotate :input").not("select,:radio,input[name$=srType]").val("");
 				//골프장 선택, 영업소찾기 수동입력 불가로 제거
@@ -966,7 +987,7 @@
 					if($(this).attr("readonly") == "readonly")
 						$(this).prop("readonly", false);
 				}); */
-				
+
 				// 아이콘 수수료 왕복 부분만 초기화
 				iconFee3 = [];
 				iconFee4 = [];
@@ -975,8 +996,10 @@
 
 		//골프장 상호 검색 레이어
 		$("[role^=golfSearch]").not("input[name*=br]").click(function(){
-			$.colorbox({
-				href : './receiptGolfLayer.do?type1='+$(this).attr("role"),
+            var targetUrl = gContextPath + "/receipt/receiptGolfLayer.do";
+            $.colorbox({
+				/*href : './receiptGolfLayer.do?type1='+$(this).attr("role"),*/
+                href : targetUrl + '?type1=' + $(this).attr("role"),
 				overlayClose : false,
 				width : 1200,
 				height : 740,
@@ -989,38 +1012,77 @@
 
 		//접수 시작
 		$("#add").click(function(){
-			var cnt = Number($("input[name$=pdCnt]:first").val()) + Number($("input[name$=bostonCnt]:first").val());
-			
-			if(1>cnt){
-				alert("백 수량을 입력해주세요.");
-				$("input[name$=pdCnt]:first").focus();
-				return;
-			}
-			
-			//편도 처리
-			if($("input[name=delKind]:checked").val() == "1"){
-				$("input[name$=srType]").attr("disabled",true);
-				$("#rotate :input").attr("disabled",true);
-			}else{
-				cnt = Number($("input[name$=pdCnt]:last").val()) + Number($("input[name$=bostonCnt]:last").val());
-				if(1>cnt){
-					alert("백 수량을 입력해주세요.");
-					$("input[name$=pdCnt]:last").focus();
-					return;
-				}
-			}
+            // pdCnt, bostonCnt에 추가로 carrierCnt 수량까지 합산.
+            var cnt = Number($("input[name$=pdCnt]:first").val()) +
+                Number($("input[name$=bostonCnt]:first").val()) +
+                Number($("input[name$=carrierCnt]:first").val() || 0); // 캐리어 수량 추가
 
-			//phoneNumber
-			addTelNum();
+            if(1 > cnt){
+                alert("백 수량을 입력해주세요.");
+                // 상황에 맞게 포커스 이동 (캐리어 선택 시엔 캐리어 입력창으로)
+                if($("#row_carrierCnt").is(":visible")) {
+                    $("#carrierCnt0").focus();
+                } else {
+                    $("input[name$=pdCnt]:first").focus();
+                }
+                return;
+            }
+
+            // 편도 처리 (왕복일 경우 list[1] 영역도 동일하게 수정 필요)
+            if($("input[name=delKind]:checked").val() == "1"){
+                $("input[name$=srType]").attr("disabled",true);
+                $("#rotate :input").attr("disabled",true);
+            } else {
+                // 왕복일 때 두 번째 리스트 체크
+                cnt = Number($("input[name$=pdCnt]:last").val()) +
+                    Number($("input[name$=bostonCnt]:last").val()) +
+                    Number($("input[name$=carrierCnt]:last").val() || 0); // 캐리어 수량 추가
+
+                if(1 > cnt){
+                    alert("백 수량을 입력해주세요.");
+                    $("input[name$=pdCnt]:last").focus();
+                    return;
+                }
+            }
 
 			//입력값 체크
 			if(checkData()){
-				//등록 전 콤마제거
-				$("input[role=pay]").each(function(){
-					var uncommaData = uncomma($(this).val());
-					$(this).val(uncommaData);
-				});
-				$("form").submit();
+
+                if(partner === 'zimcarry_111') {
+                    if(!confirm("접수하시겠습니까?")) return;
+
+                    $(window).off("beforeunload"); // 페이지 이동 경고 해제
+
+                    // [핵심] 보내는 분 이름을 다시 한번 '아이콘'으로 강제 고정
+                    $("input[name='list[0].cusSendNm']").val("아이콘");
+                    $("#rotate :input").attr("disabled", true); // 왕복 전송 원천 차단
+
+                    // 컨펌 페이지를 건너뛰고 바로 최종 저장 호출
+                    var finalAction = gContextPath + "/receipt/partnerReceiptProc.do";
+                    $("form").attr("action", finalAction);
+                    $("form").submit();
+
+                } else {
+                    //phoneNumber
+                    addTelNum();
+
+                    // 전송 전 빈 문자열인 금액 필드들을 0으로 채움
+                    $("input[role=pay], input[name$='Pay'], input[name$='Fee']").each(function(){
+                        if($.trim($(this).val()) == "") {
+                            $(this).val(0);
+                        }
+                    });
+                    //등록 전 콤마제거
+                    $("input[role=pay]").each(function(){
+                        var uncommaData = uncomma($(this).val());
+                        $(this).val(uncommaData);
+                    });
+                    // 선언해두신 gContextPath를 사용하여 경로 조합
+                    var finalAction = gContextPath + "/receipt/receiptProcConfirm.do";
+                    // form 태그의 action 속성을 강제로 업데이트
+                    $("form").attr("action", finalAction);
+                    $("form").submit();
+                }
 			}
 
 		});
@@ -1193,7 +1255,7 @@
 	function checkData(){
 		var type = ($("input[name=delKind]:checked").val() == "1") ? "#original" : "form";
 		var returnVal = true;
-		$(type+" .notNull").each(function(){
+        $(type + " .notNull:visible").each(function(){
 			if ($.trim($(this).val()) == ""){
 	            alert($(this).attr("data-name")+" 항목을 입력해 주세요.");
 	            if($(this).attr("data-name").indexOf("픽업희망일") > -1){
@@ -1245,15 +1307,15 @@
 
 		var cnt = new Array;
 		var bostonCnt = new Array;
-		
+
 		$("input[name$=pdCnt]").each(function(){
 			cnt.push(($(this).val() != "") ? $(this).val() : 0);
 		});
-		
+
 		$("input[name$=bostonCnt]").each(function(){
 			bostonCnt.push(($(this).val() != "") ? $(this).val() : 0);
 		});
-		
+
 		var extraPrice = new Array;
 		$("input[name$=pdEtcPay]").each(function(){
 			extraPrice.push(($(this).val() != "") ? Number(uncomma($(this).val())) : 0);
@@ -1281,7 +1343,7 @@
 				$("input[name$=pdDeliPay]:last").val(comma(amt[2] * cnt[1] + (amt[5] * bostonCnt[1])));
 			}
 		}
-		
+
 		$('#iconFee0').val(comma($('#iconFee0').val()));
 		$('#iconFee1').val(comma($('#iconFee1').val()));
 	}
@@ -1376,19 +1438,19 @@
 	    			else if(idx == 2) $(this).val("");
 	    			else $(this).val("");
 	    		});
-	    		
+
 	    		initIconFee(targetElement);
 	            //운임계산
-	            searchIsl();	            
+	            searchIsl();
 	        }
 	    }).open();
 	}
-	
+
 	var iconFee1 = []; // 편도의 출발지 수수료
 	var iconFee2 = []; // 편도의 도착지 수수료
 	var iconFee3 = []; // 왕복시 출발지 수수료
 	var iconFee4 = []; // 왕복시 도착지 수수료
-	
+
 	// 주소 선택시 아이콘 수수료 초기화
 	function initIconFee(type) {
 		if ( type == 'golfSearch1' ) {
@@ -1401,7 +1463,7 @@
 			iconFee4 = [];
 		}
 	}
-	
+
 	// 골프장 선택시 아이콘 수수료 정보 set
 	function setIconFee(type, iconFeeArr) {
 		if ( type == 'golfSearch1' ) {
@@ -1414,12 +1476,16 @@
 			iconFee4 = iconFeeArr;
 		}
 	}
-	
+
 	// 아이콘 수수료 계산
 	function calculateIconFee() {
-		var delKindIndex = $("input[name=delKind]:checked").val()-1; // 편도/왕복
+        // iconFee1 변수가 정의되지 않았거나 데이터가 없을 때 실행 방지
+        if (typeof iconFee1 === 'undefined' || iconFee1.length === 0) {
+            return;
+        }
+        var delKindIndex = $("input[name=delKind]:checked").val()-1; // 편도/왕복
 		var fareTypeIndex = $("#fareType option").index($("#fareType option:selected")); // 운임체계
-		
+
 		var pdFee = 8000;
 		var bostonFee = 6000;
 
@@ -1435,7 +1501,7 @@
 			bostonFee = delKindFee($('#bostonCnt0').val(), $('#bostonCnt1').val(), iconFee1[delKindIndex + 2][fareTypeIndex], Math.min(iconFee1[delKindIndex + 1][fareTypeIndex],bostonFee));
 			$('#iconFee0').val(pdFee + bostonFee);
 		} else if ( iconFee1.length == 0 && iconFee2.length > 0 ) {
-			// 도착지가 골프장일 경우			
+			// 도착지가 골프장일 경우
 			pdFee = delKindFee($('#pdCnt0').val(), $('#pdCnt1').val(), iconFee2[delKindIndex][fareTypeIndex], Math.min(iconFee2[0][0],pdFee));
 			bostonFee = delKindFee($('#bostonCnt0').val(), $('#bostonCnt1').val(), iconFee2[delKindIndex + 2][fareTypeIndex], Math.min(iconFee2[delKindIndex + 1][fareTypeIndex],bostonFee));
 			$('#iconFee0').val(pdFee + bostonFee);
@@ -1445,7 +1511,7 @@
 			bostonFee = delKindFee($('#pdCnt0').val(), $('#pdCnt1').val(), iconFee2[delKindIndex][fareTypeIndex], Math.min(iconFee2[delKindIndex][fareTypeIndex],pdFee)) + delKindFee($('#bostonCnt0').val(), $('#bostonCnt1').val(), iconFee2[delKindIndex + 2][fareTypeIndex], Math.min(iconFee2[delKindIndex + 1][fareTypeIndex],bostonFee));
 			$('#iconFee0').val(Math.min(pdFee,bostonFee));
 		}
-		
+
 		if ( $("input[name=delKind]:checked").val() == '2' ) {
 			// 왕복시 수수료 계산
 			if ( iconFee3.length == 0 && iconFee4.length == 0 ) {
@@ -1462,7 +1528,7 @@
 				// 출발지가 골프장일 경우
 				pdFee = delKindFee($('#pdCnt1').val(), $('#pdCnt0').val(), iconFee3[delKindIndex][fareTypeIndex], Math.min(iconFee3[delKindIndex-1][fareTypeIndex],8000));
 				bostonFee = delKindFee($('#bostonCnt1').val(), $('#bostonCnt0').val(), iconFee3[delKindIndex + 2][fareTypeIndex], Math.min(iconFee3[delKindIndex+1][fareTypeIndex],6000));
-				$('#iconFee1').val(pdFee + bostonFee);				
+				$('#iconFee1').val(pdFee + bostonFee);
 
 			} else if ( iconFee3.length == 0 && iconFee4.length != 0 ) {
 				// 도착지가 골프장일 경우
@@ -1477,26 +1543,26 @@
 
 			}
 		}
-		
+
 		//console.log("운임체계 : "+$("#fareType option").index($("#fareType option:selected")));
 		//console.log("편도/왕복 : "+$("input[name=delKind]:checked").val());
 		//console.log("아이콘 수수료1 : "+$('#iconFee').val());
 	}
-	
+
 	//fee(왕복요금), changeFee(편도요금)
 	function delKindFee(cnt, changeCnt, fee, changeFee){
 		fee = fee * cnt;
-		if(changeCnt==0){			
+		if(changeCnt==0){
 			fee = changeFee * cnt;
-		}			
+		}
 		return fee;
 	}
-	
-	
+
+
 	function numberWithCommas(x) {
 		x = x.replace(/[^0-9]/g,'');   // 입력값이 숫자가 아니면 공백
 		x = x.replace(/,/g,'');          // ,값 공백처리
-		return x.replace(/\B(?=(\d{3})+(?!\d))/g, ","); // 정규식을 이용해서 3자리 마다 , 추가 
+		return x.replace(/\B(?=(\d{3})+(?!\d))/g, ","); // 정규식을 이용해서 3자리 마다 , 추가
 	}
 </script>
 </html>
