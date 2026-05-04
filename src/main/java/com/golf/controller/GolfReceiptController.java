@@ -216,7 +216,7 @@ public class GolfReceiptController extends PrtController {
 				break;
 //			case "lotteRent_401" : search.setType6("4"); // 롯데렌터카
 //				break;
-            case "zimcarry_111" : search.setType6("4"); // 롯데렌터카
+            case "zimcarry_111" : search.setType6("4"); // 짐캐리
                 break;
 			default : search.setType6("99");
 				break;
@@ -472,6 +472,7 @@ public class GolfReceiptController extends PrtController {
 				mstVO.setDelKind("1");
 				listVO.getList().get(0).setCusSendNm("아이콘");
 				listVO.getList().get(0).setSrType("S");
+				listVO.getList().get(0).setRcpKind("4");
 			}
 
 			_receiptService.insertReceipt(mstVO, listVO.getList());

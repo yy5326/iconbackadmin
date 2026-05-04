@@ -1011,36 +1011,42 @@
 		});
 
 		//접수 시작
-		$("#add").click(function(){
-            // pdCnt, bostonCnt에 추가로 carrierCnt 수량까지 합산.
-            var cnt = Number($("input[name$=pdCnt]:first").val()) +
-                Number($("input[name$=bostonCnt]:first").val()) +
-                Number($("input[name$=carrierCnt]:first").val() || 0); // 캐리어 수량 추가
+        $("#add").click(function(){
+            var cnt = 0;
+            if(partner === 'zimcarry_111') {
+                // 짐캐리는 명시적으로 ID 기반 합산
+                cnt = Number($("#pdCnt0").val() || 0) +
+                    Number($("#bostonCnt0").val() || 0) +
+                    Number($("#carrierCnt0").val() || 0);
 
-            if(1 > cnt){
-                alert("백 수량을 입력해주세요.");
-                // 상황에 맞게 포커스 이동 (캐리어 선택 시엔 캐리어 입력창으로)
-                if($("#row_carrierCnt").is(":visible")) {
-                    $("#carrierCnt0").focus();
-                } else {
-                    $("input[name$=pdCnt]:first").focus();
+                if(cnt < 1) {
+                    alert("품목 수량을 입력해주세요.");
+                    return;
                 }
-                return;
+            } else {0
+                //일반 페이지는 '현재 화면에 보이는 수량 필드만 합산
+                var visiblePdCnt = $("input[name$='pdCnt']:visible:first").val() || 0;
+                var visibleBostonCnt = $("input[name$='bostonCnt']:visible:first").val() || 0;
+
+                cnt = Number(visiblePdCnt) + Number(visibleBostonCnt)
+                if(cnt < 1) {
+                    alert("백 수량을 입력해주세요.");
+                    // 포커스 지정
+                    $("input[name$='pdCnt']:visible:first").focus();
+                    return;
+                }
             }
 
-            // 편도 처리 (왕복일 경우 list[1] 영역도 동일하게 수정 필요)
+            // 2. 왕복/편도 srType 처리
             if($("input[name=delKind]:checked").val() == "1"){
                 $("input[name$=srType]").attr("disabled",true);
                 $("#rotate :input").attr("disabled",true);
             } else {
-                // 왕복일 때 두 번째 리스트 체크
-                cnt = Number($("input[name$=pdCnt]:last").val()) +
-                    Number($("input[name$=bostonCnt]:last").val()) +
-                    Number($("input[name$=carrierCnt]:last").val() || 0); // 캐리어 수량 추가
-
-                if(1 > cnt){
-                    alert("백 수량을 입력해주세요.");
-                    $("input[name$=pdCnt]:last").focus();
+                // 왕복일 때 두 번째 리스트 수량 체크 (일반 페이지용)
+                var cnt2 = Number($("input[name='list[1].pdCnt']").val() || 0) +
+                    Number($("input[name='list[1].bostonCnt']").val() || 0);
+                if(cnt2 < 1){
+                    alert("왕복 백 수량을 입력해주세요.");
                     return;
                 }
             }
