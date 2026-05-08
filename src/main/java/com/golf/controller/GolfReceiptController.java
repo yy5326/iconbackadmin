@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.golf.service.impl.KdngeAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,9 +67,12 @@ public class GolfReceiptController extends PrtController {
 	
 	@Autowired
 	GlobalProperty _globalProperty;
+
+	@Autowired
+	private KdngeAPI kdngeApi;
 	
 	/** 택배조회 리스트
-	 * 
+	 *
 	 * @param search
 	 * @param result
 	 * @param model
@@ -469,10 +473,44 @@ public class GolfReceiptController extends PrtController {
 	public String PartnerReceiptProc(GolfReceiptMstVO mstVO, GolfReceiptInfVO listVO, RedirectAttributes rttr) throws Exception {
 		try {
 			if ("zimcarry_111".equals(mstVO.getPartner())) {
-				mstVO.setDelKind("1");
-				listVO.getList().get(0).setCusSendNm("아이콘");
-				listVO.getList().get(0).setSrType("S");
-				listVO.getList().get(0).setRcpKind("4");
+				mstVO.setDelKind("1"); // 편도 고정
+
+				GolfReceiptInfVO firstInf = listVO.getList().get(0);
+
+				// [추가] 짐캐리 전용 기본값 세팅
+				firstInf.setSrType("S");
+				firstInf.setRcpKind("4");
+				firstInf.setRcpInfStat("0"); // 골프접수 상태
+				firstInf.setPayStat("1");    // 결제완료 상태
+				firstInf.setPrdType(1);      // 골프택배
+
+				// [영업소 코드 매칭] 우편번호로 실제 6자리 영업소 코드를 조회.
+				try {
+					GolfInfVO searchVO = new GolfInfVO();
+					searchVO.setType1("zipcode");
+					searchVO.setKeyword(firstInf.getCusSendZip()); // 보내는 분 우편번호 기준
+
+					Map<String, String> branchMap = kdngeApi.getBranchInfo(searchVO);
+					if (branchMap != null && branchMap.get("brCode") != null) {
+						firstInf.setBrStrCode(branchMap.get("brCode")); // 예: 311143
+						firstInf.setBrStrNm(branchMap.get("brNm"));
+					}
+
+					// 도착지는 보통 물류센터나 특정 골프장이므로 고정하거나 해당 우편번호로 조회
+					// 만약 고정이라면:
+					firstInf.setBrEndCode("331003");
+					firstInf.setBrEndNm("강원홍천상오안74");
+				} catch (Exception e) {
+					logger.error("경동 영업소 정보 조회 실패: " + e.getMessage());
+				}
+
+				// [단가 보정]단가가 0이면 거절, 최소 금액 강제로 세팅.
+				if (firstInf.getPdPay() <= 0) {
+					firstInf.setPdPay(1);     // 테스트 성공을 위한 임시금액 (1만원)
+					firstInf.setPdDeliPay(1);
+					firstInf.setPdIndivPrice("1");
+				}
+
 			}
 
 			_receiptService.insertReceipt(mstVO, listVO.getList());
@@ -937,5 +975,22 @@ public class GolfReceiptController extends PrtController {
 		
 		model.addAttribute("rcpInfSeq", search.getRcpInfSeq());
 		return "/receipt/receiptPhotoLayer";
+	}
+
+	/**
+	 * 짐캐리 송장 출력 팝업 뷰
+	 */
+	@RequestMapping(value = "/labelPrint.do")
+	public String zimcarryLabelPrint(Model model) {
+		return "/label/zimcarryLabelPrint";
+	}
+
+	/**
+	 * 경동 API로부터 송장 HTML 데이터 가져오기 (AJAX용)
+	 */
+	@RequestMapping(value = "/getZimcarryLabelData.do", method = RequestMethod.POST, produces = "text/plain;charset=UTF-8")
+	@ResponseBody
+	public String getZimcarryLabelData(String prodCode) throws Exception {
+		return kdngeApi.getZimcarryLabelData(prodCode);
 	}
 }

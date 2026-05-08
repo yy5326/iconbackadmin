@@ -93,6 +93,15 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 				payVO.setRcpInfSeq(receiptInfVO.getRcpInfSeq());
 				payVO.setPayAmt(receiptInfVO.getPdPay());
 
+				// 짐캐리 제휴사는 바로 결제완료(1) 처리, 나머지는 결제대기(0)
+				if ("zimcarry_111".equals(mstVO.getPartner())) {
+					payVO.setPayStat("1");  // 결제완료
+					payVO.setPayGubun("0"); // 일반결제(아이콘)
+				} else {
+					payVO.setPayStat("0");  // 결제대기
+					payVO.setPayGubun("0");
+				}
+
 				String historyMemo = "아이콘 택배접수 편도";
 				String orderId = receiptInfVO.getRcpNumber(); // 기본값: 접수번호
 

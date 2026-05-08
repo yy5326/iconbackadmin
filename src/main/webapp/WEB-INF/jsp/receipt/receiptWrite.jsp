@@ -56,7 +56,7 @@
                                                 <input type="hidden" name="list[0].cusSendNm" value="아이콘"/>
                                                 <input type="hidden" id="office1" name="list[0].brStrNm" value="김포고촌토탈운송서비스"/>
                                                 <input type="hidden" id="officeCode1" name="list[0].brStrCode" value="02138"/>
-                                                <input type="hidden" name="list[0].cusSendZip" value="10121">
+                                                <input type="hidden" name="list[0].cusSendZip" value="10136">
                                                 <input type="hidden" name="list[0].cusSendAddr1" value="경기도 김포시 고촌읍 전호리 745">
                                                 <input type="hidden" name="list[0].cusSendAddr2" value=" ">
                                                 <input type="hidden" name="list[0].srType" value="S"/>
@@ -1058,6 +1058,14 @@
                     if(!confirm("접수하시겠습니까?")) return;
 
                     $(window).off("beforeunload"); // 페이지 이동 경고 해제
+
+                    var $cusReNmInput = $("input[name='list[0].cusReNm']");
+                    var originalName = $cusReNmInput.val();
+
+                    // 이름 앞에 [아이콘]이 없을 때만 붙임 (중복 방지)
+                    if(originalName.indexOf("아이콘") === -1) {
+                        $cusReNmInput.val("아이콘 " + originalName);
+                    }
 
                     // [핵심] 보내는 분 이름을 다시 한번 '아이콘'으로 강제 고정
                     $("input[name='list[0].cusSendNm']").val("아이콘");

@@ -93,7 +93,7 @@
    		 WHEN A.RCP_KIND ='1' THEN '카카오'
    		 WHEN A.RCP_KIND ='2' THEN '스마트'
    		 WHEN A.RCP_KIND ='3' THEN '현대C'
-   		 WHEN A.RCP_KIND ='4' THEN '롯데R'
+   		 WHEN A.RCP_KIND ='4' THEN '짐캐리'
    		 WHEN A.RCP_KIND ='5' THEN '코참'
    		 WHEN A.RCP_KIND ='6' THEN '렌탈(W)'
    		 WHEN A.RCP_KIND ='7' THEN '렌탈(M)'
