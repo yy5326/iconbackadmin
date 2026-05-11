@@ -271,9 +271,9 @@
                                             <c:choose>
                                                 <c:when test="${partner == 'zimcarry_111'}">
                                                     <option value="">선택하세요</option>
-                                                    <option value="인천공항골프백">인천공항골프백</option>
-                                                    <option value="인천공항캐리어">인천공항캐리어</option>
-                                                    <option value="인천공항보스턴백">인천공항보스턴백</option>
+                                                    <c:forEach var="item" items="${iconGolfItems}">
+                                                        <option value="${item.itemName}">${item.itemName}</option>
+                                                    </c:forEach>
                                                 </c:when>
                                                 <c:otherwise>
                                                     <%-- 기존 옵션 추가 --%>
@@ -736,8 +736,18 @@
 	</div>
 </body>
 <script type="text/javascript">
+    // 컨텍스트패스 설정
     var gContextPath = "${pageContext.request.contextPath}";
     if(gContextPath === "/") gContextPath = "";
+    // 품목 데이터 연동
+    var iconGolfItems = {
+        <c:forEach var="item" items="<%= com.golf.util.IconGolfItem.values() %>" varStatus="status">
+        "${item.itemName}": {
+            "price": ${item.price},
+            "rcpKind": "${item.rcpKind}"
+        }${!status.last ? ',' : ''}
+        </c:forEach>
+    };
 </script>
 <script type="text/javascript">
 	$(document).ready(function(){
@@ -801,7 +811,8 @@
                 } else if(val === "인천공항보스턴백") {
                     $("#row_bostonCnt").show().find("input").val(0);
                 }
-                searchIsl();
+                //searchIsl();
+                searchIslZimcarry();
             });
 
             // [5] 고정값 및 초기화
@@ -810,6 +821,15 @@
             $("#officeCode2").val("00000");
             $("input[name$='pdEtcPay'], input[name$='pdDosunPay'], input[name$='pdDeliPay'], input[name$='pdPay']").val(0);
             $("input[name$='iconFee']").val(0);
+
+            // 수량 박스 실시간 감시
+            $(document).on("propertychange change keyup paste input", "#pdCnt0, #bostonCnt0, #carrierCnt0", function() {
+                if("${partner}" === 'zimcarry_111') {
+                    searchIslZimcarry();
+                } else {
+                    searchIsl();
+                }
+            });
         }
 
 		//새로고침 또는 페이지 이동 시 확인
@@ -1059,6 +1079,11 @@
 
                     $(window).off("beforeunload"); // 페이지 이동 경고 해제
 
+                    $("input[name$='Pay'], input[name$='Fee'], input[role='pay']").each(function() {
+                        var uncommaData = $(this).val().replace(/,/g, ''); // 쉼표 제거
+                        $(this).val(uncommaData || 0); // 빈 값이면 0으로 세팅
+                    });
+
                     var $cusReNmInput = $("input[name='list[0].cusReNm']");
                     var originalName = $cusReNmInput.val();
 
@@ -1286,7 +1311,10 @@
 
 	//운임 계산 및 도서산간구분값 적용
 	function searchIsl(){
-		// 0 = 기본운임, 1 = 스코어운임, 2 = 특판가 (골프백 도선, 골프백편도, 골프백왕복, 보스턴 도선, 보스턴편도, 보스턴왕복)
+        if("${partner}" === 'zimcarry_111') {
+            return;
+        }
+        // 0 = 기본운임, 1 = 스코어운임, 2 = 특판가 (골프백 도선, 골프백편도, 골프백왕복, 보스턴 도선, 보스턴편도, 보스턴왕복)
 		var amtArray = [[5000, 21000, 20000, 6000, 6000, 6000], [5000, 15000, 15000, 6000, 6000, 6000], [5000, 15000, 15000, 6000, 6000, 6000]]; //이 부분 변경 시 golfReceiptInf.selectByKakaoHistory 쿼리 수정 (배송운임 변경관련)
 		var amt = amtArray[$("#fareType option").index($("#fareType option:selected"))];
 		var dosun1 = 0, dosun2 = 0;
@@ -1298,7 +1326,7 @@
         $("input[name$=pdCnt]").each(function(){ cnt.push($(this).val() || 0); });
         $("input[name$=bostonCnt]").each(function(){ bostonCnt.push($(this).val() || 0); });
         $("input[name$=carrierCnt]").each(function(){ carrierCnt.push($(this).val() || 0); }); // 추가
-		
+
 		$("input[role=zip1]:eq(1),input[role=zip2]:eq(1),input[role=zip3]:eq(1),input[role=zip4]:eq(1)").each(function(idx){
 			if($(this).val().indexOf("제주") > -1){
 				(idx < 2) ? dosun1 += 1 : dosun2 += 1;
@@ -1309,7 +1337,7 @@
 				$(this).next().val("N");
 			}
 		});
-		
+
 		//골프장으로 도서지역 구분
 		if(dosun1 == 0 && dosun2 == 0){
 			$("input[role=golfSearch1]:eq(0),input[role=golfSearch2]:eq(0),input[role=golfSearch3]:eq(0),input[role=golfSearch4]:eq(0)").each(function(idx){
@@ -1361,6 +1389,41 @@
 		$('#iconFee0').val(comma($('#iconFee0').val()));
 		$('#iconFee1').val(comma($('#iconFee1').val()));
 	}
+
+    // 짐캐리 전용 운임 계산기
+    function searchIslZimcarry(){
+        // [1] Enum 데이터 단가 (안전하게 가져오기)
+        var golfBagPrice = (iconGolfItems["인천공항골프백"]) ? iconGolfItems["인천공항골프백"].price : 21000;
+        var carrierPrice = (iconGolfItems["인천공항캐리어"]) ? iconGolfItems["인천공항캐리어"].price : 18000;
+        var bostonPrice  = (iconGolfItems["인천공항보스턴백"]) ? iconGolfItems["인천공항보스턴백"].price : 6000;
+
+        // [2] 수량 파악
+        var p_cnt = parseInt($("#pdCnt0").val()) || 0;
+        var b_cnt = parseInt($("#bostonCnt0").val()) || 0;
+        var c_cnt = parseInt($("#carrierCnt0").val()) || 0;
+        var total_cnt = p_cnt + b_cnt + c_cnt;
+
+        // [3] 도서산간 체크 (받는 분 주소 기준)
+        var dosun1 = 0;
+        var addrVal = $("input[role=zip2]:eq(1)").val() || "";
+        if(addrVal.indexOf("제주") > -1){
+            dosun1 = 1;
+        }
+
+        // [4] 실제 운임 계산 (짐캐리는 수수료 fee = 0)
+        var totalDeliPay = (golfBagPrice * p_cnt) + (bostonPrice * b_cnt) + (carrierPrice * c_cnt);
+        var totalDosunPay = (dosun1 == 1) ? (5000 * total_cnt) : 0;
+        var totalPay = totalDeliPay + totalDosunPay; // 수수료 없음
+
+        // [5] 화면 출력
+        $("input[name='list[0].pdDosunPay']").val(comma(totalDosunPay));
+        $("input[name='list[0].pdDeliPay']").val(comma(totalDeliPay));
+        $("input[name='list[0].pdPay']").val(comma(totalPay));
+
+        // 수수료 및 할증 등 짐캐리에서 안 쓰는 필드 0으로 고정
+        $('#iconFee0').val(0);
+        $("input[name='list[0].pdEtcPay']").val(0);
+    }
 
 	//전화번호 문자열 확인
 	function addTelNum(){
@@ -1455,7 +1518,12 @@
 
 	    		initIconFee(targetElement);
 	            //운임계산
-	            searchIsl();
+	            //searchIsl();
+                if("${partner}" === 'zimcarry_111') {
+                    searchIslZimcarry();
+                } else {
+                    searchIsl();
+                }
 	        }
 	    }).open();
 	}

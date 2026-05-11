@@ -1,9 +1,7 @@
 package com.golf.controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -11,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.golf.service.impl.KdngeAPI;
+import com.golf.util.IconGolfItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -369,6 +368,17 @@ public class GolfReceiptController extends PrtController {
             model.addAttribute("search", search);
             model.addAttribute("partner", partner);
 
+			List<IconGolfItem> filteredItems;
+			if ("zimcarry_111".equals(partner)) {
+				// 짐캐리일 경우 RCP_KIND가 "4"인 아이템만 추출
+				filteredItems = Arrays.stream(IconGolfItem.values())
+						.filter(item -> "4".equals(item.getRcpKind()))
+						.collect(Collectors.toList());
+			} else {
+				// 그 외 파트너는 일단 전체를 주거나, 빈 리스트 혹은 기본 리스트 설정
+				filteredItems = Arrays.asList(IconGolfItem.values());
+			}
+			model.addAttribute("iconGolfItems", filteredItems);
             return "/receipt/receiptWrite";
 
     }
@@ -505,10 +515,13 @@ public class GolfReceiptController extends PrtController {
 				}
 
 				// [단가 보정]단가가 0이면 거절, 최소 금액 강제로 세팅.
-				if (firstInf.getPdPay() <= 0) {
+				/*if (firstInf.getPdPay() <= 0) {
 					firstInf.setPdPay(1);     // 테스트 성공을 위한 임시금액 (1만원)
 					firstInf.setPdDeliPay(1);
 					firstInf.setPdIndivPrice("1");
+				}*/
+				if (firstInf.getPdIndivPrice() == null || "0".equals(firstInf.getPdIndivPrice()) || "".equals(firstInf.getPdIndivPrice())) {
+					firstInf.setPdIndivPrice("200");
 				}
 
 			}
