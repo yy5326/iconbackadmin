@@ -68,7 +68,7 @@ public class CouponController extends PrtController{
 			// 세션에서 로그인한 관리자 ID 가져오기
 			String adminId = (String) session.getAttribute("admin");
 			if (adminId == null || adminId.isEmpty()) {
-				adminId = "superUser_092"; // 세션이 끊겼을 때를 대비한 하드코딩
+				adminId = "superUser_092_02"; // 세션이 끊겼을 때를 대비한 하드코딩
 			}
 			paramMap.put("regUser", adminId);
 

@@ -206,7 +206,8 @@ public class GolfReceiptController extends PrtController {
 		if(result.hasErrors())
 			return super.setBindingResult(result, model);
 		HttpSession session = request.getSession();
-		
+
+		boolean isValidPartner = true;
 		switch(partner) {
 		// 첫자리 : RcpKind , 두번쨰 : 연동방식(0:api 1:view 9:super) , 세번째 : 구현단계(0:개발, 1:테스트, 2:운영)
 			case "superUser_092_02" : search.setType6(""); // 아이콘 및 슈퍼유저
@@ -221,10 +222,18 @@ public class GolfReceiptController extends PrtController {
 //				break;
             case "zimcarry_111" : search.setType6("4"); // 짐캐리
                 break;
-			default : search.setType6("99");
+			//default : search.setType6("99");
+			default :
+				isValidPartner = false; // 정의되지 않은 파트너
 				break;
 		}
-		
+
+		// 잘못된 경로로 접근 시 메인이나 에러페이지로 튕겨냄
+		if(!isValidPartner || "null".equals(partner)) {
+			session.removeAttribute("partner"); // 잘못된 파트너 정보 삭제
+			return "redirect:/receipt/receiptList.do";
+		}
+
 		session.setAttribute("partner", partner);
 		logger.info("파트너 정보 : {}", session.getAttribute("partner"));
 		
@@ -360,7 +369,14 @@ public class GolfReceiptController extends PrtController {
      */
     @RequestMapping(value = "/{partner}/receiptWrite.do")
     public String PartnerGolfReceiptWrite(@PathVariable String partner, GolfReceiptSearchVO search, BindingResult result, Model model) throws Exception {
-        if(result.hasErrors()) {
+		// [유효성 검증] 허용된 파트너 리스트인지 확인
+		List<String> allowedPartners = Arrays.asList("superUser_092_02", "score_202", "hyundaiCard_311", "zimcarry_111");
+		if (partner == null || "null".equalsIgnoreCase(partner) || !allowedPartners.contains(partner)) {
+			// 유효하지 않은 파트너라면 목록 페이지로
+			return "redirect:/receipt/receiptList.do";
+		}
+
+		if(result.hasErrors()) {
             return super.setBindingResult(result, model);
         }
             //국번 폰번호 불러오기
