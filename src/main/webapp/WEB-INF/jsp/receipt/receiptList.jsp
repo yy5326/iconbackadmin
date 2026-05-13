@@ -192,10 +192,13 @@
 							</td>
 							<td>${m.payStatName }</td>
 							<td>${fn:substring(m.pdRecDt, 2, 10) }</td>
-							<%--<td>
-								${m.pdBarcode }
-							</td>--%>
-                            <td class="barcode-area">${m.rtNumber }</td>
+                            <td>
+                                    ${m.pdBarcode }
+<!-- 인수완료시간 -->
+<%-- <c:if test="${m.scTime ne ''}">
+                                ${fn:substring(m.scTime, 2, 16) }
+</c:if> --%>
+                            </td>
 							<td>${m.brStrNm }</td>
 							<td>${m.brEndNm }<input type ="hidden" name="cancelBrEndNm" id="${m.brEndNm}"/></td>
 							<td>${m.extComp }</td>

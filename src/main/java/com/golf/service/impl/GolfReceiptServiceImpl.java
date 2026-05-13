@@ -244,7 +244,9 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 			mstVo.setRcpSeq(infVo.getRcpSeq());
 
 			//스마트스코어 취소 경우 (전체취소, 결제취소)
-			if("2".equals(rcpKind)) {
+			// 스마트스코어(2) 거나 짐캐리(4)인 경우 일반적인 취소 로직(편도 전환 등)을 타지 않게 함
+			if("2".equals(rcpKind) || "4".equals(rcpKind)) {
+			//if("2".equals(rcpKind)) {
 				historyMemo = "스마트스코어 골프, 결제 취소";
 				receiptVo.setRcpInfStat(StatusVO.ReceiptCancel.code());
 				receiptVo.setRcpSeq(mstVo.getRcpSeq());
@@ -364,7 +366,9 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 		boolean rentalFlag = Arrays.asList("6", "7", "8").contains(rcpKind); // 렌탈 웹 모바일 기타
 
 		//히스토리 등록 및 API 전송
-		if("2".equals(rcpKind) || "0".equals(rcpKind) || "5".equals(rcpKind) ||  rentalFlag ) { // 교참추가..
+		// 수정: "4" (짐캐리) 조건 추가
+		if("2".equals(rcpKind) || "0".equals(rcpKind) || "4".equals(rcpKind) || "5".equals(rcpKind) || rentalFlag ) {
+		//if("2".equals(rcpKind) || "0".equals(rcpKind) || "5".equals(rcpKind) ||  rentalFlag ) { // 교참추가..
 
 			GolfReceiptInfVO api =  (GolfReceiptInfVO)getDAO().selectOne("golfReceiptInf.selectDetailByRcpNumber", infVo.getRcpNumber());
 
@@ -413,7 +417,9 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 					|| StatusVO.DeliveryCancel.code().equals(rcpInfStat); // 9
 
 			// 스마트스코어(rcpKind: 2)이면서 취소 상태 코드면 외부 API 호출 금지
-			boolean callExternalApi = !("2".equals(rcpKind) && isCancelStatus);
+			//boolean callExternalApi = !("2".equals(rcpKind) && isCancelStatus);
+			// 스마트스코어(2) 또는 짐캐리(4) 이면서 취소 상태일 때 외부 API 호출을 막음
+			boolean callExternalApi = !(("2".equals(rcpKind) || "4".equals(rcpKind)) && isCancelStatus);
 
 			if (callExternalApi) {
 				// 외주 업체 상태 변경 API
