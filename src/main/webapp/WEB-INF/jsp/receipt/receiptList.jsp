@@ -703,39 +703,41 @@
 
     // 짐캐리 송장 출력 함수
     function fn_printZimcarry() {
-        console.log("송장 출력 함수 시작");
         var $checked = $(".golfChk:checked");
-
         if ($checked.length === 0) {
             alert("출력할 대상을 선택해 주세요.");
             return;
         }
-
         if ($checked.length > 1) {
             alert("송장 출력은 한 건씩만 가능합니다.");
             return;
         }
+
         var $tr = $checked.closest("tr");
 
-        // [로그 추가] TR 전체의 텍스트를 찍어봅니다.
-        console.log("선택된 행 전체 텍스트:", $tr.text().replace(/\s+/g, ' '));
-
-        // 현재 HTML 구조상 운송장번호는 11번째 TD에 위치합니다.
-        // 클래스가 없으므로 nth-child 또는 eq를 사용하여 접근합니다.
+        // 1. 택배접수일 확인 (10번째 TD: eq(9))
+        var recDate = $tr.find("td:eq(9)").text().trim();
+        // 2. 운송장번호 확인 (11번째 TD: eq(10))
         var prodCode = $tr.find("td:eq(10)").text().trim();
 
-        console.log("추출된 운송장번호(prodCode):", prodCode);
+        console.log("검증 데이터 -> 접수일:", recDate, "/ 운송장번호:", prodCode);
 
-        if (!prodCode || prodCode === "") {
-            alert("운송장 번호가 발급되지 않은 건입니다.\n먼저 [픽업요청]을 진행해 주세요.");
+        // [경고문구 분기]
+        if (!recDate || recDate === "") {
+            alert("픽업요청이 완료되지 않은 건입니다.\n먼저 [픽업요청] 버튼을 클릭해 주세요.");
             return;
         }
+        if (!prodCode || prodCode === "") {
+            alert("[회수완료] 처리가 되지 않아 운송장 번호가 없습니다.\n회수 완료 후 출력이 가능합니다.");
+            return;
+        }
+
+        // 3. 정상 진행
         $.ajax({
             url: gContextPath + "/receipt/getZimcarryLabelData.do",
             type: "POST",
             data: { "prodCode": prodCode },
             success: function(res) {
-                console.log("서버 응답 결과:", res);
                 if (res && res.indexOf("ERROR") == -1) {
                     localStorage.setItem("data", res);
                     var url = gContextPath + "/receipt/labelPrint.do";
@@ -745,7 +747,7 @@
                 }
             },
             error: function(xhr) {
-                console.error("AJAX 에러 발생:", xhr.status, xhr.statusText);
+                console.error("AJAX 에러:", xhr.status);
             }
         });
     }
