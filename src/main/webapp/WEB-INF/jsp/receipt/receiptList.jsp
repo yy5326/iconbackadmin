@@ -705,7 +705,7 @@
     function fn_printZimcarry() {
         console.log("송장 출력 함수 시작");
         var $checked = $(".golfChk:checked");
-        console.log("체크된 개수:", $checked.length);
+
         if ($checked.length === 0) {
             alert("출력할 대상을 선택해 주세요.");
             return;
@@ -716,8 +716,16 @@
             return;
         }
         var $tr = $checked.closest("tr");
-        var prodCode = $tr.find(".barcode-area").text().trim();
-        console.log("추출된 운송장번호(prodCode):", prodCode); // 로그 3
+
+        // [로그 추가] TR 전체의 텍스트를 찍어봅니다.
+        console.log("선택된 행 전체 텍스트:", $tr.text().replace(/\s+/g, ' '));
+
+        // 현재 HTML 구조상 운송장번호는 11번째 TD에 위치합니다.
+        // 클래스가 없으므로 nth-child 또는 eq를 사용하여 접근합니다.
+        var prodCode = $tr.find("td:eq(10)").text().trim();
+
+        console.log("추출된 운송장번호(prodCode):", prodCode);
+
         if (!prodCode || prodCode === "") {
             alert("운송장 번호가 발급되지 않은 건입니다.\n먼저 [픽업요청]을 진행해 주세요.");
             return;
@@ -726,16 +734,12 @@
             url: gContextPath + "/receipt/getZimcarryLabelData.do",
             type: "POST",
             data: { "prodCode": prodCode },
-            beforeSend: function() {
-                console.log("AJAX 요청 보냄... 데이터:", prodCode);
-            },
             success: function(res) {
-                console.log("서버 응답 결과:", res); // 로그 4
+                console.log("서버 응답 결과:", res);
                 if (res && res.indexOf("ERROR") == -1) {
                     localStorage.setItem("data", res);
                     var url = gContextPath + "/receipt/labelPrint.do";
-                    var popup = window.open(url, "labelPopup", "width=450, height=800, scrollbars=yes");
-                    if(!popup) alert("팝업 차단 설정 확인 요망");
+                    window.open(url, "labelPopup", "width=450, height=800, scrollbars=yes");
                 } else {
                     alert("송장 데이터를 가져오지 못했습니다.\n사유: " + res);
                 }
