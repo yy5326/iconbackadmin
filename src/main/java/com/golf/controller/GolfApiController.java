@@ -165,6 +165,18 @@ public class GolfApiController extends PrtController  {
 						
 						vo.setPdBarcode(vo.getRtNumber());
 						System.out.println("업데이트 요청");
+
+						// 도서산간운임비 초기화 되는 문제 해결
+						GolfReceiptInfVO origin = (GolfReceiptInfVO)_gDao.selectOne("golfReceiptInf.selectByPrimaryKey", vo.getRcpInfSeq());
+
+						if(origin != null) {
+							// 기사님 앱에서 금액을 안 보내서 0으로 들어온 경우, DB에 있던 원래 금액으로 복구
+							if(vo.getPdDosunPay() == 0) vo.setPdDosunPay(origin.getPdDosunPay());
+							if(vo.getPdDeliPay() == 0)  vo.setPdDeliPay(origin.getPdDeliPay());
+							if(vo.getPdPay() == 0)      vo.setPdPay(origin.getPdPay());
+							if(vo.getPdEtcPay() == 0)   vo.setPdEtcPay(origin.getPdEtcPay());
+							if(vo.getIconFee() == 0)    vo.setIconFee(origin.getIconFee());
+						}
 						_receiptService.updateReceipt(vo);
 
 						//api전송
