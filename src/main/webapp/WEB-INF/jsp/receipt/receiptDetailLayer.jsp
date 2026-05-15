@@ -107,95 +107,109 @@
 				</table>
 			</div>
 		</div>
-		<div class="product_info">
-			<p class="type"><img src="../../images/dot_p.jpg" alt="점" />물품정보</p>
-			<div class="tableBox">
-				<table>
-					<tr>
-						<th>${vo.prdType eq 1 ? '골프' : vo.prdType eq 2 ? '중고채' : '캐리어'}접수일 </th>
-						<td >
-							${vo.regDate}
-						</td>
-						<th class="th">입력단가 </th>
-						<td colspan="3">
-							${vo.pdIndivPrice }
-						</td>
-					</tr>
-					<tr>
-						<th>경기일 </th>
-						<td>
-							${vo.gameDt}
-						</td>						
-						<td class="th">픽업희망일 </td>
-						<td>${vo.picReqDt}</td>
-					</tr>
-					<tr>
-						<th>품목명 </th>
-						<td>
-							${vo.pdNm}
-						</td>
-						<th class="th">포장상태 </th>
-						<td>${vo.pdPack}</td>						
-					</tr>
-					<tr>
-						<th>배송구분 </th>
-						<td>
-							${vo.payType eq '0' ? '현불택배' : '착불택배'}
-						</td>
-						<td class="th">운임구분 </td>
-						<td>${vo.payStatName }</td>
-					</tr>
-					<tr style="line-height: 30px;">
-						<th>보스턴백 수량 </th>
-						<td>
-							${vo.bostonCnt}<span class="unit">개</span>
-						</td>
-						<td class="th">${vo.prdType eq 1 ? '골프백' : vo.prdType eq 2 ? '중고채' : '캐리어'} 수량 </td>
-						<td>${vo.pdCnt}<span class="unit">개</span></td>	
-						
-					</tr>
-					<tr>
-						<th>골프채 수량</th>
-						<td><fmt:formatNumber value="${vo.pdGolfCnt}" pattern="#,###"/><span class="unit">개</span></td>
-						<td class="th">할증운임</td>
-						<td>
-							<fmt:formatNumber value="${vo.pdEtcPay}" pattern="#,###"/><span class="unit">원</span>
-							<!-- <a href="#" class="btn">개별단가</a>
-							<span class="th_fee">기타 운임 </span>
-							<input type="text" class="w265" /><span class="unit">원</span> -->
-						</td>
-					</tr>
-					
-					<tr>
-						<th>배송운임 </th>
-						<td><fmt:formatNumber value="${vo.pdDeliPay}" pattern="#,###"/><span class="unit">원</span></td>
-						<td class="th">도서운임 </td>
-						<td colspan="3"><fmt:formatNumber value="${vo.pdDosunPay}" pattern="#,###"/><span class="unit">원</span></td>
-					</tr>
-					
-					<tr>
-						<th>아이콘수수료 </th>
-						<td><fmt:formatNumber value="${vo.iconFee}" pattern="#,###"/><span class="unit">원</span></td>
-						<td class="th">총 합계</th>
-						<td colspan="3"><fmt:formatNumber value="${vo.pdPay}" pattern="#,###"/><span class="unit">원</span></td>
-					</tr>
-					<tr>
-						<th>메모</th>
-						<td colspan="3" class="short_memo"><pre>${vo.pdMemo}</pre></td>
-					</tr>
-					<!-- <tr>
-						<th>파일 </th>
-						<td>
-							<div class="fileBox">
-								<label for="uploadBtn" class="btn_file upload acen">파일 선택</label>
-								<input type="text" class="fileName" readonly="readonly" placeholder="선택한 파일이 없음" />
-								<input type="file" id="uploadBtn" class="upload uploadBtn" />
-							</div>
-						</td>
-					</tr> -->
-				</table>
-			</div>
-		</div>
+        <div class="product_info">
+            <p class="type"><img src="../../images/dot_p.jpg" alt="점" />물품정보</p>
+            <div class="tableBox">
+                <table>
+                    <%-- 행 1~5: 공통 영역 --%>
+                    <tr>
+                        <th>${vo.prdType eq 1 ? '골프' : vo.prdType eq 2 ? '중고채' : '캐리어'}접수일 </th>
+                        <td>${vo.regDate}</td>
+                        <th class="th">입력단가 </th>
+                        <td colspan="3">${vo.pdIndivPrice}</td>
+                    </tr>
+                    <tr>
+                        <th>경기일 </th>
+                        <td>${vo.gameDt}</td>
+                        <td class="th">픽업희망일 </td>
+                        <td>${vo.picReqDt}</td>
+                    </tr>
+                    <tr>
+                        <th>품목명 </th>
+                        <td>${vo.pdNm}</td>
+                        <th class="th">포장상태 </th>
+                        <td>${vo.pdPack}</td>
+                    </tr>
+                    <tr>
+                        <th>배송구분 </th>
+                        <td>${vo.payType eq '0' ? '현불택배' : '착불택배'}</td>
+                        <td class="th">운임구분 </td>
+                        <td>${vo.payStatName}</td>
+                    </tr>
+                    <tr style="line-height: 30px;">
+                        <th>보스턴백 수량 </th>
+                        <td>${vo.bostonCnt}<span class="unit">개</span></td>
+                        <td class="th">${vo.prdType eq 1 ? '골프백' : vo.prdType eq 2 ? '중고채' : '캐리어'} 수량 </td>
+                        <td>${vo.pdCnt}<span class="unit">개</span></td>
+                    </tr>
+
+                        <c:choose>
+                            <c:when test="${vo.rcpKind eq '4'}">
+                                <%-- [짐캐리 전용] 행 순서를 조정하여 메모를 위로 올림 --%>
+                                <%-- 행 6 --%>
+                                <tr>
+                                    <th>골프채 수량</th>
+                                    <td><fmt:formatNumber value="${vo.pdGolfCnt}" pattern="#,###"/><span class="unit">개</span></td>
+                                    <td class="th">도서운임</td>
+                                    <td><fmt:formatNumber value="${vo.pdDosunPay}" pattern="#,###"/><span class="unit">원</span></td>
+                                </tr>
+                                <%-- 행 7 --%>
+                                <tr>
+                                    <th>배송운임</th>
+                                    <td><fmt:formatNumber value="${vo.pdDeliPay}" pattern="#,###"/><span class="unit">원</span></td>
+                                    <td class="th">총 합계</td>
+                                    <td colspan="3"><fmt:formatNumber value="${vo.pdDeliPay + vo.pdDosunPay}" pattern="#,###"/><span class="unit">원</span></td>
+                                </tr>
+                                <%-- 행 8 (메모를 한 칸 위로 올림) --%>
+                                <tr>
+                                        <%-- 제목 칸도 상단 정렬로 통일 --%>
+                                    <th style="vertical-align: top; padding-top: 10px;">메모</th>
+
+                                    <td colspan="3" class="short_memo"
+                                        style="vertical-align: top; padding-top: 10px; <c:if test="${vo.rcpKind eq '4'}">height: 108px;</c:if>">
+
+                                            <%-- pre 태그의 기본 마진을 0으로 죽여야 제목 글자와 첫 줄이 수평이 됨 --%>
+                                        <pre style="white-space: pre-wrap; font-family: inherit; margin: 0; padding: 0; line-height: 1.4;">${vo.pdMemo}</pre>
+                                    </td>
+                                </tr>
+                                <%-- 행 9 (빈 줄을 맨 아래로 내려서 하단 라인 높이를 맞춤) --%>
+                                <tr style="line-height: 30px;">
+                                    <th></th>
+                                    <td></td>
+                                    <td class="th"></td>
+                                    <td></td>
+                                </tr>
+                            </c:when>
+
+                            <c:otherwise>
+                                <%-- [일반 파트너] 기존 9행 레이아웃 유지 --%>
+                                <tr>
+                                    <th>골프채 수량</th>
+                                    <td><fmt:formatNumber value="${vo.pdGolfCnt}" pattern="#,###"/><span class="unit">개</span></td>
+                                    <td class="th">할증운임</td>
+                                    <td><fmt:formatNumber value="${vo.pdEtcPay}" pattern="#,###"/><span class="unit">원</span></td>
+                                </tr>
+                                <tr>
+                                    <th>배송운임</th>
+                                    <td><fmt:formatNumber value="${vo.pdDeliPay}" pattern="#,###"/><span class="unit">원</span></td>
+                                    <td class="th">도서운임</td>
+                                    <td colspan="3"><fmt:formatNumber value="${vo.pdDosunPay}" pattern="#,###"/><span class="unit">원</span></td>
+                                </tr>
+                                <tr>
+                                    <th>아이콘수수료</th>
+                                    <td><fmt:formatNumber value="${vo.iconFee}" pattern="#,###"/><span class="unit">원</span></td>
+                                    <td class="th">총 합계</th>
+                                    <td colspan="3"><fmt:formatNumber value="${vo.pdPay}" pattern="#,###"/><span class="unit">원</span></td>
+                                </tr>
+                                <tr>
+                                    <th>메모</th>
+                                    <td colspan="3" class="short_memo"><pre>${vo.pdMemo}</pre></td>
+                                </tr>
+                            </c:otherwise>
+                        </c:choose>
+                </table>
+            </div>
+        </div>
 		<div class="delivery_nb">
 			<p class="type"><img src="../../images/dot_p.jpg" alt="점" />택배정보</p>
 			<div class="tableBox">
