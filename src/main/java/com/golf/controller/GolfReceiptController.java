@@ -395,7 +395,7 @@ public class GolfReceiptController extends PrtController {
 				filteredItems = Arrays.asList(IconGolfItem.values());
 			}
 			model.addAttribute("iconGolfItems", filteredItems);
-            return "/receipt/receiptWriteZim";
+            return "/receipt/receiptWrite";
 
     }
 	
