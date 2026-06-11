@@ -19,6 +19,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import com.golf.service.impl.RentalServiceImpl;
+import com.golf.util.HolidayUtil;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -30,8 +31,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import com.golf.model.common.StringPair;
 import com.golf.service.dao.GeneralDAOImpl;
@@ -168,6 +168,25 @@ public class CommonController extends PrtController {
 	public @ResponseBody String getExtraPrice(GolfReceiptInfVO vo) throws Exception {
 
 		return kdngeApi.getExtraPrice(vo);
+	}
+
+	/**
+	 * 공휴일 여부 조회
+	 */
+	@PostMapping("/isHoliday.do")
+	public @ResponseBody boolean isHoliday(@RequestBody Map<String, Object> paramMap) {
+		String date = String.valueOf(paramMap.get("date"));
+		return HolidayUtil.isHoliday(date.replace("-", ""));
+	}
+
+	/**
+	 * 객단가별 할증운임료 조회
+	 */
+	@PostMapping("/getExtraPriceByIndivPrice.do")
+	//public @ResponseBody int getExtraByIndivPrice(@RequestBody JSONObject param) {
+	public @ResponseBody int getExtraByIndivPrice(@RequestBody Map<String, Object> paramMap) {
+
+		return kdngeApi.getExtraPrice(String.valueOf(paramMap.get("pdIndivPrice")));
 	}
 
 	/**
