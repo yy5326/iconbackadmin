@@ -142,7 +142,7 @@
                             </td>
                         </tr>
 
-                        <tr>
+                        <tr style="display:none;">
                             <th>총 합계</th>
                             <td>
                                 <input type="text" name="list[0].pdPay" id="pdPay" class="w265 input" readonly="readonly" value="0" style="font-weight:bold; color:blue;"/><span class="unit">원</span>
@@ -245,18 +245,44 @@
     });
 
     function searchIslZimcarry(){
+        // [1] 기본 정보 및 수량 파악
         var itemName = $("#zimcarry_pdNm").val();
         var unitPrice = (iconGolfItems[itemName]) ? iconGolfItems[itemName].price : 0;
-        var total_cnt = parseInt($("#pdCnt0").val() || 0) + parseInt($("#bostonCnt0").val() || 0) + parseInt($("#carrierCnt0").val() || 0);
+        var p_cnt = parseInt($("#pdCnt0").val() || 0);
+        var b_cnt = parseInt($("#bostonCnt0").val() || 0);
+        var c_cnt = parseInt($("#carrierCnt0").val() || 0);
+        var total_cnt = p_cnt + b_cnt + c_cnt;
 
-        var isJeju = ($("input[role=zip2]:eq(1)").val() || "").indexOf("제주") > -1;
+        // [2] 도서산간 판별 로직 (일반 페이지 로직 이식)
+        var isIsl = false;
+        var addrVal = $("input[role=zip2]:eq(1)").val() || ""; // 기본 주소
+        var recvGolfName = $("input[role=golfSearch2]:eq(0)").val() || ""; // 골프장 상호
+
+        // 1) 주소에 '제주'가 포함된 경우
+        if(addrVal.indexOf("제주") > -1) {
+            isIsl = true;
+        }
+
+        // 2) 주소에 '제주'가 없더라도 특정 골프장(여수경도 등)인 경우 (일반페이지 참조)
+        if(!isIsl && recvGolfName.indexOf("여수경도") > -1) {
+            isIsl = true;
+        }
+
+        // [3] 운임 계산
         var totalDeliPay = unitPrice * total_cnt;
-        var totalDosunPay = isJeju ? (5000 * total_cnt) : 0;
+        var totalDosunPay = isIsl ? (5000 * total_cnt) : 0; // 도선료 개당 5,000원 고정
+        var totalPay = totalDeliPay + totalDosunPay;
 
-        $("#pdPay").val(comma(totalDeliPay + totalDosunPay));
-        $("input[name='list[0].pdDeliPay']").val(totalDeliPay);
-        $("input[name='list[0].pdDosunPay']").val(totalDosunPay);
-        $("input[name='list[0].recvIslYn']").val(isJeju ? "Y" : "N");
+        // [4] 화면 출력 및 데이터 바인딩
+        $("#pdPay").val(comma(totalPay));                     // 총 합계 (화면용)
+        $("input[name='list[0].pdPay']").val(totalPay);       // 총 합계 (전송용)
+        $("input[name='list[0].pdDeliPay']").val(totalDeliPay); // 배송운임
+        $("input[name='list[0].pdDosunPay']").val(totalDosunPay); // 도서운임
+
+        // 일반 페이지와 동일하게 히든 필드에 Y/N 세팅
+        $("input[name='list[0].recvIslYn']").val(isIsl ? "Y" : "N");
+
+        console.log("짐캐리 도서산간 판별 여부:", isIsl, " / 도선료:", totalDosunPay);
     }
 
     function searchPostcode(roleName) {
