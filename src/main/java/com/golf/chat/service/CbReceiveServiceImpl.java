@@ -231,17 +231,21 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 						&& cbReceiptInfoVo.getPdCnt() > 0 // 골프백
 						&& cbReceiptInfoVo.getBostonCnt() > 0) {// 보스턴수 0이상
 //						&& receiptInfVO.getDiscountTotal() > 0) { // 보스턴 할인가 0이상
-					int bostonDiscount = 3000;
-					int discount =  bostonDiscount * cbReceiptInfoVo.getBostonCnt(); // receiptInfVO.getDiscountTotal();
-					int iconPay = receiptInfVO.getIconFee();
-					if ("1".equals(cbReceiptInfoVo.getDelKind())) { // 편도
-						iconPay = iconPay - discount;
-					} else if ("2".equals(cbReceiptInfoVo.getDelKind())) { // 왕복
-						discount = discount/2;
-						iconPay = iconPay - discount;
+					if (cbReceiptInfoVo.getCouponDiscount() <= 0) {
+						int bostonDiscount = 3000;
+						int discount =  bostonDiscount * cbReceiptInfoVo.getBostonCnt(); // receiptInfVO.getDiscountTotal();
+						int iconPay = receiptInfVO.getIconFee();
+						if ("1".equals(cbReceiptInfoVo.getDelKind())) { // 편도
+							iconPay = iconPay - discount;
+						} else if ("2".equals(cbReceiptInfoVo.getDelKind())) { // 왕복
+							discount = discount/2;
+							iconPay = iconPay - discount;
+						}
+						receiptInfVO.setIconFee(iconPay < 0 ? 0 : iconPay);
+						receiptInfVO.setPdPay(receiptInfVO.getPdPay()-discount);
+					} else {
+						logger.info("### [보라전산] 쿠폰 적용건으로 보스턴백 자동 할인 제외");
 					}
-					receiptInfVO.setIconFee(iconPay < 0 ? 0 : iconPay);
-					receiptInfVO.setPdPay(receiptInfVO.getPdPay()-discount);
 				}else if(("9".equals(cbReceiptInfoVo.getRcpKind()))){//팬스타그루즈 할인금액적용
                     int bostonDiscount = 2000 * cbReceiptInfoVo.getBostonCnt();
                     int golfBagDiscount = 3000 * cbReceiptInfoVo.getPdCnt();
@@ -274,6 +278,13 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					receiptInfVO.setPdPay(receiptInfVO.getPdPay() + golfAddPay);
 				}
 
+				int couponVal = cbReceiptInfoVo.getCouponDiscount();
+				if (couponVal > 0) {
+					// 접수전산에서 건별로 계산해서 보낸 할인액을 그대로 차감
+					int currentPdPay = receiptInfVO.getPdPay();
+					receiptInfVO.setPdPay(Math.max(0, currentPdPay - couponVal));
+					logger.info("### 쿠폰 할인 적용: {}원 차감 (최종금액: {}원)", couponVal, receiptInfVO.getPdPay());
+				}
 
 				logger.info("챗봇 골프접수 데이터");
 				logger.info("-->"+new Gson().toJson(receiptInfVO));
