@@ -155,4 +155,9 @@ public @Data class CbReceiptInfoVO {
 
 	/* 아이콘 렌탈용 결제여부 확인 전달값 */
 	private String payStat; // 결제상태 (0: 입금대기, 1: 결제완료, 9: 결제취소)
+
+	// 쿠폰 할인 금액
+	@ApiParam(value="쿠폰 할인 금액")
+	@ApiModelProperty(position = 32, notes = "쿠폰 할인 금액")
+	private int couponDiscount;
 }
