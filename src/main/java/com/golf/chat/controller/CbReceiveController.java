@@ -327,7 +327,19 @@ public class CbReceiveController {
 			receiptInfVO.setCusReAddr1(cbReceiptInfoVo.getCusReAddr1());
 			receiptInfVO.setCusReAddr2(cbReceiptInfoVo.getCusReAddr2());
 
+			// 운임 계산
 			_receiptService.preInsertReceiptInfo(receiptInfVO, cbReceiptInfoVo);
+
+			// 제휴사 판별 (출발지 또는 도착지가 제휴사이면 true)
+			boolean isPartner = _receiptService.isPartnerGolf(cbReceiptInfoVo.getSendGolfSeq()) ||
+					_receiptService.isPartnerGolf(cbReceiptInfoVo.getRecvGolfSeq());
+
+			// 제휴사 + 쿠폰 적용 시 운임 보정 (쿠폰 할인액이 0보다 클 때 적용)
+			if (isPartner && cbReceiptInfoVo.getCouponDiscount() > 0) {
+				// 정가(8,000원) 기준으로 pdPay를 강제 설정.
+				receiptInfVO.setPdPay(8000);
+				logger.info("제휴사 쿠폰 적용: 운임이 8,000원으로 보정되었습니다.");
+			}
 
 			data.put("status", "200");
 			data.put("pdDosunPay", receiptInfVO.getPdDosunPay());
