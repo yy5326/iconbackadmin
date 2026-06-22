@@ -160,16 +160,14 @@ public class CbReceiveController {
 				String regDate = _receiptService.selectDetailByRcpSeq(receiptList.get(0).getRcpSeq(), "S").getRegDate();
 
 				String orderId = ""; // 결제용 묶음코드
-				if (list.get(0).getOrderNumber() != null) {
-					if ( "2".equals(list.get(0).getDelKind()) ) {
-						orderId = "GRP"+receiptList.get(0).getRcpSeq(); // 챗봇접수번호 - 왕복시 그룹번호 참조 create
-						data.put("cbPay", receiptList.get(0).getPdPay()+receiptList.get(1).getPdPay());
-					} else {
-						orderId = receiptList.get(0).getRcpNumber(); // 챗봇접수번호 - 편도시 rcpNumber
-						data.put("cbPay", receiptList.get(0).getPdPay());
-					}
+				if ( "2".equals(list.get(0).getDelKind()) ) {
+					orderId = "GRP"+receiptList.get(0).getRcpSeq(); // 챗봇접수번호 - 왕복시 그룹번호 참조 create
+					data.put("cbPay", receiptList.get(0).getPdPay()+receiptList.get(1).getPdPay());
+				} else {
+					orderId = receiptList.get(0).getRcpNumber(); // 챗봇접수번호 - 편도시 rcpNumber
+					data.put("cbPay", receiptList.get(0).getPdPay());
 				}
-				data.put("orderId", orderId);
+				data.put("orderId",orderId);
 
 				String rcpNumber = "";
 				for(GolfReceiptInfVO vo : receiptList) {
@@ -333,14 +331,22 @@ public class CbReceiveController {
 			_receiptService.preInsertReceiptInfo(receiptInfVO, cbReceiptInfoVo);
 
 			// 제휴사 판별 (출발지 또는 도착지가 제휴사이면 true)
-			boolean isPartner = _receiptService.isPartnerGolf(cbReceiptInfoVo.getSendGolfSeq()) ||
+ 			boolean isPartner = _receiptService.isPartnerGolf(cbReceiptInfoVo.getSendGolfSeq()) ||
 					_receiptService.isPartnerGolf(cbReceiptInfoVo.getRecvGolfSeq());
 
-			// 제휴사 + 쿠폰 적용 시 운임 보정 (쿠폰 할인액이 0보다 클 때 적용)
-			if (isPartner && cbReceiptInfoVo.getCouponDiscount() > 0) {
-				// 정가(8,000원) 기준으로 pdPay를 강제 설정.
-				receiptInfVO.setPdPay(8000);
-				logger.info("제휴사 쿠폰 적용: 운임이 8,000원으로 보정되었습니다.");
+			// 제휴사 + 쿠폰 적용 시 운임 보정
+			if (isPartner && cbReceiptInfoVo.getCouponCode() != null
+					&& !cbReceiptInfoVo.getCouponCode().isEmpty()
+					&& !"0".equals(cbReceiptInfoVo.getCouponCode())) {
+				receiptInfVO.setIconFee(8000);
+				// 다른 배송비 등은 유지하고 합계만 다시 계산
+				int newTotalPay = receiptInfVO.getPdDeliPay()
+						+ receiptInfVO.getPdDosunPay()
+						+ receiptInfVO.getPdEtcPay()
+						+ 8000; //보정된 수수료
+
+				receiptInfVO.setPdPay(newTotalPay);
+				logger.info("제휴사 쿠폰 적용: 수수료만 8,000원으로 보정하고 최종 합계 {}원을 재산출.", newTotalPay);
 			}
 
 			data.put("status", "200");

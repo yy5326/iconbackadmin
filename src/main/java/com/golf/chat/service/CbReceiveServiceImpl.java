@@ -136,30 +136,28 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 				if("0".equals(cbReceiptInfoVo.getRcpKind())) { //결제상태 - 카카오 : 입금대기, 스마트스코어 : 결제완료
 					company = "아이콘";
-					payStat = cbReceiptInfoVo.getPayStat();
-					kakaoPayStat = "";
-					kakaoPayMessage = "";
+					payStat = "0";
+					kakaoPayStat = "READY";
+					kakaoPayMessage = "결제요청";
 				}
 
 				// 2025.05.21 교참 추가
 				if("5".equals(cbReceiptInfoVo.getRcpKind())) {
 					company = "교참";
-					payStat = cbReceiptInfoVo.getPayStat();
-					kakaoPayStat = "";
-					kakaoPayMessage = "";
+					payStat = "0";
+					kakaoPayStat = "READY";
+					kakaoPayMessage = "결제요청";
 				}
 
                 if("9".equals(cbReceiptInfoVo.getRcpKind())) {
                     company = "팬스타크루즈";
-					payStat = cbReceiptInfoVo.getPayStat();
-					kakaoPayStat = "";
-					kakaoPayMessage = "";
+                    payStat = "0";
+                    kakaoPayStat = "READY";
+                    kakaoPayMessage = "결제요청";
                 }
 
 				//스마트 스코어 일때 접수상태 골프접수,20260326 팬스타크루즈 추가
-				if("2".equals(cbReceiptInfoVo.getRcpKind()) || "0".equals(cbReceiptInfoVo.getRcpKind())
-						|| "3".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind())
-						|| "9".equals(cbReceiptInfoVo.getRcpKind())){
+				if("2".equals(cbReceiptInfoVo.getRcpKind()) || "0".equals(cbReceiptInfoVo.getRcpKind()) || "3".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind())|| "9".equals(cbReceiptInfoVo.getRcpKind())){
 					receiptInfVO.setRcpInfStat("0");
 				}else{
 					receiptInfVO.setRcpInfStat(rcpInfStat);
@@ -174,6 +172,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 						&& cbReceiptInfoVo.getBostonCnt() > 0) {
 					receiptInfVO.setPdNm("국제골프택배세트");
 				}
+
 
 				receiptInfVO.setPdPack("1".equals(cbReceiptInfoVo.getDelKind()) ? "편도" : "왕복");
 
@@ -219,6 +218,8 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 				preInsertReceiptInfo(receiptInfVO, cbReceiptInfoVo);
 
+				// 제휴사 확인
+				boolean isPartner = isPartnerGolf(cbReceiptInfoVo.getSendGolfSeq()) || isPartnerGolf(cbReceiptInfoVo.getRecvGolfSeq());
 
 				/**
 				 * 2024.11.27
@@ -280,11 +281,22 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				}
 
 				int couponVal = cbReceiptInfoVo.getCouponDiscount();
+
+// --- [통합 로직 시작] ---
 				if (couponVal > 0) {
-					// 접수전산에서 건별로 계산해서 보낸 할인액을 그대로 차감
+					// 1. 제휴사라면 수수료를 8,000원으로 보정
+					if (isPartner) {
+						receiptInfVO.setIconFee(8000);
+						// 수수료가 바뀌었으므로 총액(pdPay)을 다시 계산
+						int basePay = receiptInfVO.getPdDeliPay() + receiptInfVO.getPdDosunPay() + receiptInfVO.getPdEtcPay() + 8000;
+						receiptInfVO.setPdPay(basePay);
+					}
+
+					// 2. 최종 쿠폰 할인 적용
 					int currentPdPay = receiptInfVO.getPdPay();
 					receiptInfVO.setPdPay(Math.max(0, currentPdPay - couponVal));
-					logger.info("### 쿠폰 할인 적용: {}원 차감 (최종금액: {}원)", couponVal, receiptInfVO.getPdPay());
+
+					logger.info("### 쿠폰 할인 및 제휴사 보정 적용 완료. 최종금액: {}원", receiptInfVO.getPdPay());
 				}
 
 				logger.info("챗봇 골프접수 데이터");
@@ -310,17 +322,12 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				payVO.setPayStat(payStat); // 결제상태 - 입금대기
 
 				// PAY TABLE ORDER ID 추가
-				if (cbReceiptInfoVo.getOrderNumber() != null) {
-					// 주문번호
-					payVO.setOrderId(String.valueOf(cbReceiptInfoVo.getOrderNumber()));
+				if ( "1".equals(list.get(0).getDelKind()) ) {
+					// 편도
+					payVO.setOrderId(receiptInfVO.getRcpNumber());
 				} else {
-					if ( "1".equals(list.get(0).getDelKind()) ) {
-						// 편도
-						payVO.setOrderId(receiptInfVO.getRcpNumber());
-					} else {
-						// 왕복
-						payVO.setOrderId("GRP"+mstVO.getRcpSeq());
-					}
+					// 왕복
+					payVO.setOrderId("GRP"+mstVO.getRcpSeq());
 				}
 
 				_gDao.insert("golfReceiptPay.insertReceiptPay", payVO);
@@ -1089,7 +1096,6 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 						_gDao.update("golfReceiptPay.updateSelectiveByRcpInfSeq", cancelPayVO);
 
 						// 기존 편도 데이텨 order id 변경 - ORDER_ID= GRP로 시작하는 그룹코드가 아닌 rcpNumber
-						// prefix "GRP" → "ORD" 로 변경 ex) ORD26060911050003
 						GolfReceiptPayVO modifyPayVO = new GolfReceiptPayVO();
 						modifyPayVO.setOrderId(infVo.getRcpNumber());
 						modifyPayVO.setRcpInfSeq(infVo.getRcpInfSeq());

@@ -153,17 +153,19 @@ public @Data class CbReceiptInfoVO {
 	private int rcpSeqNo; //그룹
 	private String rcpType; //구분
 
-	@ApiParam(value="결제 상태")
-	@ApiModelProperty(position = 32, notes = "결제 상태")
+	/* 아이콘 렌탈용 결제여부 확인 전달값 */
 	private String payStat; // 결제상태 (0: 입금대기, 1: 결제완료, 9: 결제취소)
+
+	@ApiParam(value="쿠폰 일련번호")
+	@ApiModelProperty(position = 33, notes = "쿠폰 일련번호")
+	private int couponSeq;
+
+	@ApiParam(value="쿠폰 코드")
+	@ApiModelProperty(position = 33, notes = "쿠폰 코드")
+	private String couponCode;
 
 	// 쿠폰 할인 금액
 	@ApiParam(value="쿠폰 할인 금액")
-	@ApiModelProperty(position = 33, notes = "쿠폰 할인 금액")
+	@ApiModelProperty(position = 32, notes = "쿠폰 할인 금액")
 	private int couponDiscount;
-
-	// 주문번호
-	@ApiParam(value="주문 번호")
-	@ApiModelProperty(position = 34, notes = "주문 번호")
-	private String orderNumber;
 }
