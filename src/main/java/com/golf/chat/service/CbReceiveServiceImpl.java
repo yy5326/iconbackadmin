@@ -1468,4 +1468,11 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		infVo.setSrType("S");
 		return (GolfReceiptInfVO)_gDao.selectByKey("golfReceiptInf.selectDetailByRcpSeq", infVo);
 	}
+
+	public boolean isPartnerGolf(int golfSeq) {
+		if (golfSeq <= 0) return false;
+		GolfInfVO golfInfo = (GolfInfVO) _gDao.selectByKey("golfInf.selectByKey", (long)golfSeq);
+		if (golfInfo == null) return false;
+		return golfInfo.getFee1() < 8000;
+	}
 }
