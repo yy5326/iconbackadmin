@@ -160,9 +160,8 @@
 					AND A.RCP_NUMBER LIKE '%${searchWord}%'
 				</when>
 				<when test="type3 == 'orderId'">
-					AND B.DEL_KIND = '2'
 					AND (CONCAT(D.ORDER_ID) LIKE '%${searchWord}%'
-							OR CONCAT('GRP', A.RCP_SEQ) LIKE '%${searchWord}%')
+							OR (CONCAT('GRP', A.RCP_SEQ) LIKE '%${searchWord}%' AND B.DEL_KIND = '2'))
 				</when>
 				<when test="type3 == 'brStrNm'">
 					AND A.BR_STR_NM LIKE '%${searchWord}%'
