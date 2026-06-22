@@ -78,6 +78,7 @@
 		<result column="ICON_FEE" jdbcType="INTEGER" property="iconFee" />
 		<result column="FILE_NM" jdbcType="INTEGER" property="fileNm" />
 
+		<result column="ORDER_ID" jdbcType="VARCHAR" property="orderId" />
 	</resultMap>
 
 
@@ -202,6 +203,7 @@
 			, C.GOLF_NAME AS RECV_GOLF_NAME
 			, D.PAY_STAT
 			, D.PAY_GUBUN
+			, D.ORDER_ID
 			, A.PRD_TYPE
 			, A.RCP_TYPE
 			, A.RCP_AIR_SEQ
@@ -1362,6 +1364,7 @@
 			, C.GOLF_NAME AS RECV_GOLF_NAME
 			, D.PAY_STAT
 			, D.PAY_GUBUN
+			, D.ORDER_ID
 		 FROM GOLF_RECEIPT_INF A
 		 LEFT JOIN GOLF_RECEIPT_MST B ON B.RCP_SEQ = A.RCP_SEQ
 		 LEFT JOIN GOLF_INF C ON C.GOLF_SEQ = A.RECV_GOLF_SEQ
