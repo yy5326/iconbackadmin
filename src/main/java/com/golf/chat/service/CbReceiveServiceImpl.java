@@ -231,7 +231,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				 * 아이콘택배(고객)는 아이콘수수료 할인 미적용가 표기<br>
 				 * 골프택배(전산)에는 아이콘수수료 할인 적용가 표기
 				 */
-				if(("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind()))  // 웹, 모바일 + 교참
+				/*if(("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind()))  // 웹, 모바일 + 교참
 						&& cbReceiptInfoVo.getPdCnt() > 0 // 골프백
 						&& cbReceiptInfoVo.getBostonCnt() > 0) {// 보스턴수 0이상
 //						&& receiptInfVO.getDiscountTotal() > 0) { // 보스턴 할인가 0이상
@@ -250,7 +250,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					} else {
 						logger.info("### [보라전산] 쿠폰 적용건으로 보스턴백 자동 할인 제외");
 					}
-				}else if(("9".equals(cbReceiptInfoVo.getRcpKind()))){//팬스타그루즈 할인금액적용
+				}else */if(("9".equals(cbReceiptInfoVo.getRcpKind()))){//팬스타그루즈 할인금액적용
                     int bostonDiscount = 2000 * cbReceiptInfoVo.getBostonCnt();
                     int golfBagDiscount = 3000 * cbReceiptInfoVo.getPdCnt();
                     int totalDiscount = (bostonDiscount + golfBagDiscount)/2;
@@ -284,21 +284,15 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 				int couponVal = cbReceiptInfoVo.getCouponDiscount();
 
-// --- [통합 로직 시작] ---
 				if (couponVal > 0) {
-					// 1. 제휴사라면 수수료를 8,000원으로 보정
-					if (isPartner) {
-						receiptInfVO.setIconFee(8000);
-						// 수수료가 바뀌었으므로 총액(pdPay)을 다시 계산
-						int basePay = receiptInfVO.getPdDeliPay() + receiptInfVO.getPdDosunPay() + receiptInfVO.getPdEtcPay() + 8000;
-						receiptInfVO.setPdPay(basePay);
-					}
-
-					// 2. 최종 쿠폰 할인 적용
+					// 제휴사 보정은 searchIsl()에서 완료
+					// 쿠폰 할인 금액(couponVal)만 반영
 					int currentPdPay = receiptInfVO.getPdPay();
 					receiptInfVO.setPdPay(Math.max(0, currentPdPay - couponVal));
-
-					logger.info("### 쿠폰 할인 및 제휴사 보정 적용 완료. 최종금액: {}원", receiptInfVO.getPdPay());
+					// 할인 총액 업데이트
+					receiptInfVO.setDiscountTotal(receiptInfVO.getDiscountTotal() + couponVal);
+					logger.info("### 쿠폰 할인 적용 완료. 최종금액: {}원, 총할인액: {}",
+							receiptInfVO.getPdPay(), receiptInfVO.getDiscountTotal());
 				}
 
 				logger.info("챗봇 골프접수 데이터");
@@ -689,7 +683,8 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		// 쿠폰 사용 여부 판단
 		boolean isCouponApplied = (cbReceiptInfoVo.getCouponCode() != null
 				&& !cbReceiptInfoVo.getCouponCode().isEmpty()
-				&& !"0".equals(cbReceiptInfoVo.getCouponCode()));
+				&& !"0".equals(cbReceiptInfoVo.getCouponCode()))
+				|| (cbReceiptInfoVo.getCouponDiscount() > 0);
 
 		// 보스턴백 세트 할인 로직 (쿠폰 미사용 시에만 동작하도록 수정)
 		if ("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind())) {
