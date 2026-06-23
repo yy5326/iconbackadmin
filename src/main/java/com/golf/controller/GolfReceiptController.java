@@ -160,7 +160,7 @@ public class GolfReceiptController extends PrtController {
 			// 검색조건
 			List<StringPair> type3 = new ArrayList<StringPair>();
 			type3.add(new StringPair("골프 접수번호", "rcpNumber"));
-			type3.add(new StringPair("그룹번호", "orderId"));
+			type3.add(new StringPair("주문번호", "orderId"));
 			type3.add(new StringPair("발송 영업소", "brStrNm"));
 			type3.add(new StringPair("도착 영업소", "brEndNm"));
 			type3.add(new StringPair("접수자", "cusReceiptNm"));
@@ -300,7 +300,7 @@ public class GolfReceiptController extends PrtController {
 		// 검색조건
 		List<StringPair> type3 = new ArrayList<StringPair>();
 		type3.add(new StringPair("골프 접수번호", "rcpNumber"));
-		type3.add(new StringPair("그룹번호", "orderId"));
+		type3.add(new StringPair("주문번호", "orderId"));
 		type3.add(new StringPair("발송 영업소", "brStrNm"));
 		type3.add(new StringPair("도착 영업소", "brEndNm"));
 		type3.add(new StringPair("접수자", "cusReceiptNm"));

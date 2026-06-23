@@ -93,7 +93,7 @@
 							<th>상품구분</th>
 							<th>접수상태</th>
 							<th>구분</th>
-							<th>그룹번호</th>
+							<th>주문번호</th>
 							<th>픽업희망일</th>
 							<th>골프 접수번호</th>
 							<th>결제상태</th>
@@ -139,52 +139,21 @@
 	</c:if>
 							</td>
 
-<c:set var ="rowSpan" value = "1"/>
-<c:if test = "${list[ss.index + 1].rcpSeq == m.rcpSeq }">
-		<c:set var ="rowSpan" value = "2"/>
-</c:if>
 
-<c:choose>
-	<c:when test="${m.delKind eq '2' && m.srType eq 'R'  && rowSpan == 2}">
-	<!-- 왕복 1,2차 모두 표시되는 경우 -->
-							<td rowspan="${rowSpan}">
-								GRP${m.rcpSeq }
-							</td>
-	</c:when>
-
-	<c:when test="${m.delKind eq '2' && rowSpan == 1 && list[ss.index - 1].rcpSeq != m.rcpSeq}">
-	<!-- 이전 그룹번호와 같지 않고 왕복 1,2차 중 한개만 표시되는 경우 -->
-								<td>
-									GRP${m.rcpSeq }
-								</td>
-	</c:when>
-
-	<c:otherwise>
-		<!-- 편도는 그룹번호 표시 안함 -->
-		<c:if test="${m.delKind eq '1'}">
-			<c:set var ="rowAirSpan" value = "1"/>
-			<c:if test = "${list[ss.index + 1].rcpAirSeq == m.rcpAirSeq }">
-				<c:set var ="rowAirSpan" value = "2"/>
-			</c:if>
-
-			<c:choose>
-				<c:when test="${m.rcpType eq 'A' && m.rcpAirSeq ne ''}">
-					<c:if test="${rowAirSpan eq '2'}">
-						<td rowspan="${rowAirSpan}">
-							인천공항
-						</td>
-					</c:if>
-					<c:if test="${rowAirSpan eq '1' && list[ss.index - 1].rcpAirSeq != m.rcpAirSeq}">
-						<td>인천공항</td>
-					</c:if>
-				</c:when>
-				<c:otherwise>
-					<td></td>
-				</c:otherwise>
-			</c:choose>
-		</c:if>
-	</c:otherwise>
-</c:choose>
+						<%-- 1. 이전 행과 orderId가 같은지 확인 --%>
+						<c:set var="isSameAsPrev" value="${ss.index > 0 && list[ss.index - 1].orderId eq m.orderId}" />
+						<%-- 2. 현재 행이 그룹의 시작인지 확인 (이전 행과 다르거나, 첫 번째 행일 때) --%>
+						<c:if test="${!isSameAsPrev}">
+							<c:set var="count" value="0" />
+							<%-- 3. 현재부터 끝까지 동일한 orderId가 몇 개인지 카운트 --%>
+							<c:forEach var="item" items="${list}" begin="${ss.index}">
+								<c:if test="${item.orderId eq m.orderId}">
+									<c:set var="count" value="${count + 1}" />
+								</c:if>
+							</c:forEach>
+							<%-- 4. td 출력 --%>
+							<td rowspan="${count}">${m.orderId}</td>
+						</c:if>
 
 							<td>${fn:substring(m.picReqDt, 2, 10) }</td>
 							<td>${m.rcpNumber }
