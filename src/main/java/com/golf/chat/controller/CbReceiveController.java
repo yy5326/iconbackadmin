@@ -337,21 +337,6 @@ public class CbReceiveController {
  			boolean isPartner = _receiptService.isPartnerGolf(cbReceiptInfoVo.getSendGolfSeq()) ||
 					_receiptService.isPartnerGolf(cbReceiptInfoVo.getRecvGolfSeq());
 
-			// 제휴사 + 쿠폰 적용 시 운임 보정
-			if (isPartner && cbReceiptInfoVo.getCouponCode() != null
-					&& !cbReceiptInfoVo.getCouponCode().isEmpty()
-					&& !"0".equals(cbReceiptInfoVo.getCouponCode())) {
-				receiptInfVO.setIconFee(8000);
-				// 다른 배송비 등은 유지하고 합계만 다시 계산
-				int newTotalPay = receiptInfVO.getPdDeliPay()
-						+ receiptInfVO.getPdDosunPay()
-						+ receiptInfVO.getPdEtcPay()
-						+ 8000; //보정된 수수료
-
-				receiptInfVO.setPdPay(newTotalPay);
-				logger.info("제휴사 쿠폰 적용: 수수료만 8,000원으로 보정하고 최종 합계 {}원을 재산출.", newTotalPay);
-			}
-
 			data.put("status", "200");
 			data.put("pdDosunPay", receiptInfVO.getPdDosunPay());
 			data.put("pdDeliPay", receiptInfVO.getPdDeliPay() + receiptInfVO.getIconFee());
