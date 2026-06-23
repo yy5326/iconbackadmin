@@ -160,14 +160,16 @@ public class CbReceiveController {
 				String regDate = _receiptService.selectDetailByRcpSeq(receiptList.get(0).getRcpSeq(), "S").getRegDate();
 
 				String orderId = ""; // 결제용 묶음코드
-				if ( "2".equals(list.get(0).getDelKind()) ) {
-					orderId = "GRP"+receiptList.get(0).getRcpSeq(); // 챗봇접수번호 - 왕복시 그룹번호 참조 create
-					data.put("cbPay", receiptList.get(0).getPdPay()+receiptList.get(1).getPdPay());
-				} else {
-					orderId = receiptList.get(0).getRcpNumber(); // 챗봇접수번호 - 편도시 rcpNumber
-					data.put("cbPay", receiptList.get(0).getPdPay());
+				if (list.get(0).getOrderNumber() != null) {
+					if ( "2".equals(list.get(0).getDelKind()) ) {
+						orderId = "GRP"+receiptList.get(0).getRcpSeq(); // 챗봇접수번호 - 왕복시 그룹번호 참조 create
+						data.put("cbPay", receiptList.get(0).getPdPay()+receiptList.get(1).getPdPay());
+					} else {
+						orderId = receiptList.get(0).getRcpNumber(); // 챗봇접수번호 - 편도시 rcpNumber
+						data.put("cbPay", receiptList.get(0).getPdPay());
+					}
 				}
-				data.put("orderId",orderId);
+				data.put("orderId", orderId);
 
 				String rcpNumber = "";
 				for(GolfReceiptInfVO vo : receiptList) {

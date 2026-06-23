@@ -136,30 +136,32 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 				if("0".equals(cbReceiptInfoVo.getRcpKind())) { //결제상태 - 카카오 : 입금대기, 스마트스코어 : 결제완료
 					company = "아이콘";
-					payStat = "0";
-					kakaoPayStat = "READY";
-					kakaoPayMessage = "결제요청";
+					payStat = cbReceiptInfoVo.getPayStat();
+					kakaoPayStat = "";
+					kakaoPayMessage = "";
 				}
 
 				// 2025.05.21 교참 추가
 				if("5".equals(cbReceiptInfoVo.getRcpKind())) {
 					company = "교참";
-					payStat = "0";
-					kakaoPayStat = "READY";
-					kakaoPayMessage = "결제요청";
+					payStat = cbReceiptInfoVo.getPayStat();
+					kakaoPayStat = "";
+					kakaoPayMessage = "";
 				}
 
-                if("9".equals(cbReceiptInfoVo.getRcpKind())) {
-                    company = "팬스타크루즈";
-                    payStat = "0";
-                    kakaoPayStat = "READY";
-                    kakaoPayMessage = "결제요청";
-                }
+				if("9".equals(cbReceiptInfoVo.getRcpKind())) {
+					company = "팬스타크루즈";
+					payStat = cbReceiptInfoVo.getPayStat();
+					kakaoPayStat = "";
+					kakaoPayMessage = "";
+				}
 
 				//스마트 스코어 일때 접수상태 골프접수,20260326 팬스타크루즈 추가
-				if("2".equals(cbReceiptInfoVo.getRcpKind()) || "0".equals(cbReceiptInfoVo.getRcpKind()) || "3".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind())|| "9".equals(cbReceiptInfoVo.getRcpKind())){
+				if ("2".equals(cbReceiptInfoVo.getRcpKind()) || "0".equals(cbReceiptInfoVo.getRcpKind())
+						|| "3".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind())
+						|| "9".equals(cbReceiptInfoVo.getRcpKind())) {
 					receiptInfVO.setRcpInfStat("0");
-				}else{
+				} else {
 					receiptInfVO.setRcpInfStat(rcpInfStat);
 				}
 				//receiptInfVO.setRcpInfStat(rcpInfStat); // 접수상태 - 카카오 , 스마트스코어: 접수대기
@@ -322,12 +324,17 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				payVO.setPayStat(payStat); // 결제상태 - 입금대기
 
 				// PAY TABLE ORDER ID 추가
-				if ( "1".equals(list.get(0).getDelKind()) ) {
-					// 편도
-					payVO.setOrderId(receiptInfVO.getRcpNumber());
+				if (cbReceiptInfoVo.getOrderNumber() != null) {
+					// 주문번호
+					payVO.setOrderId(String.valueOf(cbReceiptInfoVo.getOrderNumber()));
 				} else {
-					// 왕복
-					payVO.setOrderId("GRP"+mstVO.getRcpSeq());
+					if ( "1".equals(list.get(0).getDelKind()) ) {
+						// 편도
+						payVO.setOrderId(receiptInfVO.getRcpNumber());
+					} else {
+						// 왕복
+						payVO.setOrderId("GRP"+mstVO.getRcpSeq());
+					}
 				}
 
 				_gDao.insert("golfReceiptPay.insertReceiptPay", payVO);
@@ -1096,6 +1103,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 						_gDao.update("golfReceiptPay.updateSelectiveByRcpInfSeq", cancelPayVO);
 
 						// 기존 편도 데이텨 order id 변경 - ORDER_ID= GRP로 시작하는 그룹코드가 아닌 rcpNumber
+						// prefix "GRP" → "ORD" 로 변경 ex) ORD26060911050003
 						GolfReceiptPayVO modifyPayVO = new GolfReceiptPayVO();
 						modifyPayVO.setOrderId(infVo.getRcpNumber());
 						modifyPayVO.setRcpInfSeq(infVo.getRcpInfSeq());
