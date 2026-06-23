@@ -655,6 +655,49 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
             }
 		}
 
+		// 쿠폰 사용 여부 판단
+		boolean isCouponApplied = (cbReceiptInfoVo.getCouponCode() != null
+				&& !cbReceiptInfoVo.getCouponCode().isEmpty()
+				&& !"0".equals(cbReceiptInfoVo.getCouponCode()));
+
+		// 보스턴백 세트 할인 로직 (쿠폰 미사용 시에만 동작하도록 수정)
+		if ("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind())) {
+			if (cbReceiptInfoVo.getPdCnt() > 0 && cbReceiptInfoVo.getBostonCnt() > 0) {
+
+				// 쿠폰이 사용되지 않았을 때만 할인 적용
+				if (!isCouponApplied) {
+					int bostonDiscount = 3000;
+					int discount = bostonDiscount * cbReceiptInfoVo.getBostonCnt();
+
+					if ("2".equals(cbReceiptInfoVo.getDelKind())) {
+						pdPay = pdPay * 2;
+					}
+					receiptInfVO.setDiscount(pdPay - discount);
+					receiptInfVO.setDiscountTotal(discount);
+				} else {
+					logger.info("### 쿠폰 사용으로 인해 보스턴백 세트 할인 제외");
+					receiptInfVO.setDiscount(pdPay);
+					receiptInfVO.setDiscountTotal(0);
+				}
+			}
+		}
+
+		// 골프장 제휴사 수수료 보정 로직
+		if (isPartnerGolf(cbReceiptInfoVo.getSendGolfSeq()) || isPartnerGolf(cbReceiptInfoVo.getRecvGolfSeq())) {
+			// 쿠폰 적용 시 수수료 정책: 골프백 8,000원 + 보스턴백 4,000원 = 12,000원
+			if (isCouponApplied) {
+				// 개별 단위 수수료 정의 (수량에 맞춰 계산)
+				int targetGolfBagFee = 8000 * cbReceiptInfoVo.getPdCnt();
+				int targetBostonFee = 4000 * cbReceiptInfoVo.getBostonCnt();
+				int newTotalIconPay = targetGolfBagFee + targetBostonFee;
+				// pdPay에서 기존 iconPay를 빼고, 새 수수료를 더함
+				pdPay = pdPay - iconPay + newTotalIconPay;
+				// iconPay 갱신
+				iconPay = newTotalIconPay;
+				logger.info("### 제휴사 쿠폰 적용(12,000원 정책): 골프백={}, 보스턴백={}, 최종 pdPay={}", targetGolfBagFee, targetBostonFee, pdPay);
+			}
+		}
+
 		receiptInfVO.setPdDosunPay(pdDosunPay);
 		receiptInfVO.setPdDeliPay(pdDeliPay);
 		receiptInfVO.setIconFee(iconPay);
@@ -669,7 +712,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		 * RcpKind : 0 (모바일, 웹)
 		 * + 20250521 교참 추가 RcpKind 5
 		 */
-		if ("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind())) {
+		/*if ("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind())) {
 			if (cbReceiptInfoVo.getPdCnt() > 0) {
 				if (cbReceiptInfoVo.getBostonCnt() > 0) {
 					int bostonDiscount = 3000;
@@ -682,7 +725,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					receiptInfVO.setDiscountTotal(discount);
 				}
 			}
-		}
+		}*/
 
 	}
 

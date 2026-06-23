@@ -328,6 +328,7 @@ public class CbReceiveController {
 			receiptInfVO.setCusReAddr2(cbReceiptInfoVo.getCusReAddr2());
 
 			_receiptService.preInsertReceiptInfo(receiptInfVO, cbReceiptInfoVo);
+			logger.info("### preInsert 이후 배송비 확인: pdDeliPay={}, pdPay={}", receiptInfVO.getPdDeliPay(), receiptInfVO.getPdPay());
 
 			data.put("status", "200");
 			data.put("pdDosunPay", receiptInfVO.getPdDosunPay());
