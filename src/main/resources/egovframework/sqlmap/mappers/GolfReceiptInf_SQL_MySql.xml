@@ -99,6 +99,7 @@
    		 WHEN A.RCP_KIND ='7' THEN '렌탈(M)'
    		 WHEN A.RCP_KIND ='8' THEN '렌탈(E)'
    		 WHEN A.RCP_KIND ='9' THEN '팬스타'
+         WHEN A.RCP_KIND ='10' THEN 'KMA'
    		 ELSE '알수없음' END RCP_KIND_NAME, RCP_KIND,
    	CUS_RECEIPT_NM, CUS_RECEIPT_TELNUM
 
