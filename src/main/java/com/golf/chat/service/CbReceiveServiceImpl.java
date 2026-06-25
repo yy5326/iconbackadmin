@@ -321,8 +321,9 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				insertGolfHistory(String.valueOf(receiptInfVO.getRcpNumber()), historyMemo);
 			}
 
-			// 교참 추가
-			if("0".equals(list.get(0).getRcpKind()) || "3".equals(list.get(0).getRcpKind()) || "5".equals(list.get(0).getRcpKind())|| "9".equals(list.get(0).getRcpKind())){
+			// 202607 KMA(코참) 알림톡 발송 제외
+			//if("0".equals(list.get(0).getRcpKind()) || "3".equals(list.get(0).getRcpKind()) || "5".equals(list.get(0).getRcpKind())|| "9".equals(list.get(0).getRcpKind())){
+			if("0".equals(list.get(0).getRcpKind()) || "3".equals(list.get(0).getRcpKind()) || "9".equals(list.get(0).getRcpKind())){
 
 				if(!"A".equals(list.get(0).getRcpType())){
 					// 아이콘 프로젝트 접수시 결제정보 전송하려면 사용
