@@ -164,6 +164,8 @@ public class CbReceiveController {
 					if ( "2".equals(list.get(0).getDelKind()) ) {
 						orderId = "GRP"+receiptList.get(0).getRcpSeq(); // 챗봇접수번호 - 왕복시 그룹번호 참조 create
 						data.put("cbPay", receiptList.get(0).getPdPay()+receiptList.get(1).getPdPay());
+						data.put("sRoundTripDiscountAmt", receiptList.get(0).getRoundTripDiscountAmt()); // 왕복 1차 편도-왕복 차액
+						data.put("rRoundTripDiscountAmt", receiptList.get(1).getRoundTripDiscountAmt()); // 왕복 2차 편도-왕복 차액
 					} else {
 						orderId = receiptList.get(0).getRcpNumber(); // 챗봇접수번호 - 편도시 rcpNumber
 						data.put("cbPay", receiptList.get(0).getPdPay());
@@ -343,6 +345,7 @@ public class CbReceiveController {
 			data.put("pdEtcPay", receiptInfVO.getPdEtcPay());
 			data.put("discount", receiptInfVO.getDiscount());
 			data.put("pdPay", receiptInfVO.getPdPay());
+			data.put("roundTripDiscountAmt", receiptInfVO.getRoundTripDiscountAmt()); // 편도-왕복 차액
 			data.put("discountTotal", receiptInfVO.getDiscountTotal()); //241127 SG 할인총값 추가.
 
 

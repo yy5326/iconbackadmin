@@ -516,13 +516,14 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			extraPrice = _kdngeApi.getExtraPrice(cbReceiptInfoVo.getPdIndivPrice());
 
 			// 총운임
-			if ( dosun1 >= 1 ) {
+			if (dosun1 >= 1) {
 				// 도서 산간일 경우 0+1을 수량에 곱함
-				pdPay = ((amtArray[0]+amtArray[1])*cbReceiptInfoVo.getPdCnt()) + ((bostonAmt + bostonDosunAmt) * bostonCnt);
+				pdPay = ((amtArray[0] + amtArray[1]) * cbReceiptInfoVo.getPdCnt()) + ((bostonAmt + bostonDosunAmt) * bostonCnt);
 			} else {
-				pdPay = (amtArray[1]*cbReceiptInfoVo.getPdCnt()) + (bostonDosunAmt * bostonCnt);
+				pdPay = (amtArray[1] * cbReceiptInfoVo.getPdCnt()) + (bostonDosunAmt * bostonCnt);
 			}
-			pdPay += extraPrice+iconPay;
+			// 편도
+			pdPay += extraPrice + iconPay;
 
 			if("3".equals(cbReceiptInfoVo.getRcpKind())) {
 				receiptInfVO.setDiscount(pdPay - discount);
@@ -595,15 +596,19 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 //				extraPrice = getExtraPrice(cbReceiptInfoVo.getPdIndivPrice());
 				extraPrice = _kdngeApi.getExtraPrice(cbReceiptInfoVo.getPdIndivPrice());
 				// 총운임
-				if ( dosun1 >= 1 ) {
+				if (dosun1 >= 1) {
 					// 도서 산간일 경우 0+1을 수량에 곱함
-					pdPay = ((amtArray[0]+amtArray[2])*cbReceiptInfoVo.getPdCnt()) + ((bostonAmtR + bostonDosunAmtR) * bostonCnt);
-
-
+					pdPay = ((amtArray[0] + amtArray[2]) * cbReceiptInfoVo.getPdCnt()) + ((bostonAmtR + bostonDosunAmtR) * bostonCnt);
 				} else {
-					pdPay = (amtArray[2]*cbReceiptInfoVo.getPdCnt()) + (bostonDosunAmtR * bostonCnt);
+					pdPay = (amtArray[2] * cbReceiptInfoVo.getPdCnt()) + (bostonDosunAmtR * bostonCnt);
 				}
-				pdPay += extraPrice+iconPay;
+
+				// 편도 기준 정가 계산
+				final int onewayPdPay = getOnewayPdPay(cbReceiptInfoVo, sendGolfInfVo, recvGolfInfVo, dosun1, amtArray, bostonCnt, extraPrice);
+				// 왕복 1차
+				pdPay += extraPrice + iconPay;
+				// 편도-왕복 차액
+				receiptInfVO.setRoundTripDiscountAmt(onewayPdPay - pdPay);
 
 
 //				if("3".equals(cbReceiptInfoVo.getRcpKind())) {
@@ -651,14 +656,18 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 //				extraPrice = getExtraPrice(cbReceiptInfoVo.getPdIndivPrice());
 				extraPrice = _kdngeApi.getExtraPrice(cbReceiptInfoVo.getPdIndivPrice());
 				// 총운임
-				if ( dosun2 >= 1 ) {
+				if (dosun2 >= 1) {
 					// 도서 산간일 경우 0+1을 수량에 곱함
-					pdPay = ((amtArray[0]+amtArray[2])*cbReceiptInfoVo.getPdCnt()) + ((bostonAmtR + bostonDosunAmtR) * bostonCnt);
-
+					pdPay = ((amtArray[0] + amtArray[2]) * cbReceiptInfoVo.getPdCnt()) + ((bostonAmtR + bostonDosunAmtR) * bostonCnt);
 				} else {
-					pdPay = (amtArray[2]*cbReceiptInfoVo.getPdCnt()) + (bostonDosunAmtR * bostonCnt);
+					pdPay = (amtArray[2] * cbReceiptInfoVo.getPdCnt()) + (bostonDosunAmtR * bostonCnt);
 				}
-				pdPay += extraPrice+iconPay;
+				// 편도 기준 정가 계산
+				final int onewayPdPay = getOnewayPdPay(cbReceiptInfoVo, sendGolfInfVo, recvGolfInfVo, dosun1, amtArray, bostonCnt, extraPrice);
+				// 왕복 2차
+				pdPay += extraPrice + iconPay;
+				// 편도-왕복 차액
+				receiptInfVO.setRoundTripDiscountAmt(onewayPdPay - pdPay);
 
 //				if("3".equals(cbReceiptInfoVo.getRcpKind())) {
 //					receiptInfVO.setDiscount(pdPay - (hdCardDiscount_Round * cbReceiptInfoVo.getPdCnt()));
@@ -753,6 +762,37 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			}
 		}*/
 
+	}
+
+	/**
+	 * 왕복(1차/2차) 분할결제 건의 "편도 기준 정가"를 역산
+	 *
+	 * delKind를 일시적으로 "1"(편도)로 바꿔 calculateIconFee를 호출:
+	 * iconPay(아이콘 수수료)는 편도/왕복에 따라 금액이 다르게 계산 됨(8,000원 vs 4,500원 등),
+	 * round_trip_discount_amt(편도-왕복 차액) 산출 시 운임(amtArray)뿐 아니라 수수료도
+	 * 편도 기준으로 재계산해야 정확한 정가 차이가 나옴
+	 * (extraPrice는 delKind와 무관하게 동일하므로 그대로 사용)
+	 *
+	 * @param dosun1      도서산간 여부 플래그 (1차: dosun1, 2차: dosun2 — 호출 시 해당 분기 값 전달)
+	 * @param amtArray    {기본운임, 스코어운임(편도), 특판가(왕복)}
+	 * @param bostonCnt   보스턴백 수량
+	 * @param extraPrice  할증운임 (편도/왕복 공통, 그대로 합산)
+	 * @return 편도였다면 부과됐을 정가(운임+할증+수수료 합계)
+	 */
+	private int getOnewayPdPay(CbReceiptInfoVO cbReceiptInfoVo, GolfInfVO sendGolfInfVo, GolfInfVO recvGolfInfVo, int dosun1, int[] amtArray, int bostonCnt, int extraPrice) {
+		String origDelKind = cbReceiptInfoVo.getDelKind();
+		cbReceiptInfoVo.setDelKind("1"); // delKind를 편도("1")로 변경해서 조회
+		int onewayIconFee = calculateIconFee(cbReceiptInfoVo, sendGolfInfVo, recvGolfInfVo);
+		cbReceiptInfoVo.setDelKind(origDelKind); // 원복
+
+		int onewayBasePay;
+		if ( dosun1 >= 1 ) {
+			onewayBasePay = ((amtArray[0]+ amtArray[1])* cbReceiptInfoVo.getPdCnt()) + ((bostonAmt + bostonDosunAmt) * bostonCnt);
+		} else {
+			onewayBasePay = (amtArray[1]* cbReceiptInfoVo.getPdCnt()) + (bostonDosunAmt * bostonCnt);
+		}
+		int onewayTotal = onewayBasePay + extraPrice + onewayIconFee;
+		return onewayTotal;
 	}
 
 	public int getExtraPrice(String pdIndivPrice) {

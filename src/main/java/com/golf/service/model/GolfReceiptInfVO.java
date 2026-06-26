@@ -106,6 +106,8 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 	private int pdDeliPay = 0;
 	//총운임
 	private int pdPay = 0;
+	//왕복 할인액
+	private int roundTripDiscountAmt = 0;
 	//물품메모
 	private String pdMemo;
 	//픽업희망일
