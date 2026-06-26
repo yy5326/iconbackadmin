@@ -499,7 +499,9 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 			// 편도일 경우
 			// 도서운임
-			pdDosunPay = dosun1 >= 1 ? (cbReceiptInfoVo.getPdCnt()*amtArray[0]) + (bostonCnt * bostonDosunAmt) : 0;
+			//pdDosunPay = dosun1 >= 1 ? (cbReceiptInfoVo.getPdCnt()*amtArray[0]) + (bostonCnt * bostonDosunAmt) : 0;
+			// 편도 도선료 계산
+			pdDosunPay = calculateDosunPay(cbReceiptInfoVo, receiptInfVO, bostonDosunAmt, cbReceiptInfoVo.getPdCnt());
 			int discount =  hdCardDiscount_OneWay*cbReceiptInfoVo.getPdCnt();
 
 
@@ -518,7 +520,8 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			// 총운임
 			if (dosun1 >= 1) {
 				// 도서 산간일 경우 0+1을 수량에 곱함
-				pdPay = ((amtArray[0] + amtArray[1]) * cbReceiptInfoVo.getPdCnt()) + ((bostonAmt + bostonDosunAmt) * bostonCnt);
+				//pdPay = ((amtArray[0] + amtArray[1]) * cbReceiptInfoVo.getPdCnt()) + ((bostonAmt + bostonDosunAmt) * bostonCnt);
+				pdPay = pdDosunPay + (amtArray[1] * cbReceiptInfoVo.getPdCnt()) + (bostonAmt * bostonCnt);
 			} else {
 				pdPay = (amtArray[1] * cbReceiptInfoVo.getPdCnt()) + (bostonDosunAmt * bostonCnt);
 			}
@@ -573,14 +576,17 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				}
 
 				// 도서운임
-				pdDosunPay = (dosun1 >= 1 ? (cbReceiptInfoVo.getPdCnt()*amtArray[0]) + (bostonCnt * bostonDosunAmtR) : 0);
+				//pdDosunPay = (dosun1 >= 1 ? (cbReceiptInfoVo.getPdCnt()*amtArray[0]) + (bostonCnt * bostonDosunAmtR) : 0);
+				// 왕복 1차 도선료 계산
+				pdDosunPay = calculateDosunPay(cbReceiptInfoVo, receiptInfVO, bostonDosunAmtR, cbReceiptInfoVo.getPdCnt());
+				logger.info("RCP:{} - 1차 도선료 : {} ", cbReceiptInfoVo.getRcpNumber(), pdDosunPay);
 
 
 				// 211 골프장일경우 위의 도선 로직이 빠지는 경우가 있어서 방어 로직 하나 더 추가
-				if(receiptInfVO.getSendGolfSeq() == 211 ||  receiptInfVO.getRecvGolfSeq() == 211) {
+				/*if(receiptInfVO.getSendGolfSeq() == 211 ||  receiptInfVO.getRecvGolfSeq() == 211) {
 					pdDosunPay = (cbReceiptInfoVo.getPdCnt()*amtArray[0]) + (bostonCnt * bostonDosunAmtR);
 				}
-				logger.info("RCP:{} - 1차 도선료 : {} ", cbReceiptInfoVo.getRcpNumber(), pdDosunPay);
+				logger.info("RCP:{} - 1차 도선료 : {} ", cbReceiptInfoVo.getRcpNumber(), pdDosunPay);*/
 
 				// 배송운임
 				pdDeliPay = (amtArray[2]*cbReceiptInfoVo.getPdCnt()) + (bostonAmtR * bostonCnt);
@@ -598,7 +604,8 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				// 총운임
 				if (dosun1 >= 1) {
 					// 도서 산간일 경우 0+1을 수량에 곱함
-					pdPay = ((amtArray[0] + amtArray[2]) * cbReceiptInfoVo.getPdCnt()) + ((bostonAmtR + bostonDosunAmtR) * bostonCnt);
+					//pdPay = ((amtArray[0] + amtArray[2]) * cbReceiptInfoVo.getPdCnt()) + ((bostonAmtR + bostonDosunAmtR) * bostonCnt);
+					pdPay = pdDosunPay + (amtArray[2] * cbReceiptInfoVo.getPdCnt()) + (bostonAmt * bostonCnt);
 				} else {
 					pdPay = (amtArray[2] * cbReceiptInfoVo.getPdCnt()) + (bostonDosunAmtR * bostonCnt);
 				}
@@ -640,13 +647,16 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				}
 
 				// 도서운임
-				pdDosunPay = (dosun2 >= 1 ? (cbReceiptInfoVo.getPdCnt()*amtArray[0]) + (bostonCnt * bostonDosunAmtR) : 0);
+				//pdDosunPay = (dosun2 >= 1 ? (cbReceiptInfoVo.getPdCnt()*amtArray[0]) + (bostonCnt * bostonDosunAmtR) : 0);
+				// 왕복 2차 도선료 계산
+				pdDosunPay = calculateDosunPay(cbReceiptInfoVo, receiptInfVO, bostonDosunAmtR, cbReceiptInfoVo.getPdCnt());
+				logger.info("RCP:{} - 2차 도선료 : {} ", cbReceiptInfoVo.getRcpNumber(), pdDosunPay);
 
 				// 211 골프장일경우 위의 도선 로직이 빠지는 경우가 있어서 방어 로직 하나 더 추가
-				if(receiptInfVO.getSendGolfSeq() == 211 ||  receiptInfVO.getRecvGolfSeq() == 211) {
+				/*if(receiptInfVO.getSendGolfSeq() == 211 ||  receiptInfVO.getRecvGolfSeq() == 211) {
 					pdDosunPay = (cbReceiptInfoVo.getPdCnt()*amtArray[0]) + (bostonCnt * bostonDosunAmtR);
 				}
-				logger.info("RCP:{} - 2차 도선료 : {} ", cbReceiptInfoVo.getRcpNumber(), pdDosunPay);
+				logger.info("RCP:{} - 2차 도선료 : {} ", cbReceiptInfoVo.getRcpNumber(), pdDosunPay);*/
 
 				// 배송운임
 				pdDeliPay = (amtArray[2]*cbReceiptInfoVo.getPdCnt()) + (bostonAmtR * bostonCnt);
@@ -658,7 +668,8 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				// 총운임
 				if (dosun2 >= 1) {
 					// 도서 산간일 경우 0+1을 수량에 곱함
-					pdPay = ((amtArray[0] + amtArray[2]) * cbReceiptInfoVo.getPdCnt()) + ((bostonAmtR + bostonDosunAmtR) * bostonCnt);
+					//pdPay = ((amtArray[0] + amtArray[2]) * cbReceiptInfoVo.getPdCnt()) + ((bostonAmtR + bostonDosunAmtR) * bostonCnt);
+					pdPay = pdDosunPay + (amtArray[2] * cbReceiptInfoVo.getPdCnt()) + (bostonAmt * bostonCnt);
 				} else {
 					pdPay = (amtArray[2] * cbReceiptInfoVo.getPdCnt()) + (bostonDosunAmtR * bostonCnt);
 				}
@@ -1566,5 +1577,22 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		GolfInfVO golfInfo = (GolfInfVO) _gDao.selectByKey("golfInf.selectByKey", (long)golfSeq);
 		if (golfInfo == null) return false;
 		return golfInfo.getFee1() < 8000;
+	}
+
+	private int calculateDosunPay(CbReceiptInfoVO cbVo, GolfReceiptInfVO rcpVo, int bostonDosunAmt, int pdCnt) {
+		// 기본 계산
+		int basePay = (pdCnt * 5000) + (cbVo.getBostonCnt() * bostonDosunAmt);
+		// 특수 구간 판별
+		boolean isSendJeju = (rcpVo.getCusSendAddr1() != null && rcpVo.getCusSendAddr1().contains("제주"))
+				|| (rcpVo.getCusSendAddr2() != null && rcpVo.getCusSendAddr2().contains("제주"));
+		boolean isRecvJeju = (rcpVo.getCusReAddr1() != null && rcpVo.getCusReAddr1().contains("제주"))
+				|| (rcpVo.getCusReAddr2() != null && rcpVo.getCusReAddr2().contains("제주"));
+		boolean isSpecialRoute = (isSendJeju && rcpVo.getRecvGolfSeq() == 211)
+				|| (isRecvJeju && rcpVo.getSendGolfSeq() == 211);
+		// 특수 구간일 경우 재계산
+		if (isSpecialRoute) {
+			return (pdCnt * 10000) + (cbVo.getBostonCnt() * bostonDosunAmt);
+		}
+		return basePay;
 	}
 }
