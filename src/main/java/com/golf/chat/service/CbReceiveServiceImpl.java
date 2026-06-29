@@ -320,7 +320,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				// PAY TABLE ORDER ID 추가
 				if (cbReceiptInfoVo.getOrderNumber() != null) {
 					// 주문번호
-					payVO.setOrderId(String.valueOf(cbReceiptInfoVo.getOrderNumber()));
+					payVO.setOrderId(cbReceiptInfoVo.getOrderNumber());
 				} else {
 					if ( "1".equals(list.get(0).getDelKind()) ) {
 						// 편도

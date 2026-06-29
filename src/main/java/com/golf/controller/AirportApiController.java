@@ -82,7 +82,7 @@ public class AirportApiController extends PrtController  {
 
 		GolfReceiptInfVO receiptInfVO = new GolfReceiptInfVO();
 
-		int addPay = 5000; // 내륙이지만 도서산간비용으로
+		int addPay = 5000; // 인천공항 추가수수료(내륙이지만 도서산간비용으로)
 
 		data.put("status", "500");
 		try {
@@ -112,6 +112,7 @@ public class AirportApiController extends PrtController  {
 				data.put("crDeliPay", receiptInfVO.getPdDeliPay() + receiptInfVO.getIconFee() + carrAddPay);
 				data.put("crEtcPay", receiptInfVO.getPdEtcPay());
 				data.put("crPay", receiptInfVO.getPdPay() + carrAddPay);
+				data.put("crRoundTripDiscountAmt", receiptInfVO.getRoundTripDiscountAmt()); // 편도-왕복 차액
 			}
 			// 골프백
 			if(cbReceiptInfoVO.getPdCnt() > 0) {
@@ -124,6 +125,7 @@ public class AirportApiController extends PrtController  {
 				data.put("pdDeliPay", receiptInfVO.getPdDeliPay() + receiptInfVO.getIconFee() + golfAddPay);
 				data.put("pdEtcPay", receiptInfVO.getPdEtcPay());
 				data.put("pdPay", receiptInfVO.getPdPay() + golfAddPay);
+				data.put("pdRoundTripDiscountAmt", receiptInfVO.getRoundTripDiscountAmt()); // 편도-왕복 차액
 			}
 
 			logger.debug("골프백+캐리어 정산 이후 log... {}", data);
@@ -158,7 +160,7 @@ public class AirportApiController extends PrtController  {
 
 			int cbPay = 0;
 			int crPay = 0;
-			String orderId = "";
+			String orderId = ""; // 결제용 묶음코드
 			JSONObject data = new JSONObject();
 			data.put("rcpType","A");
 			data.put("rcpNumberGolf","");
@@ -180,7 +182,7 @@ public class AirportApiController extends PrtController  {
 						data.put("cbPay", cbPay);
 						data.put("cbReceiptStatus", "-1"); // 0이 접수대기
 						data.put("errorMsg", "요청한 데이터 없음");
-					} else if ( "2".equals(list.get(0).getDelKind()) && list.size() != 2 ) {
+					} else if ( "2".equals(list.get(0).getDelKind()) && list.size() != 2 ) { // 인천공항 배송은 편도 고정
 						logger.info("왕복 건 입력 오류(왕복 건은 데이터가 2개 입력되어야 합니다)");
 						data.put("cbPay", cbPay);
 						data.put("cbReceiptStatus", "-1"); // 0이 접수대기
@@ -192,13 +194,11 @@ public class AirportApiController extends PrtController  {
 						data.put("errorMsg", "delKind는 1(편도)이거나 2(왕복)이어야 합니다.");
 					} else {
 						String regDate = _receiptService.selectDetailByRcpSeq(receiptGolfList.get(0).getRcpSeq(), "S").getRegDate();
-
+						// 인천공항 배송은 편도 고정
 						if ( "2".equals(list.get(0).getDelKind()) ) {
-							orderId = "GRP"+receiptGolfList.get(0).getRcpSeq(); // 챗봇접수번호 - 왕복시 그룹번호 참조 create
 							cbPay = receiptGolfList.get(0).getPdPay()+receiptGolfList.get(1).getPdPay();
 							data.put("cbPayGolf", cbPay);
 						} else {
-							orderId = receiptGolfList.get(0).getRcpNumber(); // 챗봇접수번호 - 편도시 rcpNumber
 							cbPay = receiptGolfList.get(0).getPdPay();
 
 							data.put("cbDosunPay",receiptGolfList.get(0).getPdDosunPay());
@@ -207,6 +207,20 @@ public class AirportApiController extends PrtController  {
 							data.put("cbFeePay",receiptGolfList.get(0).getIconFee());
 
 							data.put("cbPayGolf", cbPay);
+						}
+
+						if (list.get(0).getOrderNumber() != null) {
+							orderId = list.get(0).getOrderNumber();
+							if ( "2".equals(list.get(0).getDelKind()) ) {
+								data.put("sRoundTripDiscountAmt", receiptGolfList.get(0).getRoundTripDiscountAmt()); // 왕복 1차 편도-왕복 차액
+								data.put("rRoundTripDiscountAmt", receiptGolfList.get(1).getRoundTripDiscountAmt()); // 왕복 2차 편도-왕복 차액
+							}
+						} else {
+							if ( "2".equals(list.get(0).getDelKind()) ) {
+								orderId = "GRP"+receiptGolfList.get(0).getRcpSeq(); // 챗봇접수번호 - 왕복시 그룹번호 참조 create
+							} else {
+								orderId = receiptGolfList.get(0).getRcpNumber(); // 챗봇접수번호 - 편도시 rcpNumber
+							}
 						}
 						data.put("orderId",orderId);
 

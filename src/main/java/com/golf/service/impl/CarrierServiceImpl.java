@@ -238,7 +238,7 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 					logger.debug("인천공항 결제정의전 log... {}", new Gson().toJson(receiptInfVO));
 					logger.debug("##############################################################");
 
-					int addPay = 5000; // 인천공항 추가수수료.
+					int addPay = 5000; // 인천공항 추가수수료(내륙이지만 도서산간비용으로)
 					int carrAddPay =  addPay * receiptInfVO.getPdCnt();
 					int iconPay = receiptInfVO.getIconFee();
 					if ("1".equals(cbReceiptInfoVO.getDelKind())) { // 편도
@@ -270,12 +270,17 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 				payVO.setPayStat(payStat); // 결제상태 - 입금대기
 
 				// PAY TABLE ORDER ID 추가
-				if ( "1".equals(list.get(0).getDelKind()) ) {
-					// 편도
-					payVO.setOrderId(receiptInfVO.getRcpNumber());
+				if (cbReceiptInfoVO.getOrderNumber() != null) {
+					// 주문번호
+					payVO.setOrderId(cbReceiptInfoVO.getOrderNumber());
 				} else {
-					// 왕복
-					payVO.setOrderId("GRP"+mstVO.getRcpSeq());
+					if ( "1".equals(list.get(0).getDelKind()) ) {
+						// 편도
+						payVO.setOrderId(receiptInfVO.getRcpNumber());
+					} else {
+						// 왕복
+						payVO.setOrderId("GRP"+mstVO.getRcpSeq());
+					}
 				}
 
 				_gDao.insert("golfReceiptPay.insertReceiptPay", payVO);

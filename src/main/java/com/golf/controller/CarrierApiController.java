@@ -127,27 +127,38 @@ public class CarrierApiController extends PrtController  {
 		JSONArray kakaoArray = new JSONArray();
 		try {
 			
-			List<GolfReceiptInfVO> receiptList = _carrierReceiptService.receiptProcConfirm(list);			
+			List<GolfReceiptInfVO> receiptList = _carrierReceiptService.receiptProcConfirm(list);
 			logger.info("접수요청 확인");
 			
 			JSONObject data = new JSONObject();
 			
 			String rcpNumber = "";
 			String regDate = _receiptService.selectDetailByRcpSeq(receiptList.get(0).getRcpSeq(), "S").getRegDate();
-			String orderId = "";
-			
-			orderId = receiptList.get(0).getRcpNumber();
-			data.put("orderId",orderId);
-			for(GolfReceiptInfVO vo : receiptList) {
-				rcpNumber += vo.getRcpNumber()+"|";
-			}
-			rcpNumber = rcpNumber.substring(0, rcpNumber.length()-1);
-			data.put("rcpNumber",rcpNumber);
+
 			if("2".equals(list.get(0).getDelKind())) {
 				data.put("cbPay", receiptList.get(0).getPdPay()*2);
 			}else {
 				data.put("cbPay", receiptList.get(0).getPdPay());
 			}
+
+			String orderId = ""; // 결제용 묶음코드
+			if (list.get(0).getOrderNumber() != null) {
+				orderId = list.get(0).getOrderNumber();
+				if ( "2".equals(list.get(0).getDelKind()) ) {
+					data.put("sRoundTripDiscountAmt", receiptList.get(0).getRoundTripDiscountAmt()); // 왕복 1차 편도-왕복 차액
+					data.put("rRoundTripDiscountAmt", receiptList.get(1).getRoundTripDiscountAmt()); // 왕복 2차 편도-왕복 차액
+				}
+			} else {
+				orderId = receiptList.get(0).getRcpNumber();
+			}
+			data.put("orderId",orderId);
+
+			for(GolfReceiptInfVO vo : receiptList) {
+				rcpNumber += vo.getRcpNumber()+"|";
+			}
+			rcpNumber = rcpNumber.substring(0, rcpNumber.length()-1);
+			data.put("rcpNumber",rcpNumber);
+
 			data.put("regDate", regDate);
 			kakaoArray.add(data);			
 			obj.put("result",kakaoArray);
@@ -212,7 +223,7 @@ public class CarrierApiController extends PrtController  {
 				data.put("pdEtcPay", receiptInfVO.getPdEtcPay());
 				data.put("pdPay", receiptInfVO.getPdPay());
 			}
-			
+			data.put("roundTripDiscountAmt", receiptInfVO.getRoundTripDiscountAmt()); // 편도-왕복 차액
 			
 		} catch ( Exception e ) {
 			data.put("status", "500");	
