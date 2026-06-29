@@ -715,9 +715,6 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					int bostonDiscount = 3000;
 					int discount = bostonDiscount * cbReceiptInfoVo.getBostonCnt();
 
-					if ("2".equals(cbReceiptInfoVo.getDelKind())) {
-						pdPay = pdPay * 2;
-					}
 					receiptInfVO.setDiscount(pdPay - discount);
 					receiptInfVO.setDiscountTotal(discount);
 				} else {
