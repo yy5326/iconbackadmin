@@ -156,6 +156,13 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
                     kakaoPayMessage = "결제요청";
                 }
 
+				if("10".equals(cbReceiptInfoVo.getRcpKind())) {
+					company = "KMA";
+					payStat = "0";
+					kakaoPayStat = "READY";
+					kakaoPayMessage = "결제요청";
+				}
+
 				//스마트 스코어 일때 접수상태 골프접수,20260326 팬스타크루즈 추가
 				if("2".equals(cbReceiptInfoVo.getRcpKind()) || "0".equals(cbReceiptInfoVo.getRcpKind()) || "3".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind())|| "9".equals(cbReceiptInfoVo.getRcpKind())){
 					receiptInfVO.setRcpInfStat("0");
