@@ -159,16 +159,24 @@ public class CbReceiveController {
 			} else {
 				String regDate = _receiptService.selectDetailByRcpSeq(receiptList.get(0).getRcpSeq(), "S").getRegDate();
 
+				if ( "2".equals(list.get(0).getDelKind()) ) {
+					data.put("cbPay", receiptList.get(0).getPdPay()+receiptList.get(1).getPdPay());
+				} else {
+					data.put("cbPay", receiptList.get(0).getPdPay());
+				}
+
 				String orderId = ""; // 결제용 묶음코드
 				if (list.get(0).getOrderNumber() != null) {
+					orderId = list.get(0).getOrderNumber();
 					if ( "2".equals(list.get(0).getDelKind()) ) {
-						orderId = "GRP"+receiptList.get(0).getRcpSeq(); // 챗봇접수번호 - 왕복시 그룹번호 참조 create
-						data.put("cbPay", receiptList.get(0).getPdPay()+receiptList.get(1).getPdPay());
 						data.put("sRoundTripDiscountAmt", receiptList.get(0).getRoundTripDiscountAmt()); // 왕복 1차 편도-왕복 차액
 						data.put("rRoundTripDiscountAmt", receiptList.get(1).getRoundTripDiscountAmt()); // 왕복 2차 편도-왕복 차액
+					}
+				} else {
+					if ( "2".equals(list.get(0).getDelKind()) ) {
+						orderId = "GRP"+receiptList.get(0).getRcpSeq(); // 챗봇접수번호 - 왕복시 그룹번호 참조 create
 					} else {
 						orderId = receiptList.get(0).getRcpNumber(); // 챗봇접수번호 - 편도시 rcpNumber
-						data.put("cbPay", receiptList.get(0).getPdPay());
 					}
 				}
 				data.put("orderId", orderId);

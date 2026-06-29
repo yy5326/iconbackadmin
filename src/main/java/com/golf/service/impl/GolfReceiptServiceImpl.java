@@ -298,7 +298,7 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 						for(GolfReceiptInfVO receiptInfVO : golfReceiptList){
 							payVO = new GolfReceiptPayVO();
 
-							payVO.setOrderId(receiptInfVO.getRcpNumber());
+//							payVO.setOrderId(receiptInfVO.getRcpNumber());
 							payVO.setRcpInfSeq(receiptInfVO.getRcpInfSeq());
 							payVO.setPayAmt(receiptInfVO.getPdPay());
 							rcpInfSeqArr.add(receiptInfVO.getRcpInfSeq());
