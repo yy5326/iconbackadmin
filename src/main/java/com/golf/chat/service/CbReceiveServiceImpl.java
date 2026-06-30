@@ -141,9 +141,9 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					kakaoPayMessage = "";
 				}
 
-				// 2025.05.21 교참 추가
+				// 2025.05.21 코참 추가
 				if("5".equals(cbReceiptInfoVo.getRcpKind())) {
-					company = "교참";
+					company = "코참";
 					payStat = cbReceiptInfoVo.getPayStat();
 					kakaoPayStat = "";
 					kakaoPayMessage = "";
@@ -169,7 +169,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				receiptInfVO.setPayType("0"); // 배송지불타입(현불)
 				receiptInfVO.setPdNm("국제골프택배기본");
 				// 241120 보스턴백수량 1개이상일시 국제골프택배세트로 고정
-				// 20250521 교참 추가,20260326 팬스타크루즈 추가
+				// 20250521 코참 추가,20260326 팬스타크루즈 추가
 				if(("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind()) || "9".equals(cbReceiptInfoVo.getRcpKind()))
 						&& cbReceiptInfoVo.getBostonCnt() > 0) {
 					receiptInfVO.setPdNm("국제골프택배세트");
@@ -231,7 +231,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				 * 아이콘택배(고객)는 아이콘수수료 할인 미적용가 표기<br>
 				 * 골프택배(전산)에는 아이콘수수료 할인 적용가 표기
 				 */
-				/*if(("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind()))  // 웹, 모바일 + 교참
+				/*if(("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind()))  // 웹, 모바일 + 코참
 						&& cbReceiptInfoVo.getPdCnt() > 0 // 골프백
 						&& cbReceiptInfoVo.getBostonCnt() > 0) {// 보스턴수 0이상
 //						&& receiptInfVO.getDiscountTotal() > 0) { // 보스턴 할인가 0이상
@@ -346,7 +346,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				insertGolfHistory(String.valueOf(receiptInfVO.getRcpNumber()), historyMemo);
 			}
 
-			// 교참 추가
+			// 코참 추가
 			if("0".equals(list.get(0).getRcpKind()) || "3".equals(list.get(0).getRcpKind()) || "5".equals(list.get(0).getRcpKind())|| "9".equals(list.get(0).getRcpKind())){
 
 				if(!"A".equals(list.get(0).getRcpType())){
@@ -753,7 +753,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		 * 편도 /왕복 3000
 		 * DelKind : 1 편도, 2 왕복
 		 * RcpKind : 0 (모바일, 웹)
-		 * + 20250521 교참 추가 RcpKind 5
+		 * + 20250521 코참 추가 RcpKind 5
 		 */
 		/*if ("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind())) {
 			if (cbReceiptInfoVo.getPdCnt() > 0) {
@@ -836,7 +836,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
         //20260326 팬스타크루즈 추가
 		if("2".equals(cbReceiptInfoVo.getRcpKind()) || "0".equals(cbReceiptInfoVo.getRcpKind()) || "3".equals(cbReceiptInfoVo.getRcpKind()) || "4".equals(cbReceiptInfoVo.getRcpKind())
-				|| "5".equals(cbReceiptInfoVo.getRcpKind()) || "9".equals(cbReceiptInfoVo.getRcpKind())) { //스마트스코어 + 교참추가
+				|| "5".equals(cbReceiptInfoVo.getRcpKind()) || "9".equals(cbReceiptInfoVo.getRcpKind())) { //스마트스코어 + 코참추가
 			bostonCnt = cbReceiptInfoVo.getBostonCnt();
 		}
 
@@ -1102,7 +1102,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					}else if(cbReceiptInfoVO.getRcpKind().equals("0")){
 						company = "아이콘";
 					}else if(cbReceiptInfoVO.getRcpKind().equals("5")){
-						company = "교참";
+						company = "코참";
 					}
 					//히스토리 등록
 					String historyMemo = company + " 골프 수정";
@@ -1257,7 +1257,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		receiptInfVO.setCusReAddr2(list.get(1).getCusReAddr2());
 
 		receiptInfVO.setPdCnt(list.get(1).getPdCnt()); // 골프백 수량
-		if("2".equals(infVo.getRcpKind()) || "0".equals(infVo.getRcpKind()) || "5".equals(infVo.getRcpKind())) { //카카오 + 교참
+		if("2".equals(infVo.getRcpKind()) || "0".equals(infVo.getRcpKind()) || "5".equals(infVo.getRcpKind())) { //카카오 + 코참
 			receiptInfVO.setBostonCnt(list.get(1).getBostonCnt()); // 보스턴백 수량
 		}
 

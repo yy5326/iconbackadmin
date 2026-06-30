@@ -346,7 +346,7 @@ public class ReceiptCompleteMessage {
 		StringBuffer sb = new StringBuffer();
 		sb.append("[아이콘] 접수 완료 \n\n");
 
-		if ( "0".equals(sendRequestVO.getRcpKind()) || "5".equals(sendRequestVO.getRcpKind()) ) { // 교참
+		if ( "0".equals(sendRequestVO.getRcpKind()) || "5".equals(sendRequestVO.getRcpKind()) ) { // 코참
 			// 아이콘접수일 경우 받는분
 			sb.append("예약자 : "+sendRequestVO.getCusReNm()+" \n");
 		} else if ( "1".equals(sendRequestVO.getRcpKind()) ) {
@@ -398,7 +398,7 @@ public class ReceiptCompleteMessage {
 		StringBuffer sb = new StringBuffer();
 		sb.append("[아이콘] 접수 완료 \n\n");
 
-		if ( "0".equals(list.get(0).getRcpKind()) ||  "5".equals(list.get(0).getRcpKind()) ) { // 교참
+		if ( "0".equals(list.get(0).getRcpKind()) ||  "5".equals(list.get(0).getRcpKind()) ) { // 코참
 			// 아이콘접수일 경우 받는분
 			sb.append("예약자 : "+list.get(0).getCusReNm()+" \n");
 		} else if ( "1".equals(list.get(0).getRcpKind()) ) {
@@ -444,7 +444,7 @@ public class ReceiptCompleteMessage {
 		StringBuffer sb = new StringBuffer();
 		sb.append("[아이콘] 접수 완료 \n\n");
 		if ( roundRequestVO != null ) {
-			if ( "0".equals(startRequestVO.getRcpKind()) ||  "5".equals(startRequestVO.getRcpKind())) { //교참
+			if ( "0".equals(startRequestVO.getRcpKind()) ||  "5".equals(startRequestVO.getRcpKind())) { //코참
 				// 아이콘접수일 경우 받는분
 				sb.append("예약자 : "+startRequestVO.getCusReNm()+" \n");
 			} else if ( "1".equals(startRequestVO.getRcpKind()) ) {
@@ -469,7 +469,7 @@ public class ReceiptCompleteMessage {
 			}
 
 		} else {
-			if ( "0".equals(startRequestVO.getRcpKind()) || "5".equals(startRequestVO.getRcpKind())) { // 교참
+			if ( "0".equals(startRequestVO.getRcpKind()) || "5".equals(startRequestVO.getRcpKind())) { // 코참
 				// 아이콘접수일 경우 받는분
 				sb.append("예약자 : "+startRequestVO.getCusReNm()+" \n");
 			} else if ( "1".equals(startRequestVO.getRcpKind()) ) {

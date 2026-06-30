@@ -368,7 +368,7 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 		//히스토리 등록 및 API 전송
 		// 수정: "4" (짐캐리) 조건 추가
 		if("2".equals(rcpKind) || "0".equals(rcpKind) || "4".equals(rcpKind) || "5".equals(rcpKind) || rentalFlag ) {
-		//if("2".equals(rcpKind) || "0".equals(rcpKind) || "5".equals(rcpKind) ||  rentalFlag ) { // 교참추가..
+		//if("2".equals(rcpKind) || "0".equals(rcpKind) || "5".equals(rcpKind) ||  rentalFlag ) { // 코참추가..
 
 			GolfReceiptInfVO api =  (GolfReceiptInfVO)getDAO().selectOne("golfReceiptInf.selectDetailByRcpNumber", infVo.getRcpNumber());
 
@@ -450,7 +450,7 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 
 		String historyMemo = "아이콘 결제완료";
 		if("5".equals(infVo.getRcpKind())) {
-			historyMemo = "교참 결제완료";
+			historyMemo = "코참 결제완료";
 		}
 
 		GolfReceiptPayVO payVO = new GolfReceiptPayVO();
@@ -469,7 +469,7 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 			if(payVO.getPayStat().equals(StatusPayVO.Cancel.code())){
 				historyMemo = "아이콘 결제취소";
 				if("5".equals(infVo.getRcpKind())) {
-					historyMemo = "교참 결제취소";
+					historyMemo = "코참 결제취소";
 				}
 			}
 			insertGolfHistoryArr(infVo.getRcpNumberArray(), historyMemo);

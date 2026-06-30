@@ -27,7 +27,7 @@ public class KaKaoUtil {
 			logger.info("신청자 연락처 없음");
 			return receiptInfoVO.getCusSendTelnum();
 		}
-		// 2023-12-06 요청으로 아이콘에서는 발송자에게 알림톡 + 교참
+		// 2023-12-06 요청으로 아이콘에서는 발송자에게 알림톡 + 코참
 		if( "0".equals(receiptInfoVO.getRcpKind()) || "5".equals(receiptInfoVO.getRcpKind())) {
 			return receiptInfoVO.getCusSendTelnum();
 		}
@@ -39,7 +39,7 @@ public class KaKaoUtil {
 			logger.info("신청자 성함 없음");
 			return receiptInfoVO.getCusSendNm();
 		}
-		// 2023-12-06 요청으로 아이콘에서는 발송자에게 알림톡 + 교참
+		// 2023-12-06 요청으로 아이콘에서는 발송자에게 알림톡 + 코참
 		if( "0".equals(receiptInfoVO.getRcpKind()) || "5".equals(receiptInfoVO.getRcpKind())) {
 			logger.info("요기 : " + receiptInfoVO.getCusSendNm());
 
@@ -49,7 +49,7 @@ public class KaKaoUtil {
 	}
 
 	public static void getTempleteForEtc(String etc, SendRequestVO sendVo) {
-		// 결제 완료, 알림톡 유저, 편도 + 교참
+		// 결제 완료, 알림톡 유저, 편도 + 코참
 		if ( "0".equals(sendVo.getRcpKind()) || "5".equals(sendVo.getRcpKind()) || "9".equals(sendVo.getRcpKind() )) {
 			// 아이콘 접수 템플릿
 			sendVo.setEtc1(etc+"_icon");

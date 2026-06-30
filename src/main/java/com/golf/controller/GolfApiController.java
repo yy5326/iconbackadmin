@@ -183,7 +183,7 @@ public class GolfApiController extends PrtController  {
 						vo.setRcpKind(golfReceiptList.get(0).getRcpKind());
 						golfApi.updateApi(vo, "update_cbag_status");
 
-						// 교참추가
+						// 코참추가
 						if(golfReceiptList.get(0).getRcpKind().equals("0") || golfReceiptList.get(0).getRcpKind().equals("5")) {
 							vo.setCusSendNm(golfReceiptList.get(0).getCusReNm());//관리자에서 접수 한 경우 보내는 사람이름이 아이콘이여서 받는사람으로 변경
 						}else {
