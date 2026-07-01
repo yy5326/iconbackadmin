@@ -268,13 +268,14 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 
 				logger.debug("사이즈"+ golfRcptList.size());
 				logger.debug("델카인드"+ infVo.getDelKind());
-				if(golfRcptList.size() > 1 && "1".equals(infVo.getDelKind())) {
-					payVO.setOrderId("GRP"+Integer.toString(mstVo.getRcpSeq()));
-				}else {
-					//왕복2차 및 편도인 경우 한건만 취소
-					payVO.setOrderId(infVo.getRcpNumber());
+				if (!infVo.getOrderId().startsWith("ORD")) {
+					if(golfRcptList.size() > 1 && "1".equals(infVo.getDelKind())) {
+						payVO.setOrderId("GRP"+Integer.toString(mstVo.getRcpSeq()));
+					}else {
+						//왕복2차 및 편도인 경우 한건만 취소
+						payVO.setOrderId(infVo.getRcpNumber());
+					}
 				}
-
 				getDAO().update("golfReceiptPay.cancelSmartGolfPay", payVO);
 			}else {
 				//편도처리
@@ -283,8 +284,9 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 
 				//왕복인 경우 그룹번호에서 골프접수번호로 변경
 				if("2".equals(infVo.getDelKind())) {
-
-					receiptVo.setOrderId("GRP"+infVo.getRcpSeq());
+					if (!infVo.getOrderId().startsWith("ORD")) {
+						receiptVo.setOrderId("GRP" + infVo.getRcpSeq());
+					}
 
 					List<GolfReceiptInfVO> golfReceiptList;
 					if(infVo.getPrdType() == 3) {

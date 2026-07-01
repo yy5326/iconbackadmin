@@ -147,7 +147,7 @@ public class GolfApi extends BaseServiceImpl {
 				}
 
 				// 2025.05.21 코참추가 RCP_KIND = 5
-				// 골프전산 -> 아이콘택배로 상태 변경값을 전달하는 API
+				// 골프전산 → 아이콘택배로 상태 변경값을 전달하는 API
 				// api/update/receiptState/update_cbag_status
 				if("0".equals(infVO.getRcpKind()) || "5".equals(infVO.getRcpKind())) {
 //					logger.debug("WebMode 모드 : {}" , super.getConfig().getWebMode());
