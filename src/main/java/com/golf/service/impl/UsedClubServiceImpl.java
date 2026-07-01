@@ -210,14 +210,19 @@ public class UsedClubServiceImpl extends BaseServiceImpl {
 				payVO.setKakaoPayStat(kakaoPayStat);
 				payVO.setKakaoPayMessage(kakaoPayMessage);
 				payVO.setPayStat(payStat); // 결제상태 - 입금대기
-				
+
 				// PAY TABLE ORDER ID 추가
-				if ( "1".equals(list.get(0).getDelKind()) ) {
-					// 편도
-					payVO.setOrderId(receiptInfVO.getRcpNumber());
+				if (cbReceiptInfoVO.getOrderNumber() != null) {
+					// 주문번호
+					payVO.setOrderId(cbReceiptInfoVO.getOrderNumber());
 				} else {
-					// 왕복
-					payVO.setOrderId("GRP"+mstVO.getRcpSeq());
+					if ( "1".equals(list.get(0).getDelKind()) ) {
+						// 편도
+						payVO.setOrderId(receiptInfVO.getRcpNumber());
+					} else {
+						// 왕복
+						payVO.setOrderId("GRP"+mstVO.getRcpSeq());
+					}
 				}
 				
 				_gDao.insert("golfReceiptPay.insertReceiptPay", payVO);
@@ -339,7 +344,7 @@ public class UsedClubServiceImpl extends BaseServiceImpl {
 					preInsertReceiptInfo(infVo, cbReceiptInfoVO);
 					_gDao.update("golfReceiptInf.updateSelective", infVo);
 					
-					// 기존 편도 데이텨 payAmt 변경
+					// 기존 편도 데이터 payAmt 변경
 					GolfReceiptPayVO payVO = new GolfReceiptPayVO();
 					payVO.setPayAmt(infVo.getPdPay());
 					payVO.setRcpInfSeq(infVo.getRcpInfSeq());
@@ -379,10 +384,13 @@ public class UsedClubServiceImpl extends BaseServiceImpl {
 						cancelPayVO.setRcpInfSeq(cancelInfVo.getRcpInfSeq());
 						cancelPayVO.setUseYn("N");
 						_gDao.update("golfReceiptPay.updateSelectiveByRcpInfSeq", cancelPayVO);
-						
-						// 기존 편도 데이텨 order id 변경 - ORDER_ID= GRP로 시작하는 그룹코드가 아닌 rcpNumber
+
+						// 기존 편도 데이터 order id 변경 - ORDER_ID= GRP로 시작하는 그룹코드가 아닌 rcpNumber
+						// prefix "GRP" → "ORD" 로 변경 ex) ORD26060911050003
 						GolfReceiptPayVO modifyPayVO = new GolfReceiptPayVO();
-						modifyPayVO.setOrderId(infVo.getRcpNumber());
+						if (!infVo.getOrderId().startsWith("ORD")) {
+							modifyPayVO.setOrderId(infVo.getRcpNumber());
+						}
 						modifyPayVO.setRcpInfSeq(infVo.getRcpInfSeq());
 						_gDao.update("golfReceiptPay.updateSelectiveByRcpInfSeq", modifyPayVO);
 						
