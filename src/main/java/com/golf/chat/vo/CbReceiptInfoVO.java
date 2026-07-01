@@ -170,8 +170,13 @@ public @Data class CbReceiptInfoVO {
 	@ApiModelProperty(position = 35, notes = "쿠폰 할인 금액")
 	private int couponDiscount;
 
-	// 주문번호
+	// 주문 번호
 	@ApiParam(value="주문 번호")
 	@ApiModelProperty(position = 36, notes = "주문 번호")
 	private String orderNumber;
+
+	// 결제 상태
+	@ApiParam(value="결제 상태")
+	@ApiModelProperty(position = 37, notes = "결제 상태")
+	private String payStatus;
 }

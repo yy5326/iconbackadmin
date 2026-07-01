@@ -113,9 +113,12 @@ public class CarrierApiController extends PrtController  {
 	private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 	
 	/**
-	 * 캐리어 접수
-	 * 
-	 * */
+	 * 캐리어접수
+	 * /icon/carrier/receipt
+	 *
+	 * @param list
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	@PostMapping("/carrier/receipt")
 	public JSONObject carrierReceipt(@RequestBody List<CbReceiptInfoVO> list){
@@ -235,13 +238,14 @@ public class CarrierApiController extends PrtController  {
 		
 		
 	}
-	
-	
-	
+
 	/**
-	 * 캐리어 수정
-	 * 
-	 * */
+	 * 캐리어접수 수정
+	 * /icon/carrier/updateReceipt
+	 *
+	 * @param list
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	@PostMapping("/carrier/updateReceipt")
 	public JSONObject carrierUpdate(@RequestBody  List<CbReceiptInfoVO> list) throws Exception{
