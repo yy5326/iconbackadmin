@@ -355,6 +355,7 @@ public class CbReceiveController {
 			data.put("pdPay", receiptInfVO.getPdPay());
 			data.put("roundTripDiscountAmt", receiptInfVO.getRoundTripDiscountAmt()); // 편도-왕복 차액
 			data.put("discountTotal", receiptInfVO.getDiscountTotal()); //241127 SG 할인총값 추가.
+			data.put("iconFee", receiptInfVO.getIconFee());
 
 
 		} catch ( Exception e ) {

@@ -1577,6 +1577,10 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 	}
 
 	private int calculateDosunPay(CbReceiptInfoVO cbVo, GolfReceiptInfVO rcpVo, int bostonDosunAmt, int pdCnt) {
+		// 방어 로직 추가
+		if (!"Y".equals(rcpVo.getSendIslYn()) && !"Y".equals(rcpVo.getRecvIslYn())) {
+			return 0;
+		}
 		// 기본 계산
 		int basePay = (pdCnt * 5000) + (cbVo.getBostonCnt() * bostonDosunAmt);
 		// 특수 구간 판별
