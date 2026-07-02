@@ -140,6 +140,13 @@ public class AirportApiController extends PrtController  {
 
 	}
 
+	/**
+	 * 인천공항 배송접수
+	 * /airport/receiptProcConfirm
+	 *
+	 * @param list
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	@PostMapping("/receiptProcConfirm")
 	public JSONObject airportReceipt(@RequestBody List<CbReceiptInfoVO> list){
@@ -334,9 +341,12 @@ public class AirportApiController extends PrtController  {
 	}
 
 	/**
-	 * TODO 해야함
-	 * 인천공항 수정
-	 * */
+	 * 인천공항 배송접수 수정
+	 * /airport/updateReceipt
+	 *
+	 * @param list
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	@PostMapping("/updateReceipt")
 	public JSONObject airportUpdate(@RequestBody  List<CbReceiptInfoVO> list) throws Exception{

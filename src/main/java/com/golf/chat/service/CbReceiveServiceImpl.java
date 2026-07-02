@@ -19,6 +19,7 @@ import javax.net.ssl.X509TrustManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import com.golf.enums.PayStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1150,6 +1151,13 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					GolfReceiptPayVO payVO = new GolfReceiptPayVO();
 					payVO.setPayAmt(infVo.getPdPay());
 					payVO.setRcpInfSeq(infVo.getRcpInfSeq());
+
+					// 아이콘택배 → 골프전산 결제 상태 수정
+					if (PayStatus.PAID.name().equals(cbReceiptInfoVO.getPayStatus())
+							|| PayStatus.CANCELLED.name().equals(cbReceiptInfoVO.getPayStatus())) {
+						final String payStat = PayStatus.valueOf(cbReceiptInfoVO.getPayStatus()).getPayStat();
+						payVO.setPayStat(payStat);
+					}
 					_gDao.update("golfReceiptPay.updateSelectiveByRcpInfSeq", payVO);
 
 					//히스토리 등록

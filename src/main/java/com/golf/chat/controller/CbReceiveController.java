@@ -107,6 +107,13 @@ public class CbReceiveController {
 		return obj;
 	}
 
+	/**
+	 * 골프택배접수
+	 * /kakao/cbReceive/receiptProcConfirm
+	 *
+	 * @param list
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	@PostMapping("/receiptProcConfirm")
 	@ApiOperation(value = "골프 접수/수정/예상운임비 확인", notes = "<DR-3>")
@@ -220,6 +227,13 @@ public class CbReceiveController {
 		return obj;
 	}
 
+	/**
+	 * 골프택배접수 수정
+	 * /kakao/cbReceive/updateReceipt
+	 *
+	 * @param list
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	@PostMapping("/updateReceipt")
 	@ApiOperation(value = "접수 수정", notes = "<TT-3-33-331> 접수 상태 체크 후 골프 접수 상태까지 변경 가능, 각 항목 업데이트, 편도<->왕복은 오프라인 연결")
