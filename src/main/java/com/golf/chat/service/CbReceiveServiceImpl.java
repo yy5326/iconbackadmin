@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import com.golf.enums.PayStatus;
+import com.golf.talk.vo.SendRequestVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1052,16 +1053,16 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 	}
 
 	/**
-	 * 카카오 골프 수정
+	 * 골프접수 수정
 	 * @param url
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
 	public List<GolfReceiptInfVO> updateReceipt(List<CbReceiptInfoVO> list) throws Exception {
-		// TODO Auto-generated method stub
-
+		PayStatus payStatus = null;
 		GolfReceiptInfVO infVo = new GolfReceiptInfVO();
-		List<GolfReceiptInfVO> result = new ArrayList<GolfReceiptInfVO>();
+		List<GolfReceiptInfVO> result = new ArrayList<>();
+		List<Integer> rcpInfSeqArray = new ArrayList<>();
 
 		// 리스트로 들어온 각각의 데이터에 관해 수정작업
 		for ( CbReceiptInfoVO cbReceiptInfoVO : list ) {
@@ -1087,7 +1088,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 				// 결제가 완료된 골프접수 건은 일부정보만 수정 가능
 				// CUS_SEND_NM, CUS_SEND_TELNUM, CUS_RE_NM, CUS_RE_TELNUM, PD_MEMO
-				if ( "1".equals(infVo.getPayStat() ) && infVo.getDelKind().equals(list.get(0).getDelKind()) ) {
+				if (PayStatus.PAID.getPayStat().equals(infVo.getPayStat()) && infVo.getDelKind().equals(list.get(0).getDelKind())) {
 					// 골프접수 이고 결제 상태가 결제
 					if ( cbReceiptInfoVO.getCusReceiptNm() != null && !"".equals(cbReceiptInfoVO.getCusReceiptNm()) ) infVo.setCusReceiptNm(cbReceiptInfoVO.getCusReceiptNm());
 					if ( cbReceiptInfoVO.getCusSendNm() != null && !"".equals(cbReceiptInfoVO.getCusSendNm()) ) infVo.setCusSendNm(cbReceiptInfoVO.getCusSendNm());
@@ -1095,9 +1096,31 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					if ( cbReceiptInfoVO.getCusReNm() != null && !"".equals(cbReceiptInfoVO.getCusReNm()) ) infVo.setCusReNm(cbReceiptInfoVO.getCusReNm());
 					if ( cbReceiptInfoVO.getCusReTelNum() != null && !"".equals(cbReceiptInfoVO.getCusReTelNum()) ) infVo.setCusReTelnum2(cbReceiptInfoVO.getCusReTelNum());
 					if ( cbReceiptInfoVO.getPdMemo() != null && !"".equals(cbReceiptInfoVO.getPdMemo()) ) infVo.setPdMemo(cbReceiptInfoVO.getPdMemo());
-					_gDao.update("golfReceiptInf.updateSelective", infVo);
-					String company = "카카오";
 
+					// 아이콘택배 → 골프전산 결제 상태 수정
+					String payStat = ""; // PayStatus 의 payStat 참조
+					if (cbReceiptInfoVO.getPayStatus() != null && !cbReceiptInfoVO.getPayStatus().isEmpty()) {
+						payStatus = PayStatus.valueOf(cbReceiptInfoVO.getPayStatus());
+						if (PayStatus.isPaidOrCancelled(payStatus)) {
+							payStat = payStatus.getPayStat();
+							final String rcpInfStat = payStatus.getRcpInfStat();
+							infVo.setRcpInfStat(rcpInfStat);
+						}
+					}
+					_gDao.update("golfReceiptInf.updateSelective", infVo);
+
+					if (!"".equals(payStat)) { // cbReceiptInfoVO.getPayStatus() 가 없으면 비어있음
+						if (PayStatus.CANCELLED.equals(payStatus)) {
+							// 기존 편도 데이터 payAmt 변경
+							GolfReceiptPayVO payVO = new GolfReceiptPayVO();
+							payVO.setPayAmt(infVo.getPdPay());
+							payVO.setRcpInfSeq(infVo.getRcpInfSeq());
+							payVO.setPayStat(payStat);
+							_gDao.update("golfReceiptPay.updateSelectiveByRcpInfSeq", payVO);
+						}
+					}
+
+					String company = "카카오";
 					if(cbReceiptInfoVO.getRcpKind().equals("2")) {
 						company = "스마트 스코어";
 					}else if(cbReceiptInfoVO.getRcpKind().equals("0")){
@@ -1109,7 +1132,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					String historyMemo = company + " 골프 수정";
 					insertGolfHistory(String.valueOf(infVo.getRcpNumber()), historyMemo);
 					result.add( (GolfReceiptInfVO)_gDao.selectByKey("golfReceiptInf.selectDetailByRcpSeq", infVo) );
-				} else if ( "0".equals(infVo.getPayStat()) ) {
+				} else if (PayStatus.WAIT.getPayStat().equals(infVo.getPayStat())) {
 					String historyMemo = "스마트 스코어 골프 수정";
 
 					if(infVo.getRcpKind().equals("1")) { //카카오
@@ -1145,17 +1168,24 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					// 접수자전화번호
 					if ( cbReceiptInfoVO.getCusReceiptTelNum() != null && !"".equals(cbReceiptInfoVO.getCusReceiptTelNum()) ) infVo.setCusReceiptTelNum(cbReceiptInfoVO.getCusReceiptTelNum());
 					preInsertReceiptInfo(infVo, cbReceiptInfoVO);
+
+					// 아이콘택배 → 골프전산 결제 상태 수정
+					String payStat = ""; // PayStatus 의 payStat 참조
+					if (cbReceiptInfoVO.getPayStatus() != null && !cbReceiptInfoVO.getPayStatus().isEmpty()) {
+						payStatus = PayStatus.valueOf(cbReceiptInfoVO.getPayStatus());
+						if (PayStatus.isPaidOrCancelled(payStatus)) {
+							payStat = payStatus.getPayStat();
+							final String rcpInfStat = payStatus.getRcpInfStat();
+							infVo.setRcpInfStat(rcpInfStat);
+						}
+					}
 					_gDao.update("golfReceiptInf.updateSelective", infVo);
 
 					// 기존 편도 데이터 payAmt 변경
 					GolfReceiptPayVO payVO = new GolfReceiptPayVO();
 					payVO.setPayAmt(infVo.getPdPay());
 					payVO.setRcpInfSeq(infVo.getRcpInfSeq());
-
-					// 아이콘택배 → 골프전산 결제 상태 수정
-					if (PayStatus.PAID.name().equals(cbReceiptInfoVO.getPayStatus())
-							|| PayStatus.CANCELLED.name().equals(cbReceiptInfoVO.getPayStatus())) {
-						final String payStat = PayStatus.valueOf(cbReceiptInfoVO.getPayStatus()).getPayStat();
+					if (!"".equals(payStat)) {
 						payVO.setPayStat(payStat);
 					}
 					_gDao.update("golfReceiptPay.updateSelectiveByRcpInfSeq", payVO);
@@ -1215,6 +1245,8 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 						return changeRoundReceipt(list, infVo);
 					}
 					result.add( (GolfReceiptInfVO)_gDao.selectByKey("golfReceiptInf.selectDetailByRcpSeq", infVo) );
+					// 골프접수 알림톡 발송용
+					rcpInfSeqArray.add(infVo.getRcpInfSeq());
 				} else {
 					logger.info("결제 완료 건중 수정할 수 없는 데이터가 포함되어 있거나 결제 취소건이라 수정이 불가능합니다. ");
 					logger.info("또는 골프 접수 상태에서 편도/왕복은 수정이 불가능합니다. ");
@@ -1222,6 +1254,23 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 			} else {
 				logger.info("기타 사유로 수정 처리 불가");
+			}
+		}
+
+		if (!rcpInfSeqArray.isEmpty()) {
+			infVo = new GolfReceiptInfVO();
+			infVo.setRcpInfSeqArray(rcpInfSeqArray);
+			// 골프접수 상태변경시 알림톡 전송 리스트 생성
+			List<GolfReceiptInfVO> receiptList = (List<GolfReceiptInfVO>) _gDao.selectList("golfReceiptInf.selectDetailByKeyArr", infVo);
+			if (!receiptList.isEmpty()) {
+				List<SendRequestVO> userList;
+				List<SendRequestVO> iconList;
+				if (payStatus != null && StatusVO.Receipt.code().equals(payStatus.getRcpInfStat())) {
+					userList = _sendTalkService.createPaymentArrayList(receiptList, "hdexp_0004", "user"); // 결제 완료, 알림톡 유저
+					iconList = _sendTalkService.createPaymentArrayList(receiptList, "hdexp_0005", "icon"); // 결제 완료, 알림톡 관리자
+					_sendTalkService.sendTalk(userList);
+					_sendTalkService.sendTalk(iconList);
+				}
 			}
 		}
 

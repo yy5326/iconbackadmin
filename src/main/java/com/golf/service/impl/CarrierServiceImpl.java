@@ -305,7 +305,7 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 	}
 
 	/**
-	 * 카카오 골프 수정
+	 * 캐리어접수 수정
 	 * @param list
 	 * @throws Exception
 	 */
@@ -348,7 +348,30 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 					if ( cbReceiptInfoVO.getCusReNm() != null && !"".equals(cbReceiptInfoVO.getCusReNm()) ) infVo.setCusReNm(cbReceiptInfoVO.getCusReNm());
 					if ( cbReceiptInfoVO.getCusReTelNum() != null && !"".equals(cbReceiptInfoVO.getCusReTelNum()) ) infVo.setCusReTelnum2(cbReceiptInfoVO.getCusReTelNum());
 					if ( cbReceiptInfoVO.getPdMemo() != null && !"".equals(cbReceiptInfoVO.getPdMemo()) ) infVo.setPdMemo(cbReceiptInfoVO.getPdMemo());
+
+					// 아이콘택배 → 골프전산 결제 상태 수정
+					String payStat = ""; // PayStatus 의 payStat 참조
+					if (cbReceiptInfoVO.getPayStatus() != null && !cbReceiptInfoVO.getPayStatus().isEmpty()) {
+						payStatus = PayStatus.valueOf(cbReceiptInfoVO.getPayStatus());
+						if (PayStatus.isPaidOrCancelled(payStatus)) {
+							payStat = payStatus.getPayStat();
+							final String rcpInfStat = payStatus.getRcpInfStat();
+							infVo.setRcpInfStat(rcpInfStat);
+						}
+					}
 					_gDao.update("golfReceiptInf.updateSelective", infVo);
+
+					if (!"".equals(payStat)) { // cbReceiptInfoVO.getPayStatus() 가 없으면 비어있음
+						if (PayStatus.CANCELLED.equals(payStatus)) {
+							// 기존 편도 데이터 payAmt 변경
+							GolfReceiptPayVO payVO = new GolfReceiptPayVO();
+							payVO.setPayAmt(infVo.getPdPay());
+							payVO.setRcpInfSeq(infVo.getRcpInfSeq());
+							payVO.setPayStat(payStat);
+							_gDao.update("golfReceiptPay.updateSelectiveByRcpInfSeq", payVO);
+						}
+					}
+
 					String company = "카카오";
 
 					if(cbReceiptInfoVO.getRcpKind().equals("2")) {
