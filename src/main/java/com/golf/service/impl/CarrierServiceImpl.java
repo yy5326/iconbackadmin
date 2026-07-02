@@ -305,7 +305,7 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 	}
 
 	/**
-	 * 카카오 골프 수정
+	 * 캐리어접수 수정
 	 * @param list
 	 * @throws Exception
 	 */
