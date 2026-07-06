@@ -448,6 +448,8 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		receiptInfVO.setSendIslYn("N");
 		receiptInfVO.setRecvIslYn("N");
 
+		receiptInfVO.setDiscountTotal(0);
+
 		int pdDosunPay = 0;
 		int pdDeliPay = 0;
 		int iconPay = 0;
@@ -713,12 +715,13 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			if (cbReceiptInfoVo.getPdCnt() > 0 && cbReceiptInfoVo.getBostonCnt() > 0) {
 
 				// 쿠폰이 사용되지 않았을 때만 할인 적용
-				if (!isCouponApplied) {
-					int bostonDiscount = 3000;
-					int discount = bostonDiscount * cbReceiptInfoVo.getBostonCnt();
-
-					receiptInfVO.setDiscount(pdPay - discount);
-					receiptInfVO.setDiscountTotal(discount);
+				if (!isCouponApplied && cbReceiptInfoVo.getBostonCnt() > 0) {
+					int bostonDiscount = 3000 * cbReceiptInfoVo.getBostonCnt();
+					// 세트 할인
+					pdPay -= bostonDiscount;
+					receiptInfVO.setPdPay(pdPay);
+					receiptInfVO.setDiscountTotal(bostonDiscount);
+					receiptInfVO.setDiscount(pdPay); // 할인된 최종 금액
 				} else {
 					logger.info("### 쿠폰 사용으로 인해 보스턴백 세트 할인 제외");
 					receiptInfVO.setDiscount(pdPay);
