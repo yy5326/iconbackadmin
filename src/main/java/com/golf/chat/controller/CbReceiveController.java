@@ -172,6 +172,12 @@ public class CbReceiveController {
 					data.put("cbPay", receiptList.get(0).getPdPay());
 				}
 
+				int discountAmount = 0;
+				for (GolfReceiptInfVO vo : receiptList) {
+					discountAmount += vo.getDiscountTotal();
+				}
+				data.put("discountAmount", discountAmount);
+
 				String orderId = ""; // 결제용 묶음코드
 				if (list.get(0).getOrderNumber() != null) {
 					orderId = list.get(0).getOrderNumber();
