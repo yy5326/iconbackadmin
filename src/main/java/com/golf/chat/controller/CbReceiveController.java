@@ -166,11 +166,23 @@ public class CbReceiveController {
 			} else {
 				String regDate = _receiptService.selectDetailByRcpSeq(receiptList.get(0).getRcpSeq(), "S").getRegDate();
 
+				long totalPay = 0;
 				if ( "2".equals(list.get(0).getDelKind()) ) {
-					data.put("cbPay", receiptList.get(0).getPdPay()+receiptList.get(1).getPdPay());
+					totalPay = receiptList.get(0).getPdPay() + receiptList.get(1).getPdPay();
 				} else {
-					data.put("cbPay", receiptList.get(0).getPdPay());
+					totalPay = receiptList.get(0).getPdPay();
 				}
+
+				// 보스턴백 세트 할인 로직 적용 ( 수정 시 /commission 부분과 교차검증 필요)
+				int bostonCnt = list.get(0).getBostonCnt();
+				if (bostonCnt > 0) {
+					long bostonDiscount = 3000L * bostonCnt;
+					totalPay -= bostonDiscount; // 128,000(왕복합계) - 할인액
+					data.put("discountTotal", bostonDiscount);
+				} else {
+					data.put("discountTotal", 0);
+				}
+				data.put("cbPay", totalPay);
 
 				String orderId = ""; // 결제용 묶음코드
 				if (list.get(0).getOrderNumber() != null) {
