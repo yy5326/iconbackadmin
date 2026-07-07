@@ -710,8 +710,8 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				&& !"0".equals(cbReceiptInfoVo.getCouponCode()))
 				|| (cbReceiptInfoVo.getCouponDiscount() > 0);
 
-		// 보스턴백 세트 할인 로직 (쿠폰 미사용 시에만 동작하도록 수정)
-		if ("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind())) {
+		// 왕복 합산 이후에 적용하도록 receiptProcConfirm 으로 이동 (정책 변경(편도마다적용) 대비하여 주석)
+		/*if ("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind())) {
 			if (cbReceiptInfoVo.getPdCnt() > 0 && cbReceiptInfoVo.getBostonCnt() > 0) {
 
 				// 쿠폰이 사용되지 않았을 때만 할인 적용
@@ -728,7 +728,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					receiptInfVO.setDiscountTotal(0);
 				}
 			}
-		}
+		}*/
 
 		// 골프장 제휴사 수수료 보정 로직
 		if (isPartnerGolf(cbReceiptInfoVo.getSendGolfSeq()) || isPartnerGolf(cbReceiptInfoVo.getRecvGolfSeq())) {
