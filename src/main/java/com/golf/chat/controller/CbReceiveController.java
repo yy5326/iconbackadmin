@@ -173,13 +173,21 @@ public class CbReceiveController {
 					totalPay = receiptList.get(0).getPdPay();
 				}
 
+				// 쿠폰 사용 여부 판단
+				boolean isCouponApplied = (list.get(0).getCouponCode() != null && !list.get(0).getCouponCode().isEmpty() && !"0".equals(list.get(0).getCouponCode()))
+						|| (list.get(0).getCouponDiscount() > 0);
+
 				// 보스턴백 세트 할인 로직 적용 ( 수정 시 /commission 부분과 교차검증 필요)
 				int bostonCnt = list.get(0).getBostonCnt();
-				if (bostonCnt > 0) {
+				if (!isCouponApplied && bostonCnt > 0) {
 					long bostonDiscount = 3000L * bostonCnt;
-					totalPay -= bostonDiscount; // 128,000(왕복합계) - 할인액
+					totalPay -= bostonDiscount;
 					data.put("discountTotal", bostonDiscount);
+					logger.info("### [보스턴백 할인] 쿠폰 미사용으로 할인 적용: {}원", bostonDiscount);
 				} else {
+					if (isCouponApplied) {
+						logger.info("### [보스턴백 할인] 쿠폰 사용으로 인해 세트 할인 제외");
+					}
 					data.put("discountTotal", 0);
 				}
 				data.put("cbPay", totalPay);
