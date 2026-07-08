@@ -216,6 +216,12 @@ public class AirportApiController extends PrtController  {
 							data.put("cbPayGolf", cbPay);
 						}
 
+						int discountAmount = 0;
+						for (GolfReceiptInfVO vo : receiptGolfList) {
+							discountAmount += vo.getDiscountTotal();
+						}
+						data.put("discountAmount", discountAmount);
+
 						if (list.get(0).getOrderNumber() != null) {
 							orderId = list.get(0).getOrderNumber();
 							if ( "2".equals(list.get(0).getDelKind()) ) {
