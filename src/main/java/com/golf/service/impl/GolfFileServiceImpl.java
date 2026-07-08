@@ -4,25 +4,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-import com.golf.service.model.GolfInfVO;
-import com.golf.service.model.GolfReceiptInfVO;
 import com.golf.service.model.GolfFileVO;
-import com.golf.service.model.GolfReceiptPayVO;
-import com.golf.service.model.StatusPayVO;
-import com.golf.service.model.StatusVO;
-import com.golf.service.model.GolfHistoryVO;
 import com.golf.model.common.BaseFileVO;
 import com.golf.util.StringUtil;
 import com.golf.util.UploadFile;

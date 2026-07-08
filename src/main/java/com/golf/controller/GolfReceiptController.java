@@ -30,8 +30,8 @@ import com.golf.service.impl.GolfReceiptServiceImpl;
 import com.golf.service.model.GolfInfVO;
 import com.golf.service.model.GolfReceiptInfVO;
 import com.golf.service.model.GolfReceiptMstVO;
-import com.golf.service.model.StatusPayVO;
-import com.golf.service.model.StatusVO;
+import com.golf.enums.PayStat;
+import com.golf.enums.RcpInfStat;
 import com.golf.service.model.search.GolfReceiptSearchVO;
 import com.golf.talk.service.SendTalkServiceImpl;
 import com.golf.talk.vo.SendRequestVO;
@@ -854,8 +854,8 @@ public class GolfReceiptController extends PrtController {
 			
 			List<SendRequestVO> userList = new ArrayList<SendRequestVO>();
 			List<SendRequestVO> iconList = new ArrayList<SendRequestVO>();
-			String payFunction = StringUtils.isEmpty(infVo.getGolfUpdate()) ? StatusPayVO.Complete.code() : StatusPayVO.Cancel.code();
-			if(payFunction.equals(StatusPayVO.Cancel.code())){
+			String payFunction = StringUtils.isEmpty(infVo.getGolfUpdate()) ? PayStat.COMPLETE.code() : PayStat.CANCEL.code();
+			if(payFunction.equals(PayStat.CANCEL.code())){
 				//userList = _sendTalkService.createPaymentArrayUserList(receiptList, "hdexp_0006"); // 결제 취소, 알림톡 유저
 				//iconList = _sendTalkService.createPaymentArrayIconList(receiptList, "hdexp_0007"); // 결제 취소, 알림톡 관리자
 			} else {
@@ -908,8 +908,8 @@ public class GolfReceiptController extends PrtController {
 			
 			List<SendRequestVO> userList = new ArrayList<SendRequestVO>();
 			List<SendRequestVO> iconList = new ArrayList<SendRequestVO>();
-			String payFunction = StringUtils.isEmpty(infVo.getGolfUpdate()) ? StatusPayVO.Complete.code() : StatusPayVO.Cancel.code();
-			if(payFunction.equals(StatusPayVO.Cancel.code())){
+			String payFunction = StringUtils.isEmpty(infVo.getGolfUpdate()) ? PayStat.COMPLETE.code() : PayStat.CANCEL.code();
+			if(payFunction.equals(PayStat.CANCEL.code())){
 				//userList = _sendTalkService.createPaymentArrayUserList(receiptList, "hdexp_0006"); // 결제 취소, 알림톡 유저
 				//iconList = _sendTalkService.createPaymentArrayIconList(receiptList, "hdexp_0007"); // 결제 취소, 알림톡 관리자
 			} else {
@@ -961,7 +961,7 @@ public class GolfReceiptController extends PrtController {
 		List<GolfReceiptInfVO> kakao = new ArrayList<GolfReceiptInfVO>();
 		
 		for(GolfReceiptInfVO vo: receiptList) {		
-			vo.setRcpInfStat(StatusVO.Receipt.code());
+			vo.setRcpInfStat(RcpInfStat.RECEIPT.code());
 			_receiptService.updateReceiptInfSel(vo, false);
 			
 			//스마트스코어인 경우 알림톡 발송 안함

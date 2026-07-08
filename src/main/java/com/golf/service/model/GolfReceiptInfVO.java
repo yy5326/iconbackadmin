@@ -310,6 +310,8 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 	public String getPayStatName() {
 		if (this.getPayStat() == null)
 			return "";
+		else if (this.getPayStat().equals("-1"))
+			return "미결제";
 		else if (this.getPayStat().equals("0"))
 			return "결제대기";
 		else if (this.getPayStat().equals("1"))

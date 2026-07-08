@@ -6,13 +6,9 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.cert.X509Certificate;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -23,12 +19,11 @@ import javax.net.ssl.X509TrustManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.poi.util.SystemOutLogger;
+import com.golf.enums.RcpInfStat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -36,9 +31,6 @@ import com.golf.service.model.GolfInfVO;
 import com.golf.service.model.GolfReceiptInfVO;
 import com.golf.service.model.GolfReceiptMstVO;
 import com.golf.service.model.GolfReceiptPayVO;
-import com.golf.service.model.StatusPayVO;
-import com.golf.service.model.StatusVO;
-import com.golf.service.model.UsedClubInfoVO;
 import com.golf.talk.service.SendTalkServiceImpl;
 import com.golf.util.EgovMapDeserializer;
 import com.google.gson.Gson;
@@ -51,7 +43,6 @@ import com.golf.chat.vo.CbCommonVO;
 import com.golf.chat.vo.CbGolfInfoVo;
 import com.golf.chat.vo.CbReceiptInfoVO;
 import com.golf.service.dao.GeneralDAOImpl;
-import com.golf.service.impl.GolfApi;
 
 /**
  * 중고채 접수 서비스
@@ -274,15 +265,15 @@ public class UsedClubServiceImpl extends BaseServiceImpl {
 				
 				logger.info("접수번호를 찾을 수 없습니다.");
 				
-			} else if ( "7".equals(infVo.getRcpInfStat()) || "8".equals(infVo.getRcpInfStat()) || "9".equals(infVo.getRcpInfStat()) ){
+			} else if ( RcpInfStat.RECEIPT_CANCEL.code().equals(infVo.getRcpInfStat()) || RcpInfStat.PICKUP_CANCEL.code().equals(infVo.getRcpInfStat()) || RcpInfStat.DELIVERY_CANCEL.code().equals(infVo.getRcpInfStat()) ){
 				// 골프취소, 픽업취소, 택배취소
 				logger.info("이미 삭제된 접수번호 입니다. 확인 부탁드립니다.");
 				
-			} else if ( "2".equals(infVo.getRcpInfStat()) || "3".equals(infVo.getRcpInfStat()) || "1".equals(infVo.getRcpInfStat()) ){
+			} else if ( RcpInfStat.DELIVERY.code().equals(infVo.getRcpInfStat()) || RcpInfStat.COMPLETE.code().equals(infVo.getRcpInfStat()) || RcpInfStat.PICKUP.code().equals(infVo.getRcpInfStat()) ){
 				// 택배접수, 배송완료, 픽업요청 - 수정불가
 				logger.info("운송장번호가 발급되어 수정이 불가합니다. 영업소 프로그램으로 확인 부탁드립니다.");			
 				
-			} else if ( "0".equals(infVo.getRcpInfStat()) || "4".equals(infVo.getRcpInfStat()) ){
+			} else if ( RcpInfStat.RECEIPT.code().equals(infVo.getRcpInfStat()) || RcpInfStat.WAIT.code().equals(infVo.getRcpInfStat()) ){
 				
 				// 결제가 완료된 골프접수 건은 일부정보만 수정 가능
 				// CUS_SEND_NM, CUS_SEND_TELNUM, CUS_RE_NM, CUS_RE_TELNUM, PD_MEMO
@@ -369,7 +360,7 @@ public class UsedClubServiceImpl extends BaseServiceImpl {
 							infVo.setSrType("S");
 						}
 						GolfReceiptInfVO cancelInfVo = (GolfReceiptInfVO)_gDao.selectByKey("golfReceiptInf.selectDetailByRcpSeq", infVo);
-						cancelInfVo.setRcpInfStat(StatusVO.ReceiptCancel.code());
+						cancelInfVo.setRcpInfStat(RcpInfStat.RECEIPT_CANCEL.code());
 						_receiptService.updateReceiptInfSel(cancelInfVo, false);
 						
 						// 리턴을 위해 원래대로 변경

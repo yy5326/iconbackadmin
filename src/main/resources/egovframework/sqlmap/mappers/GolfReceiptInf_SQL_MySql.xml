@@ -217,6 +217,7 @@
 			ON D.RCP_INF_SEQ = A.RCP_INF_SEQ
 		WHERE A.USE_YN = 'Y'
 			AND B.USE_YN = 'Y'
+			AND D.PAY_STAT != '-1'
 			<include refid="whereClause" />
 		ORDER BY
 		<if test="type7 != '' and type7 != null">

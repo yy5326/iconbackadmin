@@ -24,9 +24,8 @@ import com.golf.service.dao.GeneralDAOImpl;
 import com.golf.service.model.GolfReceiptInfVO;
 import com.golf.service.model.GolfReceiptMstVO;
 import com.golf.service.model.GolfReceiptPayVO;
-import com.golf.service.model.StatusPayVO;
+import com.golf.enums.PayStat;
 import com.golf.talk.message.KaKaoUtil;
-import com.golf.talk.message.PayExpireMessage;
 import com.golf.talk.message.PayRequestMessage;
 import com.golf.talk.message.ReceiptCancelMessage;
 import com.golf.talk.message.ReceiptCompleteMessage;
@@ -312,7 +311,7 @@ public class SendTalkServiceImpl {
 		// TODO Auto-generated method stub
 		GolfReceiptPayVO payVO = new GolfReceiptPayVO();
 		payVO.setRcpInfSeqArray(vo.getRcpInfSeqArray());
-		payVO.setPayStat(StringUtils.isEmpty(vo.getGolfUpdate()) ? StatusPayVO.Complete.code() : StatusPayVO.Cancel.code());
+		payVO.setPayStat(StringUtils.isEmpty(vo.getGolfUpdate()) ? PayStat.COMPLETE.code() : PayStat.CANCEL.code());
 
 		List<GolfReceiptInfVO> rcpNumberList = new ArrayList<GolfReceiptInfVO>();
 		GolfReceiptInfVO sendVo = new GolfReceiptInfVO();

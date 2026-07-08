@@ -7,6 +7,9 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import com.golf.enums.PayStat;
+import com.golf.enums.RcpInfStat;
+import com.golf.service.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,15 +18,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import com.golf.service.model.GolfInfVO;
-import com.golf.service.model.GolfReceiptInfVO;
-import com.golf.service.model.GolfReceiptMstVO;
-import com.golf.service.model.GolfReceiptPayVO;
-import com.golf.service.model.StatusPayVO;
-import com.golf.service.model.StatusVO;
 import com.google.gson.Gson;
-
-import com.golf.service.model.GolfHistoryVO;
 
 /**
  * 골프택배 접수 서비스
@@ -233,11 +228,11 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 		}
 
 
-		if(infVo.getRcpInfStat().equals(StatusVO.Delivery.code())) {
+		if(infVo.getRcpInfStat().equals(RcpInfStat.DELIVERY.code())) {
 			historyMemo = "택배접수";
 
 
-		}else if(infVo.getRcpInfStat().equals(StatusVO.ReceiptCancel.code())) {
+		}else if(infVo.getRcpInfStat().equals(RcpInfStat.RECEIPT_CANCEL.code())) {
 			historyMemo = "골프취소";
 			GolfReceiptMstVO mstVo = new GolfReceiptMstVO();
 			GolfReceiptInfVO receiptVo = new GolfReceiptInfVO();
@@ -248,7 +243,7 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 			if("2".equals(rcpKind) || "4".equals(rcpKind)) {
 			//if("2".equals(rcpKind)) {
 				historyMemo = "스마트스코어 골프, 결제 취소";
-				receiptVo.setRcpInfStat(StatusVO.ReceiptCancel.code());
+				receiptVo.setRcpInfStat(RcpInfStat.RECEIPT_CANCEL.code());
 				receiptVo.setRcpSeq(mstVo.getRcpSeq());
 				receiptVo.setRcpKind(rcpKind);
 
@@ -263,7 +258,7 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 					getDAO().update("golfReceipt.cancelSmartGolfInfComplete", receiptVo);
 				}
 
-				payVO.setPayStat(StatusPayVO.Cancel.code());
+				payVO.setPayStat(PayStat.CANCEL.code());
 				//왕복1차이고  모두 취소
 
 				logger.debug("사이즈"+ golfRcptList.size());
@@ -328,11 +323,11 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 				}
 			}
 
-		}else if(infVo.getRcpInfStat().equals(StatusVO.PickupCancel.code())) {
+		}else if(infVo.getRcpInfStat().equals(RcpInfStat.PICKUP_CANCEL.code())) {
 			historyMemo = "픽업취소";
-		}else if(infVo.getRcpInfStat().equals(StatusVO.DeliveryCancel.code())) {
+		}else if(infVo.getRcpInfStat().equals(RcpInfStat.DELIVERY_CANCEL.code())) {
 			historyMemo = "택배취소";
-		}else if(infVo.getRcpInfStat().equals(StatusVO.Receipt.code())) {
+		}else if(infVo.getRcpInfStat().equals(RcpInfStat.RECEIPT.code())) {
 			historyMemo = "골프접수 신청";
 		}
 
@@ -344,10 +339,10 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 		//영업소에서 요청또는 취소시에는 결제상태값 변경 처리 안함
 		if(flag){
 			//픽업취소일때 결제취소
-			if(StatusVO.PickupCancel.code().equals(infVo.getRcpInfStat())){
+			if(RcpInfStat.PICKUP_CANCEL.code().equals(infVo.getRcpInfStat())){
 				payVO = new GolfReceiptPayVO();
 				payVO.setRcpInfSeq(infVo.getRcpInfSeq());
-				payVO.setPayStat(StatusPayVO.Cancel.code());
+				payVO.setPayStat(PayStat.CANCEL.code());
 
 				rcpInfSeqArr.add(infVo.getRcpInfSeq());
 				payVO.setRcpInfSeqArray(rcpInfSeqArr);
@@ -376,7 +371,7 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 
 			System.out.println("에이피아이첫" + api);
 
-			if(!infVo.getRcpInfStat().equals(StatusVO.ReceiptCancel.code())) {
+			if(!infVo.getRcpInfStat().equals(RcpInfStat.RECEIPT_CANCEL.code())) {
 				rcpNumberArr = new ArrayList<String>();
 				rcpNumberArr.add(infVo.getRcpNumber());
 				//히스토리 등록용
@@ -414,9 +409,9 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 			String rcpInfStat = infVo.getRcpInfStat(); // 접수 상태코드
 			// 취소 상태인지 여부 (7: 골프취소, 8: 픽업취소, 9: 택배취소)
 			boolean isCancelStatus =
-					StatusVO.ReceiptCancel.code().equals(rcpInfStat)  // 7
-					|| StatusVO.PickupCancel.code().equals(rcpInfStat)   // 8
-					|| StatusVO.DeliveryCancel.code().equals(rcpInfStat); // 9
+					RcpInfStat.RECEIPT_CANCEL.code().equals(rcpInfStat)  // 7
+					|| RcpInfStat.PICKUP_CANCEL.code().equals(rcpInfStat)   // 8
+					|| RcpInfStat.DELIVERY_CANCEL.code().equals(rcpInfStat); // 9
 
 			// 스마트스코어(rcpKind: 2)이면서 취소 상태 코드면 외부 API 호출 금지
 			//boolean callExternalApi = !("2".equals(rcpKind) && isCancelStatus);
@@ -457,18 +452,18 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 
 		GolfReceiptPayVO payVO = new GolfReceiptPayVO();
 		payVO.setRcpInfSeqArray(infVo.getRcpInfSeqArray());
-		payVO.setPayStat(StringUtils.isEmpty(infVo.getGolfUpdate()) ? StatusPayVO.Complete.code() : StatusPayVO.Cancel.code());
+		payVO.setPayStat(StringUtils.isEmpty(infVo.getGolfUpdate()) ? PayStat.COMPLETE.code() : PayStat.CANCEL.code());
 
 		int payChk = (int)getDAO().selectOne("golfReceiptPay.selectByPayChk", payVO);
 
 		if(payChk==0) {
-			if(!payVO.getPayStat().equals(StatusPayVO.Cancel.code())){
+			if(!payVO.getPayStat().equals(PayStat.CANCEL.code())){
 				payVO.setPayGubun("0");
 				payVO.setKakaoPayMessage(""); //결제 완료인 경우 빈칸처리 (카카오에서 접수 된 건은 결제요청이라는 메세지가 기본적으로 들어가있음)
 			}
 			getDAO().update("golfReceiptPay.updateSelectiveByRcpInfSeqArray", payVO);
 
-			if(payVO.getPayStat().equals(StatusPayVO.Cancel.code())){
+			if(payVO.getPayStat().equals(PayStat.CANCEL.code())){
 				historyMemo = "아이콘 결제취소";
 				if("5".equals(infVo.getRcpKind())) {
 					historyMemo = "코참 결제취소";
