@@ -19,9 +19,7 @@ import javax.net.ssl.X509TrustManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import com.golf.enums.IconPayStatus;
-import com.golf.enums.PayStat;
-import com.golf.enums.RcpInfStat;
+import com.golf.enums.*;
 import com.golf.service.model.*;
 import com.golf.talk.vo.SendRequestVO;
 import org.slf4j.Logger;
@@ -287,14 +285,6 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 				}
 				insertGolfHistory(String.valueOf(receiptInfVO.getRcpNumber()), historyMemo);
 			}
-
-			if("0".equals(list.get(0).getRcpKind()) || "3".equals(list.get(0).getRcpKind()) || "9".equals(list.get(0).getRcpKind())){
-
-				if(!"A".equals(list.get(0).getRcpType())){
-					// 아이콘 프로젝트 접수시 결제정보 전송하려면 사용
-					_sendTalkService.sendPayRequest(receiptList, mstVO);
-				}
-			}
 		}
 
 		return receiptList;
@@ -310,7 +300,8 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 		IconPayStatus iconPayStatus = null;
 		GolfReceiptInfVO infVo = new GolfReceiptInfVO();
 		List<GolfReceiptInfVO> result = new ArrayList<>();
-		List<Integer> rcpInfSeqArray = new ArrayList<>();
+		List<Integer> roundPaidRcpInfSeqArray = new ArrayList<>();
+		List<Integer> oneWayPaidRcpInfSeqArray = new ArrayList<>();
 
 		// 리스트로 들어온 각각의 데이터에 관해 수정작업
 		for ( CbReceiptInfoVO cbReceiptInfoVO : list ) {
@@ -353,6 +344,14 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 							payStat = iconPayStatus.getPayStat();
 							final String rcpInfStat = iconPayStatus.getRcpInfStat();
 							infVo.setRcpInfStat(rcpInfStat);
+
+							if (IconPayStatus.PAID.equals(iconPayStatus)) {
+								if (TripType.ONE_WAY.equals(TripType.fromCode(infVo.getDelKind()))) {
+									oneWayPaidRcpInfSeqArray.add(infVo.getRcpInfSeq());
+								} else if (TripType.ROUND_TRIP.equals(TripType.fromCode(infVo.getDelKind()))) {
+									roundPaidRcpInfSeqArray.add(infVo.getRcpInfSeq());
+								}
+							}
 						}
 					}
 					_gDao.update("golfReceiptInf.updateSelective", infVo);
@@ -492,8 +491,6 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 						//return changeRoundReceipt(list, infVo);
 					}
 					result.add( (GolfReceiptInfVO)_gDao.selectByKey("golfReceiptInf.selectDetailByRcpSeq", infVo) );
-					// 골프접수 알림톡 발송용
-					rcpInfSeqArray.add(infVo.getRcpInfSeq());
 				} else {
 					logger.info("결제 완료 건중 수정할 수 없는 데이터가 포함되어 있거나 결제 취소건이라 수정이 불가능합니다. ");
 					logger.info("또는 골프 접수 상태에서 편도/왕복은 수정이 불가능합니다. ");
@@ -503,20 +500,30 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 			}
 		}
 
-		if (!rcpInfSeqArray.isEmpty()) {
+
+		if (!oneWayPaidRcpInfSeqArray.isEmpty()) {
 			infVo = new GolfReceiptInfVO();
-			infVo.setRcpInfSeqArray(rcpInfSeqArray);
-			// 골프접수 상태변경시 알림톡 전송 리스트 생성
+			infVo.setRcpInfSeqArray(oneWayPaidRcpInfSeqArray);
+			// 편도 결제 완료 알림톡 전송 리스트 생성
 			List<GolfReceiptInfVO> receiptList = (List<GolfReceiptInfVO>) _gDao.selectList("golfReceiptInf.selectDetailByKeyArr", infVo);
-			if (!receiptList.isEmpty()) {
-				List<SendRequestVO> userList;
-				List<SendRequestVO> iconList;
-				if (iconPayStatus != null && RcpInfStat.RECEIPT.code().equals(iconPayStatus.getRcpInfStat())) {
-					userList = _sendTalkService.createPaymentArrayList(receiptList, "hdexp_0004", "user"); // 결제 완료, 알림톡 유저
-					iconList = _sendTalkService.createPaymentArrayList(receiptList, "hdexp_0005", "icon"); // 결제 완료, 알림톡 관리자
-					_sendTalkService.sendTalk(userList);
-					_sendTalkService.sendTalk(iconList);
-				}
+			if (!receiptList.isEmpty() && IconPayStatus.PAID.equals(iconPayStatus)) {
+				List<SendRequestVO> userList = _sendTalkService.createSendRequestArrayList(receiptList, KakaoTalkEtcType.ONEWAY_PAY, KakaoTalkRecipientType.USER);
+				List<SendRequestVO> iconList = _sendTalkService.createPaymentArrayList(receiptList, "hdexp_0005", "icon"); // 결제 완료, 알림톡 관리자
+				_sendTalkService.sendTalk(userList);
+				_sendTalkService.sendTalk(iconList);
+			}
+		}
+
+		if (!roundPaidRcpInfSeqArray.isEmpty()) {
+			infVo = new GolfReceiptInfVO();
+			infVo.setRcpInfSeqArray(roundPaidRcpInfSeqArray);
+			// 왕복 결제 완료 알림톡 전송 리스트 생성
+			List<GolfReceiptInfVO> receiptList = (List<GolfReceiptInfVO>) _gDao.selectList("golfReceiptInf.selectDetailByKeyArr", infVo);
+			if (!receiptList.isEmpty() && IconPayStatus.PAID.equals(iconPayStatus)) {
+				List<SendRequestVO> userList = _sendTalkService.createSendRequestArrayList(receiptList, KakaoTalkEtcType.ROUND_PAY, KakaoTalkRecipientType.USER);
+				List<SendRequestVO> iconList = _sendTalkService.createPaymentArrayList(receiptList, "hdexp_0005", "icon"); // 결제 완료, 알림톡 관리자
+				_sendTalkService.sendTalk(userList);
+				_sendTalkService.sendTalk(iconList);
 			}
 		}
 

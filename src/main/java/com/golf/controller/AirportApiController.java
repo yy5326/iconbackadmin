@@ -7,6 +7,9 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import com.golf.enums.KakaoTalkEtcType;
+import com.golf.enums.KakaoTalkRecipientType;
+import com.golf.enums.TripType;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -326,8 +329,6 @@ public class AirportApiController extends PrtController  {
 						logger.debug("인천공항 최종 log... {}", new Gson().toJson(receiptList));
 						GolfReceiptMstVO mstVO = new GolfReceiptMstVO();
 						mstVO.setGameDt(list.get(0).getGameDt()); // 라운딩 시작일
-	//					 아이콘 프로젝트 접수시 결제정보 전송하려면 사용
-						_sendTalkService.sendPayRequest(receiptList, mstVO);
 					}
 				}
 			}

@@ -340,6 +340,7 @@
 			, B.GAME_DT
 			, B.FARE_TYPE
 
+			, C.ORDER_ID
 			, C.PAY_STAT
 			, C.PAY_GUBUN
 			, A.PRD_TYPE

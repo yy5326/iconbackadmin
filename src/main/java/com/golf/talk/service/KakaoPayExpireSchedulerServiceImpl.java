@@ -10,7 +10,6 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
-import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,6 @@ import com.golf.service.dao.GeneralDAOImpl;
 import com.golf.service.model.GolfReceiptInfVO;
 import com.golf.talk.message.KaKaoUtil;
 import com.golf.talk.message.PayExpireMessage;
-import com.golf.talk.message.PayRequestMessage;
 import com.golf.talk.vo.SendRequestVO;
 import com.golf.util.HolidayUtil;
 

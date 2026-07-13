@@ -201,7 +201,7 @@ public class ReceiptCancelMessage {
 		
 		if(prdType != 3) {
 			sb.append("골프백수량 : "+sendRequestVO.getPdCnt()+"\n");
-			sb.append("보스턴백수량 : "+sendRequestVO.getBoston()+"\n");
+			sb.append("보스턴백수량 : "+sendRequestVO.getBostonCnt()+"\n");
 			sb.append("라운딩일정 : "+gameDt+"\n");
 			sb.append("픽업희망일 : "+sendRequestVO.getPicReqDt()+"\n");
 			sb.append("총합계 : "+sendRequestVO.getPdPay()+"원 \n");
@@ -240,7 +240,7 @@ public class ReceiptCancelMessage {
 		sb.append("연락처 : "+list.get(0).getReceiverNum()+"\n");
 		if(prdType != 3) {
 			sb.append("골프백수량 : "+list.get(0).getPdCnt()+"\n");
-			sb.append("보스턴백수량 : "+list.get(0).getBoston()+"\n");
+			sb.append("보스턴백수량 : "+list.get(0).getBostonCnt()+"\n");
 			sb.append("라운딩일정 : "+gameDt+"\n");
 			sb.append("픽업희망일 : "+list.get(0).getPicReqDt()+"\n");
 			sb.append("총합계 : "+(list.get(0).getPdPay()+list.get(1).getPdPay())+"원 \n");
@@ -279,7 +279,7 @@ public class ReceiptCancelMessage {
 			sb.append("연락처 : "+startRequestVO.getReceiverNum()+"\n");
 			if(prdType != 3) {
 				sb.append("골프백수량 : "+startRequestVO.getPdCnt()+"\n");
-				sb.append("보스턴백수량 : "+startRequestVO.getBoston()+"\n");
+				sb.append("보스턴백수량 : "+startRequestVO.getBostonCnt()+"\n");
 				sb.append("라운딩일정 : "+gameDt+"\n");
 				sb.append("픽업희망일 : "+startRequestVO.getPicReqDt()+"\n");
 				sb.append("총합계 : "+(startRequestVO.getPdPay()+roundRequestVO.getPdPay())+"원 \n");
@@ -306,7 +306,7 @@ public class ReceiptCancelMessage {
 			sb.append("연락처 : "+startRequestVO.getReceiverNum()+"\n");
 			if(prdType != 3) {
 				sb.append("골프백수량 : "+startRequestVO.getPdCnt()+"\n");
-				sb.append("보스턴백수량 : "+startRequestVO.getBoston()+"\n");
+				sb.append("보스턴백수량 : "+startRequestVO.getBostonCnt()+"\n");
 				sb.append("라운딩일정 : "+gameDt+"\n");
 				sb.append("픽업희망일 : "+startRequestVO.getPicReqDt()+"\n");
 				sb.append("총합계 : "+startRequestVO.getPdPay()+"원 \n");

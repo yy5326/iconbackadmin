@@ -1,5 +1,8 @@
 package com.golf.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum RcpInfStat {
 
 	/*
@@ -43,9 +46,9 @@ public enum RcpInfStat {
 	 */
 	DELIVERY_CANCEL("9");
 
-	String value;
+	private final String value;
 
-    private RcpInfStat(String value){
+    RcpInfStat(String value){
         this.value = value;
     }
 
