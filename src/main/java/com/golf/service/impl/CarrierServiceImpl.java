@@ -344,14 +344,6 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 							payStat = iconPayStatus.getPayStat();
 							final String rcpInfStat = iconPayStatus.getRcpInfStat();
 							infVo.setRcpInfStat(rcpInfStat);
-
-							if (IconPayStatus.PAID.equals(iconPayStatus)) {
-								if (TripType.ONE_WAY.equals(TripType.fromCode(infVo.getDelKind()))) {
-									oneWayPaidRcpInfSeqArray.add(infVo.getRcpInfSeq());
-								} else if (TripType.ROUND_TRIP.equals(TripType.fromCode(infVo.getDelKind()))) {
-									roundPaidRcpInfSeqArray.add(infVo.getRcpInfSeq());
-								}
-							}
 						}
 					}
 					_gDao.update("golfReceiptInf.updateSelective", infVo);
@@ -494,6 +486,14 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 				} else {
 					logger.info("결제 완료 건중 수정할 수 없는 데이터가 포함되어 있거나 결제 취소건이라 수정이 불가능합니다. ");
 					logger.info("또는 골프 접수 상태에서 편도/왕복은 수정이 불가능합니다. ");
+				}
+
+				if (IconPayStatus.PAID.equals(iconPayStatus)) {
+					if (TripType.ONE_WAY.equals(TripType.fromCode(infVo.getDelKind()))) {
+						oneWayPaidRcpInfSeqArray.add(infVo.getRcpInfSeq());
+					} else if (TripType.ROUND_TRIP.equals(TripType.fromCode(infVo.getDelKind()))) {
+						roundPaidRcpInfSeqArray.add(infVo.getRcpInfSeq());
+					}
 				}
 			} else {
 				logger.info("기타 사유로 수정 처리 불가");
