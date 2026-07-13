@@ -285,14 +285,6 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 				}
 				insertGolfHistory(String.valueOf(receiptInfVO.getRcpNumber()), historyMemo);
 			}
-
-			if("0".equals(list.get(0).getRcpKind()) || "3".equals(list.get(0).getRcpKind()) || "9".equals(list.get(0).getRcpKind())){
-
-				if(!"A".equals(list.get(0).getRcpType())){
-					// 아이콘 프로젝트 접수시 결제정보 전송하려면 사용
-					_sendTalkService.sendPayRequest(receiptList, mstVO);
-				}
-			}
 		}
 
 		return receiptList;
@@ -310,7 +302,6 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 		List<GolfReceiptInfVO> result = new ArrayList<>();
 		List<Integer> roundPaidRcpInfSeqArray = new ArrayList<>();
 		List<Integer> oneWayPaidRcpInfSeqArray = new ArrayList<>();
-		List<Integer> canceledRcpInfSeqArray = new ArrayList<>();
 
 		// 리스트로 들어온 각각의 데이터에 관해 수정작업
 		for ( CbReceiptInfoVO cbReceiptInfoVO : list ) {
@@ -373,8 +364,6 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 							payVO.setRcpInfSeq(infVo.getRcpInfSeq());
 							payVO.setPayStat(payStat);
 							_gDao.update("golfReceiptPay.updateSelectiveByRcpInfSeq", payVO);
-
-							canceledRcpInfSeqArray.add(infVo.getRcpInfSeq());
 						}
 					}
 
@@ -535,17 +524,6 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 				List<SendRequestVO> iconList = _sendTalkService.createPaymentArrayList(receiptList, "hdexp_0005", "icon"); // 결제 완료, 알림톡 관리자
 				_sendTalkService.sendTalk(userList);
 				_sendTalkService.sendTalk(iconList);
-			}
-		}
-
-		if (!canceledRcpInfSeqArray.isEmpty()) {
-			infVo = new GolfReceiptInfVO();
-			infVo.setRcpInfSeqArray(canceledRcpInfSeqArray);
-			// 취소 완료 알림톡 전송 리스트 생성
-			List<GolfReceiptInfVO> receiptList = (List<GolfReceiptInfVO>) _gDao.selectList("golfReceiptInf.selectDetailByKeyArr", infVo);
-			if (!receiptList.isEmpty() && IconPayStatus.CANCELLED.equals(iconPayStatus)) {
-				List<SendRequestVO> userList = _sendTalkService.createSendRequestArrayList(receiptList, KakaoTalkEtcType.CANCEL, KakaoTalkRecipientType.USER);
-				_sendTalkService.sendTalk(userList);
 			}
 		}
 

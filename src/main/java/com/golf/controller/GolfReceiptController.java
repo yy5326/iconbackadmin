@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.golf.enums.*;
 import com.golf.service.impl.KdngeAPI;
 import com.golf.util.IconGolfItem;
 import org.slf4j.Logger;
@@ -30,8 +31,6 @@ import com.golf.service.impl.GolfReceiptServiceImpl;
 import com.golf.service.model.GolfInfVO;
 import com.golf.service.model.GolfReceiptInfVO;
 import com.golf.service.model.GolfReceiptMstVO;
-import com.golf.enums.PayStat;
-import com.golf.enums.RcpInfStat;
 import com.golf.service.model.search.GolfReceiptSearchVO;
 import com.golf.talk.service.SendTalkServiceImpl;
 import com.golf.talk.vo.SendRequestVO;
@@ -471,12 +470,6 @@ public class GolfReceiptController extends PrtController {
 		//등록
 		try {
 			_receiptService.insertReceipt(mstVO, list.getList());
-			// 알림톡 전송
-			list.getList().get(0).setDelKind(mstVO.getDelKind());
-			/*if ( !super.getConfig().getWebMode().equals("op") ) {
-				_sendTalkService.sendPayRequest(list.getList());
-			}*/
-			_sendTalkService.sendPayRequest(list.getList(), mstVO);
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -496,7 +489,7 @@ public class GolfReceiptController extends PrtController {
 	 * @throws Exception
 	 */
 	@RequestMapping(value = "/partnerReceiptProc.do", method=RequestMethod.POST)
-	public String PartnerReceiptProc(GolfReceiptMstVO mstVO, GolfReceiptInfVO listVO, RedirectAttributes rttr) throws Exception {
+	public String partnerReceiptProc(GolfReceiptMstVO mstVO, GolfReceiptInfVO listVO, RedirectAttributes rttr) throws Exception {
 		try {
 			if ("zimcarry_111".equals(mstVO.getPartner())) {
 				mstVO.setDelKind("1"); // 편도 고정
@@ -543,12 +536,6 @@ public class GolfReceiptController extends PrtController {
 			}
 
 			_receiptService.insertReceipt(mstVO, listVO.getList());
-
-			try {
-				_sendTalkService.sendPayRequest(listVO.getList(), mstVO);
-			} catch (Exception e) {
-				logger.error("알림톡 발송 실패: " + e.getMessage());
-			}
 
 			rttr.addFlashAttribute("saveMsg", "정상적으로 접수되었습니다.");
 
@@ -969,14 +956,6 @@ public class GolfReceiptController extends PrtController {
 				kakao.add(vo);
 			}
 		}
-		
-		// 골프접수 상태변경시 알림톡 전송
-		/*if ( !super.getConfig().getWebMode().equals("op") ) {
-			_sendTalkService.sendPayRequest(receiptList);
-		}*/
-		
-		//스마트스코어 접수건은 결제가 완료된 건으로 결제완료처리 알림톡 전송
-		_sendTalkService.sendPayRequest(kakao);
 		return  new Gson().toJson(returnVal); 
 	}
 

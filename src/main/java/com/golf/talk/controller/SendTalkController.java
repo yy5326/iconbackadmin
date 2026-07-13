@@ -162,7 +162,7 @@ public class SendTalkController {
 	}
 
 	/**
-	 * 접수 안내 (receipt)
+	 * 가상계좌안내
 	 * @param list
 	 * @return
 	 */
@@ -183,7 +183,7 @@ public class SendTalkController {
 	}
 
 	/**
-	 *
+	 * 접수 안내
 	 * @param list
 	 * @return
 	 */
@@ -203,24 +203,11 @@ public class SendTalkController {
 		return "jsonView";
 	}
 
-	@PostMapping("/sendPayCompleteMessageForUser")
-	public String sendPayCompleteMessageForUser(@RequestBody Map<String, SendRequestVO> sendRequestMap) {
-
-		try {
-			logger.info("결제 완료 알림");
-			final SendRequestVO startRequestVO = sendRequestMap.get("startRequestVO");
-			final SendRequestVO roundRequestVO = sendRequestMap.get("roundRequestVO");
-			String message = PayCompleteMessage.makeForUserByIcon(startRequestVO, roundRequestVO, PrdType.fromValue(startRequestVO.getPrdType()));
-			List<SendRequestVO> list = new ArrayList<>();
-			list.add(startRequestVO);
-			_sendTalkService.sendTalk(list, message);
-		} catch ( Exception e ) {
-			e.printStackTrace();
-		}
-
-		return "jsonView";
-	}
-
+	/**
+	 * 취소 완료
+	 * @param list
+	 * @return
+	 */
 	@PostMapping("/sendPayCancelMessageForUser")
 	public String sendPayCancelMessageForUser(@RequestBody List<SendRequestVO> list) {
 

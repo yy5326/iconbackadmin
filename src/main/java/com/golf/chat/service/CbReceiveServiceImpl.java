@@ -1067,7 +1067,6 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		List<GolfReceiptInfVO> result = new ArrayList<>();
 		List<Integer> roundPaidRcpInfSeqArray = new ArrayList<>();
 		List<Integer> oneWayPaidRcpInfSeqArray = new ArrayList<>();
-		List<Integer> canceledRcpInfSeqArray = new ArrayList<>();
 
 		// 리스트로 들어온 각각의 데이터에 관해 수정작업
 		for ( CbReceiptInfoVO cbReceiptInfoVO : list ) {
@@ -1130,7 +1129,6 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 							payVO.setRcpInfSeq(infVo.getRcpInfSeq());
 							payVO.setPayStat(payStat);
 							_gDao.update("golfReceiptPay.updateSelectiveByRcpInfSeq", payVO);
-							canceledRcpInfSeqArray.add(infVo.getRcpInfSeq());
 						}
 					}
 
@@ -1292,17 +1290,6 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				List<SendRequestVO> iconList = _sendTalkService.createPaymentArrayList(receiptList, "hdexp_0005", "icon"); // 결제 완료, 알림톡 관리자
 				_sendTalkService.sendTalk(userList);
 				_sendTalkService.sendTalk(iconList);
-			}
-		}
-
-		if (!canceledRcpInfSeqArray.isEmpty()) {
-			infVo = new GolfReceiptInfVO();
-			infVo.setRcpInfSeqArray(canceledRcpInfSeqArray);
-			// 취소 완료 알림톡 전송 리스트 생성
-			List<GolfReceiptInfVO> receiptList = (List<GolfReceiptInfVO>) _gDao.selectList("golfReceiptInf.selectDetailByKeyArr", infVo);
-			if (!receiptList.isEmpty() && IconPayStatus.CANCELLED.equals(iconPayStatus)) {
-				List<SendRequestVO> userList = _sendTalkService.createSendRequestArrayList(receiptList, KakaoTalkEtcType.CANCEL, KakaoTalkRecipientType.USER);
-				_sendTalkService.sendTalk(userList);
 			}
 		}
 
