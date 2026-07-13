@@ -191,6 +191,9 @@ public class CbReceiveController {
 					data.put("discountTotal", 0);
 				}
 				data.put("cbPay", totalPay);
+				data.put("etcPay", receiptList.get(0).getPdEtcPay());
+				data.put("dosunPay", receiptList.get(0).getPdDosunPay());
+				data.put("deliPay", receiptList.get(0).getPdDeliPay());
 
 				int discountAmount = 0;
 				for (GolfReceiptInfVO vo : receiptList) {
