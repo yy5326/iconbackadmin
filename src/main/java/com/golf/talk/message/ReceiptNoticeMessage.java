@@ -12,17 +12,18 @@ public class ReceiptNoticeMessage {
 		switch (prdType) {
 			case GOLF:
 				template = getGolfTemplate();
+				break;
 			case CARRIER:
 				template = getCarrierTemplate();
+				break;
 			case AIRPORT:
 				template = getAirportTemplate();
-			default:
-				template = getGolfTemplate();
+				break;
 		}
 
 		// #{고객명}
 		final String cusSendNm = sendRequestVO.getCusSendNm();
-		final String replaceTemplate = template
+		String replaceTemplate = template
 				.replace("#{고객명}", cusSendNm);
 		return replaceTemplate;
 	}

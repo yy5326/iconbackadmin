@@ -22,10 +22,13 @@ public class PayCompleteMessage {
 		switch (prdType) {
 			case GOLF:
 				template = getGolfTemplate(tripType);
+				break;
 			case CARRIER:
 				template = getCarrierTemplate(tripType);
+				break;
 			case AIRPORT:
 				template = getAirportTemplate(tripType);
+				break;
 		}
 
 		// #{예약자명}
@@ -41,7 +44,7 @@ public class PayCompleteMessage {
 		// #{도착지주소}
 		final String cusReAddr = startRequestVO.getCusReAddr();
 
-		final String replaceTemplate = template
+		String replaceTemplate = template
 				.replace("#{예약자명}", cusSendNm)
 				.replace("#{연락처}", receiverNum)
 				.replace("#{라운딩일자}", gameDt)
@@ -59,14 +62,14 @@ public class PayCompleteMessage {
 			if (roundRequestVO.getPdPay() != null) {
 				payAmt += roundRequestVO.getPdPay();
 			}
-			replaceTemplate
+			replaceTemplate = replaceTemplate
 				.replace("#{회수지주소}", roundCusSendAddr)
 				.replace("#{회수도착지주소}", roundCusReAddr)
 				.replace("#{총결제금액}", payAmt.toString());
 		} else { // TripType.ONE_WAY
 			// #{총결제금액}
 			Integer payAmt = startRequestVO.getPdPay();
-			replaceTemplate
+			replaceTemplate = replaceTemplate
 				.replace("#{총결제금액}", payAmt.toString());
 		}
 
@@ -81,14 +84,16 @@ public class PayCompleteMessage {
 				final Integer golfCnt = startRequestVO.getPdCnt();
 				// #{보스턴백수량}
 				final Integer bostonCnt = startRequestVO.getBostonCnt();
-				replaceTemplate.replace("#{추가할증금액}", etcPayAmt.toString());
-				replaceTemplate.replace("#{골프백수량}", golfCnt.toString());
-				replaceTemplate.replace("#{보스턴백수량}", bostonCnt.toString());
+				replaceTemplate = replaceTemplate.replace("#{추가할증금액}", etcPayAmt.toString());
+				replaceTemplate = replaceTemplate.replace("#{골프백수량}", golfCnt.toString());
+				replaceTemplate = replaceTemplate.replace("#{보스턴백수량}", bostonCnt.toString());
+				break;
 			case CARRIER:
 			case AIRPORT:
 				// #{캐리어수량}
 				final Integer carrierCnt = startRequestVO.getBoxCnt();
-				replaceTemplate.replace("#{캐리어수량}", carrierCnt.toString());
+				replaceTemplate = replaceTemplate.replace("#{캐리어수량}", carrierCnt.toString());
+				break;
 		}
 		return replaceTemplate;
 	}

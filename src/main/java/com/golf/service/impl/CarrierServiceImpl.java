@@ -308,7 +308,6 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 		IconPayStatus iconPayStatus = null;
 		GolfReceiptInfVO infVo = new GolfReceiptInfVO();
 		List<GolfReceiptInfVO> result = new ArrayList<>();
-		List<Integer> rcpInfSeqArray = new ArrayList<>();
 		List<Integer> roundPaidRcpInfSeqArray = new ArrayList<>();
 		List<Integer> oneWayPaidRcpInfSeqArray = new ArrayList<>();
 		List<Integer> canceledRcpInfSeqArray = new ArrayList<>();
@@ -503,8 +502,6 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 						//return changeRoundReceipt(list, infVo);
 					}
 					result.add( (GolfReceiptInfVO)_gDao.selectByKey("golfReceiptInf.selectDetailByRcpSeq", infVo) );
-					// 골프접수 알림톡 발송용
-					rcpInfSeqArray.add(infVo.getRcpInfSeq());
 				} else {
 					logger.info("결제 완료 건중 수정할 수 없는 데이터가 포함되어 있거나 결제 취소건이라 수정이 불가능합니다. ");
 					logger.info("또는 골프 접수 상태에서 편도/왕복은 수정이 불가능합니다. ");
@@ -514,19 +511,6 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 			}
 		}
 
-		if (!rcpInfSeqArray.isEmpty()) {
-			infVo = new GolfReceiptInfVO();
-			infVo.setRcpInfSeqArray(rcpInfSeqArray);
-			// 골프접수 상태변경시 알림톡 전송 리스트 생성
-			List<GolfReceiptInfVO> receiptList = (List<GolfReceiptInfVO>) _gDao.selectList("golfReceiptInf.selectDetailByKeyArr", infVo);
-			if (!receiptList.isEmpty()) {
-				List<SendRequestVO> userList;
-				if (iconPayStatus != null && RcpInfStat.WAIT.code().equals(iconPayStatus.getRcpInfStat())) {
-					userList = _sendTalkService.createSendRequestArrayList(receiptList, KakaoTalkEtcType.RECEIPT, KakaoTalkRecipientType.USER);
-					_sendTalkService.sendTalk(userList);
-				}
-			}
-		}
 
 		if (!oneWayPaidRcpInfSeqArray.isEmpty()) {
 			infVo = new GolfReceiptInfVO();

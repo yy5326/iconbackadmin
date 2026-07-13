@@ -12,10 +12,13 @@ public class PayCancelMessage {
 		switch (prdType) {
 			case GOLF:
 				template = getGolfTemplate();
+				break;
 			case CARRIER:
 				template = getCarrierTemplate();
+				break;
 			case AIRPORT:
 				template = getAirportTemplate();
+				break;
 		}
 
 		// #{고객명}
@@ -24,7 +27,7 @@ public class PayCancelMessage {
 		final String receiverNm = sendRequestVO.getReceiver();
 		// #{연락처}
 		final String receiverNum = sendRequestVO.getReceiverNum();
-		final String replaceTemplate = template
+		String replaceTemplate = template
 				.replace("#{고객명}", cusSendNm)
 				.replace("#{예약자명}", receiverNm)
 				.replace("#{연락처}", receiverNum);
@@ -33,14 +36,17 @@ public class PayCancelMessage {
 		String gameDt = sendRequestVO.getGameDt();
 		switch (prdType) {
 			case GOLF:
-				replaceTemplate.replace("#{라운딩일자}", gameDt);
+				replaceTemplate = replaceTemplate.replace("#{라운딩일자}", gameDt);
+				break;
 			case CARRIER:
 				// #{캐리어수량}
 				final Integer carrierCnt = sendRequestVO.getPdCnt();
-				replaceTemplate.replace("#{캐리어수량}", carrierCnt.toString());
-				replaceTemplate.replace("#{라운딩일자}", gameDt);
+				replaceTemplate = replaceTemplate.replace("#{캐리어수량}", carrierCnt.toString());
+				replaceTemplate = replaceTemplate.replace("#{라운딩일자}", gameDt);
+				break;
 			case AIRPORT:
-				replaceTemplate.replace("#{여행일자}", gameDt);
+				replaceTemplate = replaceTemplate.replace("#{여행일자}", gameDt);
+				break;
 		}
 		return replaceTemplate;
 	}

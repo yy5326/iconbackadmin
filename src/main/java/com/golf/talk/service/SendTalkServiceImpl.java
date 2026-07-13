@@ -295,18 +295,19 @@ public class SendTalkServiceImpl {
 				final SendRequestVO startRequestVO = getSendRequestVO(etcType, recipientType, svo);
 
 				switch (etcType) {
-					case RECEIPT:
-						startRequestVO.setTalkMessage(ReceiptNoticeMessage.makeForUserByIcon(startRequestVO, prdType));
 					case ONEWAY_PAY:
 						startRequestVO.setTalkMessage(PayCompleteMessage.makeForUserByIcon(startRequestVO, null, prdType));
+						break;
 					case ROUND_PAY:
 						if (TripType.ROUND_TRIP.equals(tripType)) {
 							// 왕복 2차
 							SendRequestVO roundRequestVO = getSendRequestVO(etcType, recipientType, receiptGroup.get(1));
 							startRequestVO.setTalkMessage(PayCompleteMessage.makeForUserByIcon(startRequestVO, roundRequestVO, prdType));
 						}
+						break;
 					case CANCEL:
 						startRequestVO.setTalkMessage(PayCancelMessage.makeForUserByIcon(startRequestVO, prdType));
+						break;
 				}
 
 				final SendRequestVO sendVO = startRequestVO;

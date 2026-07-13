@@ -1,12 +1,12 @@
 package com.golf.talk.controller;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
-import com.golf.enums.KakaoTalkEtcType;
-import com.golf.enums.KakaoTalkRecipientType;
-import com.golf.service.model.GolfReceiptInfVO;
+import com.golf.enums.PrdType;
 import com.golf.talk.message.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -161,6 +161,11 @@ public class SendTalkController {
 		return "jsonView";
 	}
 
+	/**
+	 * 접수 안내 (receipt)
+	 * @param list
+	 * @return
+	 */
 	@PostMapping("/sendVbankMessageForUser")
 	public String sendVbankMessageForUser(@RequestBody List<SendRequestVO> list) {
 
@@ -168,6 +173,62 @@ public class SendTalkController {
 			logger.info("[공통] 가상계좌안내");
 			for (SendRequestVO sendVO : list) {
 				String message = CommonMessage.makeVBankForUserByIcon(sendVO);
+				_sendTalkService.sendTalk(list, message);
+			}
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
+
+		return "jsonView";
+	}
+
+	/**
+	 *
+	 * @param list
+	 * @return
+	 */
+	@PostMapping("/sendReceiptNoticeMessageForUser")
+	public String sendReceiptNoticeMessageForUser(@RequestBody List<SendRequestVO> list) {
+
+		try {
+			logger.info("접수 안내");
+			for (SendRequestVO sendVO : list) {
+				String message = ReceiptNoticeMessage.makeForUserByIcon(sendVO, PrdType.fromValue(sendVO.getPrdType()));
+				_sendTalkService.sendTalk(list, message);
+			}
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
+
+		return "jsonView";
+	}
+
+	@PostMapping("/sendPayCompleteMessageForUser")
+	public String sendPayCompleteMessageForUser(@RequestBody Map<String, SendRequestVO> sendRequestMap) {
+
+		try {
+			logger.info("결제 완료 알림");
+			final SendRequestVO startRequestVO = sendRequestMap.get("startRequestVO");
+			final SendRequestVO roundRequestVO = sendRequestMap.get("roundRequestVO");
+			String message = PayCompleteMessage.makeForUserByIcon(startRequestVO, roundRequestVO, PrdType.fromValue(startRequestVO.getPrdType()));
+			List<SendRequestVO> list = new ArrayList<>();
+			list.add(startRequestVO);
+			_sendTalkService.sendTalk(list, message);
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
+
+		return "jsonView";
+	}
+
+	@PostMapping("/sendPayCancelMessageForUser")
+	public String sendPayCancelMessageForUser(@RequestBody List<SendRequestVO> list) {
+
+		try {
+			logger.info("취소 완료 알림");
+
+			for (SendRequestVO sendVO : list) {
+				String message = PayCancelMessage.makeForUserByIcon(sendVO, PrdType.fromValue(sendVO.getPrdType()));
 				_sendTalkService.sendTalk(list, message);
 			}
 		} catch ( Exception e ) {
