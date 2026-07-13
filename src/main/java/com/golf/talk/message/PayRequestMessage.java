@@ -128,7 +128,7 @@ public class PayRequestMessage {
 			if(prdType == 5 ) {
 				sb.append("캐리어수량 : "+sendRequestVO.getBoxCnt()+"\n");
 			}else if(prdType != 3 ) {
-				sb.append("보스턴백수량 : "+sendRequestVO.getBoston()+"\n");
+				sb.append("보스턴백수량 : "+sendRequestVO.getBostonCnt()+"\n");
 			}
 			sb.append("픽업지 : "+sendRequestVO.getCusSendAddr()+"\n");
 			sb.append("도착지 : "+sendRequestVO.getCusReAddr()+"\n");
@@ -141,7 +141,7 @@ public class PayRequestMessage {
 				}
 				sb.append("픽업예정일 : "+sendRequestVO.getPicReqDt()+"\n\n");
 
-				if(sendRequestVO.getBoston() > 0 && sendRequestVO.getPdDiscount() > 0) { // 241127 보스턴수량
+				if(sendRequestVO.getBostonCnt() > 0 && sendRequestVO.getPdDiscount() > 0) { // 241127 보스턴수량
 					sb.append("총 결제 금액 : "+sendRequestVO.getPdDiscount()+"원 \n");
 				}else {
 					sb.append("총 결제 금액 : "+sendRequestVO.getPdPay()+"원 \n");
@@ -164,9 +164,9 @@ public class PayRequestMessage {
 			sb.append("도착지 : "+sendRequestVO.getCusReAddr()+"\n");
 			sb.append("전화번호 : "+sendRequestVO.getReceiverNum()+"\n");
 			sb.append("골프백수량 : "+sendRequestVO.getPdCnt()+"\n"); //
-			sb.append("보스턴백수량 : "+sendRequestVO.getBoston()+"\n\n");
+			sb.append("보스턴백수량 : "+sendRequestVO.getBostonCnt()+"\n\n");
 
-			if(sendRequestVO.getBoston() > 0 && sendRequestVO.getPdDiscount() > 0) { // 241127 보스턴수량
+			if(sendRequestVO.getBostonCnt() > 0 && sendRequestVO.getPdDiscount() > 0) { // 241127 보스턴수량
 				sb.append("총 결제 금액 : "+sendRequestVO.getPdDiscount()+"원 \n");
 			}else {
 				sb.append("총 결제 금액 : "+sendRequestVO.getPdPay()+"원 \n");
@@ -308,7 +308,7 @@ public class PayRequestMessage {
 		sb.append("전화번호 : "+userlist.get(0).getReceiverNum()+"\n");
 		sb.append(itemName+"수량 : "+userlist.get(0).getPdCnt()+"\n");
 		if(prdType != 3 ) {
-			sb.append("보스턴백수량 : "+userlist.get(0).getBoston()+"\n");
+			sb.append("보스턴백수량 : "+userlist.get(0).getBostonCnt()+"\n");
 		}
 
 		if(prdType != 3 ) {
@@ -487,7 +487,7 @@ public class PayRequestMessage {
 			sb.append("전화번호 : "+startRequestVO.getReceiverNum()+"\n");
 			sb.append(itemName+"수량 : "+startRequestVO.getPdCnt()+"\n");
 			if(prdType != 3 ) {
-				sb.append("보스턴백수량 : "+startRequestVO.getBoston()+"\n");
+				sb.append("보스턴백수량 : "+startRequestVO.getBostonCnt()+"\n");
 			}
 
 			if(prdType != 3 ) {
@@ -498,7 +498,7 @@ public class PayRequestMessage {
 				sb.append("회수예정일 : "+roundRequestVO.getPicReqDt()+"\n");
 				sb.append("회수도착지 : "+roundRequestVO.getCusReAddr()+"\n\n");
 
-				if(startRequestVO.getBoston() > 0) { // 241127 보스턴수량
+				if(startRequestVO.getBostonCnt() > 0) { // 241127 보스턴수량
 					sb.append("총 결제 금액 : "+startRequestVO.getPdDiscount()+"원 \n");
 				}else {
 					int sumPay = startRequestVO.getPdPay()+roundRequestVO.getPdPay();
@@ -535,10 +535,10 @@ public class PayRequestMessage {
 			sb.append("회수도착지 : "+roundRequestVO.getCusReAddr()+"\n");
 			sb.append("전화번호 : "+startRequestVO.getReceiverNum()+"\n");
 			sb.append("골프백수량 : "+startRequestVO.getPdCnt()+"\n");
-			sb.append("보스턴백수량 : "+startRequestVO.getBoston()+"\n\n");
+			sb.append("보스턴백수량 : "+startRequestVO.getBostonCnt()+"\n\n");
 
             int sumPay = startRequestVO.getPdPay()+roundRequestVO.getPdPay();
-			if(startRequestVO.getBoston() > 0) { // 241127 보스턴수량
+			if(startRequestVO.getBostonCnt() > 0) { // 241127 보스턴수량
 				sb.append("총 결제 금액 : "+sumPay+"원 \n");
 			}else {
 				sb.append("총 결제 금액 : "+sumPay+"원 \n");

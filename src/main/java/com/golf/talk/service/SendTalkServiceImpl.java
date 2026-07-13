@@ -5,12 +5,14 @@ import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import com.golf.enums.*;
+import com.golf.talk.message.*;
+import com.nhncorp.lucy.security.xss.CommonUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
@@ -24,11 +26,6 @@ import com.golf.service.dao.GeneralDAOImpl;
 import com.golf.service.model.GolfReceiptInfVO;
 import com.golf.service.model.GolfReceiptMstVO;
 import com.golf.service.model.GolfReceiptPayVO;
-import com.golf.enums.PayStat;
-import com.golf.talk.message.KaKaoUtil;
-import com.golf.talk.message.PayRequestMessage;
-import com.golf.talk.message.ReceiptCancelMessage;
-import com.golf.talk.message.ReceiptCompleteMessage;
 import com.golf.talk.vo.KakaoInfoVO;
 import com.golf.talk.vo.KakaoVO;
 import com.golf.talk.vo.SendRequestVO;
@@ -53,7 +50,7 @@ public class SendTalkServiceImpl {
 			sendVo.setReceiverNum(KaKaoUtil.getReceiverTelNum(receiptInfoVO)); // 수신자 연락처 - 접수자 연락처, 접수자 연락처가 없을 경우 보내는 분 연락처
 			sendVo.setReceiver(KaKaoUtil.getReceiver(receiptInfoVO)); // 수신자명
 
-
+			sendVo.setDelKind(receiptInfoVO.getDelKind());
 			sendVo.setRcpNumber(receiptInfoVO.getRcpNumber());
 			sendVo.setCusSendNm(receiptInfoVO.getCusSendNm());
 			sendVo.setCusReNm(receiptInfoVO.getCusReNm());
@@ -65,7 +62,7 @@ public class SendTalkServiceImpl {
 			sendVo.setRcpKind(receiptInfoVO.getRcpKind());
 			sendVo.setPdDiscount(receiptInfoVO.getDiscount());
 			sendVo.setPrdType(receiptInfoVO.getPrdType());
-			sendVo.setBoston(receiptInfoVO.getBostonCnt());
+			sendVo.setBostonCnt(receiptInfoVO.getBostonCnt());
 
 			String cusSendAddr2 = "";
 			if ( receiptInfoVO.getCusSendAddr2() != null ) {
@@ -79,7 +76,6 @@ public class SendTalkServiceImpl {
 			sendVo.setCusSendAddr(receiptInfoVO.getCusSendAddr1()+" "+cusSendAddr2);
 			sendVo.setCusReAddr(receiptInfoVO.getCusReAddr1()+" "+cusReAddr2);
 			sendVo.setRcpSeq(receiptInfoVO.getRcpSeq());
-
 
 			//인천공항용
 			if("A".equals(receiptInfoVO.getRcpType())) {
@@ -98,14 +94,14 @@ public class SendTalkServiceImpl {
 					// 기존 add 한 list element 의 왕복건으로 처리
 					duplicateRound = true;
 					//sendRequestList.get(i).setEtc1("hdexp_0002");
-					if("2".equals(receiptList.get(i).getRcpKind())) {
+					if (RcpKind.SMARTSCORE.getValue().equals(receiptList.get(i).getRcpKind())) {
 						KaKaoUtil.getTempleteForEtc("hdexp_0004", sendRequestList.get(i));
 					}else {
 						KaKaoUtil.getTempleteForEtc("hdexp_0002", sendRequestList.get(i));
 					}
 
 					try {
-						if("2".equals(receiptList.get(i).getRcpKind())) {
+						if (RcpKind.SMARTSCORE.getValue().equals(receiptList.get(i).getRcpKind())) {
 							sendRequestList.get(i).setTalkMessage(ReceiptCompleteMessage.getForUserRound(sendRequestList.get(i), sendVo));
 						}else {
 							sendRequestList.get(i).setTalkMessage(PayRequestMessage.getRoundMessage(sendRequestList.get(i), sendVo));
@@ -181,7 +177,7 @@ public class SendTalkServiceImpl {
 			sendVo.setRcpKind(receiptInfoVO.getRcpKind());
 			sendVo.setPdDiscount(receiptInfoVO.getDiscount());
 			sendVo.setPrdType(receiptInfoVO.getPrdType());
-			sendVo.setBoston(receiptInfoVO.getBostonCnt());
+			sendVo.setBostonCnt(receiptInfoVO.getBostonCnt());
 			//sendVo.setEtc1(etc);
 			if ( "user".equals(sendType) ) {
 				sendVo.setReceiverNum(KaKaoUtil.getReceiverTelNum(receiptInfoVO)); // 수신자 연락처 - 접수자 연락처, 접수자 연락처가 없을 경우 보내는 분 연락처
@@ -275,6 +271,92 @@ public class SendTalkServiceImpl {
 		return sendRequestList;
 	}
 
+	public List<SendRequestVO> createSendRequestArrayList(List<GolfReceiptInfVO> receiptList, KakaoTalkEtcType etcType, KakaoTalkRecipientType recipientType) {
+		// 발송 목록
+		List<SendRequestVO> sendRequestList = new ArrayList<>();
+
+		// 접수 건 별 그룹핑
+		Map<Integer, List<GolfReceiptInfVO>> groupedByRcpSeq = receiptList.stream()
+				.collect(Collectors.groupingBy(GolfReceiptInfVO::getRcpSeq));
+		for (Integer rcpSeq : groupedByRcpSeq.keySet()) {
+			List<GolfReceiptInfVO> srList = groupedByRcpSeq.get(rcpSeq);
+			// 주문 건 재그룹핑
+			Map<String, List<GolfReceiptInfVO>> groupedByOrderIds = srList.stream()
+					.collect(Collectors.groupingBy(GolfReceiptInfVO::getOrderId));
+			for (String orderId : groupedByOrderIds.keySet()) {
+				List<GolfReceiptInfVO> receiptGroup = groupedByOrderIds.get(orderId);
+				// S(출발)가 R(도착)보다 먼저 오도록 srType 기준 정렬
+				receiptGroup.sort(Comparator.comparing(GolfReceiptInfVO::getSrType));
+
+				// 편도 or 왕복 1차
+				final GolfReceiptInfVO svo = receiptGroup.get(0);
+				final TripType tripType = TripType.fromCode(svo.getDelKind());
+				final PrdType prdType = PrdType.fromValue(svo.getPrdType());
+				final SendRequestVO startRequestVO = getSendRequestVO(etcType, recipientType, svo);
+
+				switch (etcType) {
+					case RECEIPT:
+						startRequestVO.setTalkMessage(ReceiptNoticeMessage.makeForUserByIcon(startRequestVO, prdType));
+					case ONEWAY_PAY:
+						startRequestVO.setTalkMessage(PayCompleteMessage.makeForUserByIcon(startRequestVO, null, prdType));
+					case ROUND_PAY:
+						if (TripType.ROUND_TRIP.equals(tripType)) {
+							// 왕복 2차
+							SendRequestVO roundRequestVO = getSendRequestVO(etcType, recipientType, receiptGroup.get(1));
+							startRequestVO.setTalkMessage(PayCompleteMessage.makeForUserByIcon(startRequestVO, roundRequestVO, prdType));
+						}
+					case CANCEL:
+						startRequestVO.setTalkMessage(PayCancelMessage.makeForUserByIcon(startRequestVO, prdType));
+				}
+
+				final SendRequestVO sendVO = startRequestVO;
+				sendRequestList.add(sendVO);
+			}
+		}
+		return sendRequestList;
+	}
+
+	/**
+	 * 발송요청
+	 *
+	 * @param etcType 템플릿 유형
+	 * @param recipientType 수신자 유형
+	 * @param svo 접수 정보
+	 */
+	private static SendRequestVO getSendRequestVO(KakaoTalkEtcType etcType, KakaoTalkRecipientType recipientType, GolfReceiptInfVO svo) {
+		SendRequestVO sendVo = new SendRequestVO();
+		sendVo.setDelKind(svo.getDelKind());		// 배송구분(1-편도/2-왕복)
+		sendVo.setRcpNumber(svo.getRcpNumber()); 	// 접수번호
+		sendVo.setCusSendNm(svo.getCusSendNm()); 	// 예약자
+		sendVo.setCusReNm(svo.getCusReNm());		// 받는분
+		sendVo.setPdCnt(svo.getPdCnt());			// 골프백수량
+		sendVo.setGameDt(svo.getGameDt());			// 라운딩일정 or 여행일정
+		sendVo.setPicReqDt(svo.getPicReqDt());		// 픽업희망일
+		sendVo.setPdPay(svo.getPdPay());			// 총합계
+		sendVo.setPdEtcPay(svo.getPdEtcPay());		// 할증운임
+		sendVo.setRcpSeq(svo.getRcpSeq());			// 그룹번호
+		sendVo.setRcpKind(svo.getRcpKind());		// 접수구분
+		sendVo.setPdDiscount(svo.getDiscount());	// 할인 적용
+		sendVo.setPrdType(svo.getPrdType());		// 상품유형
+		sendVo.setBostonCnt(svo.getBostonCnt());	// 보스턴백 수량
+
+		if (KakaoTalkRecipientType.USER.equals(recipientType) ) {
+			// 수신자 연락처 - 접수자 연락처, 접수자 연락처가 없을 경우 보내는 분 연락처
+			sendVo.setReceiverNum(KaKaoUtil.getReceiverTelNum(svo));
+			// 수신자명
+			sendVo.setReceiver(KaKaoUtil.getReceiver(svo));
+			// 템플릿 그룹 ID
+			sendVo.setEtc1(KaKaoUtil.getTemplateGrpId(PrdType.fromValue(sendVo.getPrdType()), etcType));
+		} else {
+			// ICON 관리자 수신
+			sendVo.setReceiverNum(KakaoTalkRecipientType.MANAGER.getPhoneNumber());
+			sendVo.setReceiver(KakaoTalkRecipientType.MANAGER.getRecipentName());
+			KaKaoUtil.getIconTempleteForEtc("icon", sendVo);
+		}
+
+		return sendVo;
+	}
+
 	// 아이콘 관리자 골프대기->골프접수시 결제요청 알림톡 전송 - 파라미터 mstVO 있는 경우, 라운딩 일자가 리스트에 없는 로직에서 호출(화면에서 바로 접수완료)
 	public void sendPayRequest(List<GolfReceiptInfVO> receiptList, GolfReceiptMstVO mstVO) {
 		// TODO Auto-generated method stub
@@ -358,7 +440,7 @@ public class SendTalkServiceImpl {
 			sendVo.setRcpKind(receiptInfoVO.getRcpKind());
 			sendVo.setPdDiscount(receiptInfoVO.getDiscount());
 			sendVo.setPrdType(receiptInfoVO.getPrdType());
-			sendVo.setBoston(receiptInfoVO.getBostonCnt());
+			sendVo.setBostonCnt(receiptInfoVO.getBostonCnt());
 
 			//sendVo.setEtc1("hdexp_0004");
 			KaKaoUtil.getTempleteForEtc("hdexp_0004", sendVo);
@@ -441,7 +523,7 @@ public class SendTalkServiceImpl {
 			sendVo.setRcpKind(receiptInfoVO.getRcpKind());
 			sendVo.setPdDiscount(receiptInfoVO.getDiscount());
 			sendVo.setPrdType(receiptInfoVO.getPrdType());
-			sendVo.setBoston(receiptInfoVO.getBostonCnt());
+			sendVo.setBostonCnt(receiptInfoVO.getBostonCnt());
 			//sendVo.setEtc1("hdexp_0006");
 			KaKaoUtil.getTempleteForEtc("hdexp_0006", sendVo);
 			userlist.add(sendVo);
@@ -462,7 +544,7 @@ public class SendTalkServiceImpl {
 			iconSendVo.setRcpKind(receiptInfoVO.getRcpKind());
 			iconSendVo.setPdDiscount(receiptInfoVO.getDiscount());
 			iconSendVo.setPrdType(receiptInfoVO.getPrdType());
-			iconSendVo.setBoston(receiptInfoVO.getBostonCnt());
+			iconSendVo.setBostonCnt(receiptInfoVO.getBostonCnt());
 			//iconSendVo.setEtc1("hdexp_0007");
 			KaKaoUtil.getIconTempleteForEtc("hdexp_0007", iconSendVo);
 			iconList.add(iconSendVo);
@@ -624,7 +706,9 @@ public class SendTalkServiceImpl {
         	kakaoVO.setKakaoInfoVO(new KakaoInfoVO());
     		kakaoVO.getKakaoInfoVO().setMode(server);
     		kakaoVO.setEtc1(sendRequestVO.getEtc1()); // 템플릿 그룹 ID
-    		kakaoVO.setEtc2(sendRequestVO.getRcpNumber()); // 골프접수번호
+			if (sendRequestVO.getRcpNumber() != null) {
+    			kakaoVO.setEtc2(sendRequestVO.getRcpNumber()); // 골프접수번호
+			}
 
     		// find template
     		logger.info(server+" server data search");
@@ -633,7 +717,7 @@ public class SendTalkServiceImpl {
             }else {
             	templCodeList = (KakaoVO) _gDao.selectOne("kakao.selectByTemplateTest", kakaoVO);
             }
-    		templCodeList.setPhoneNumber(sendRequestVO.getReceiverNum());
+    		templCodeList.setPhoneNumber(sendRequestVO.getReceiverNum().replace("-", ""));
 
 
     		// ready send & param set

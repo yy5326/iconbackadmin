@@ -200,6 +200,14 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 	private Long irOrderNo; //아이콘렌탈용
 
 	private String type;
+
+	// 결제금액
+	private String vbankPayAmt;
+	// 가상계좌
+	private String vbankInfo;
+	// 입금만료일시
+	private String vbankExpDtm;
+
 	/*
 	public String getCusReTelnum() {
 		return this.getCusReTelnumNo().getNo();

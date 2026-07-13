@@ -4,6 +4,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import com.golf.enums.KakaoTalkEtcType;
+import com.golf.enums.PrdType;
+import com.golf.enums.RcpKind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +31,7 @@ public class KaKaoUtil {
 			return receiptInfoVO.getCusSendTelnum();
 		}
 		// 2023-12-06 요청으로 아이콘에서는 발송자에게 알림톡 + 코참
-		if( "0".equals(receiptInfoVO.getRcpKind()) || "5".equals(receiptInfoVO.getRcpKind())) {
+		if (RcpKind.ICON.getValue().equals(receiptInfoVO.getRcpKind()) || RcpKind.KORCHAM.getValue().equals(receiptInfoVO.getRcpKind())) {
 			return receiptInfoVO.getCusSendTelnum();
 		}
 		return receiptInfoVO.getCusReceiptTelNum();
@@ -40,7 +43,7 @@ public class KaKaoUtil {
 			return receiptInfoVO.getCusSendNm();
 		}
 		// 2023-12-06 요청으로 아이콘에서는 발송자에게 알림톡 + 코참
-		if( "0".equals(receiptInfoVO.getRcpKind()) || "5".equals(receiptInfoVO.getRcpKind())) {
+		if (RcpKind.ICON.getValue().equals(receiptInfoVO.getRcpKind()) || RcpKind.KORCHAM.getValue().equals(receiptInfoVO.getRcpKind())) {
 			logger.info("요기 : " + receiptInfoVO.getCusSendNm());
 
 			return receiptInfoVO.getCusSendNm();
@@ -85,5 +88,21 @@ public class KaKaoUtil {
 		}else {
 			sendVo.setEtc1(etc);
 		}
+	}
+
+	/**
+	 * KakaoTalkEtcType으로 템플릿 불러오기
+	 *
+	 * @param prdType, 상품 유형
+	 * @param etcType, 수신자 유형
+	 */
+	public static String getTemplateGrpId(PrdType prdType, KakaoTalkEtcType etcType) {
+		final String PREFIX = "icexp";
+		final String PRODUCT = KakaoTalkEtcType.VBANK_PAY.equals(etcType) ? "common" : prdType.name().toLowerCase();
+		final String PROCESS = etcType.name().toLowerCase();
+
+		// 템플릿 그룹 ID 형식 : icexp_{유형}_{업무}_v{버전}
+		String templateGrpId = String.format("%s_%s_%s", PREFIX, PRODUCT, PROCESS);
+		return templateGrpId;
 	}
 }

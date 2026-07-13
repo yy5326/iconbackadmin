@@ -1,5 +1,8 @@
 package com.golf.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum PayStat {
 
 	/*
@@ -24,9 +27,9 @@ public enum PayStat {
 	 */
 	CANCEL("9");
 
-	String value;
+	private final String value;
 
-    private PayStat(String value){
+    PayStat(String value){
         this.value = value;
     }
 
