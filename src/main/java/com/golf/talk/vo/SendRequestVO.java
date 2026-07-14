@@ -68,11 +68,14 @@ public @Data class SendRequestVO {
 	private String rcpNumbers;
 
 	// 결제금액
+	private String payAmt;
+
+	// 결제금액
 	private String vbankPayAmt;
 	// 가상계좌
 	private String vbankInfo;
 	// 입금만료일시
 	private String vbankExpDtm;
 	// 추가할증금액
-	private String etcPay;
+	private String etcPayAmt;
 }

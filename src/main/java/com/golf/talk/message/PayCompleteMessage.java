@@ -58,33 +58,27 @@ public class PayCompleteMessage {
 			// #{회수도착지주소}
 			final String roundCusReAddr = roundRequestVO.getCusReAddr();
 			// #{총결제금액}
-			Integer payAmt = startRequestVO.getPdPay();
-			if (roundRequestVO.getPdPay() != null) {
-				payAmt += roundRequestVO.getPdPay();
-			}
+			String payAmt = startRequestVO.getPayAmt();
 			replaceTemplate = replaceTemplate
 				.replace("#{회수지주소}", roundCusSendAddr)
 				.replace("#{회수도착지주소}", roundCusReAddr)
-				.replace("#{총결제금액}", payAmt.toString());
+				.replace("#{총결제금액}", payAmt);
 		} else { // TripType.ONE_WAY
 			// #{총결제금액}
-			Integer payAmt = startRequestVO.getPdPay();
+			String payAmt = startRequestVO.getPayAmt();
 			replaceTemplate = replaceTemplate
-				.replace("#{총결제금액}", payAmt.toString());
+				.replace("#{총결제금액}", payAmt);
 		}
 
 		switch (prdType) {
 			case GOLF:
 				// #{추가할증금액}
-				Integer etcPayAmt = startRequestVO.getPdEtcPay();
-				if (roundRequestVO != null && roundRequestVO.getPdEtcPay() != null) {
-					etcPayAmt += roundRequestVO.getPdEtcPay();
-				}
+				String etcPayAmt = startRequestVO.getEtcPayAmt();
 				// #{골프백수량}
 				final Integer golfCnt = startRequestVO.getPdCnt();
 				// #{보스턴백수량}
 				final Integer bostonCnt = startRequestVO.getBostonCnt();
-				replaceTemplate = replaceTemplate.replace("#{추가할증금액}", etcPayAmt.toString());
+				replaceTemplate = replaceTemplate.replace("#{추가할증금액}", etcPayAmt);
 				replaceTemplate = replaceTemplate.replace("#{골프백수량}", golfCnt.toString());
 				replaceTemplate = replaceTemplate.replace("#{보스턴백수량}", bostonCnt.toString());
 				break;
