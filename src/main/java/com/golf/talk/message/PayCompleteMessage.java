@@ -38,7 +38,7 @@ public class PayCompleteMessage {
 		// #{라운딩일자}
 		final String gameDt = startRequestVO.getGameDt();
 		// #{픽업예정일}
-		final String picReqDt = startRequestVO.getPicReqDt();
+		final String picReqDt = startRequestVO.getPicReqDt() != null ? startRequestVO.getPicReqDt() : "미정";
 		// #{픽업지주소}
 		final String cusSendAddr = startRequestVO.getCusSendAddr();
 		// #{도착지주소}
