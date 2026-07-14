@@ -220,112 +220,9 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 				preInsertReceiptInfo(receiptInfVO, cbReceiptInfoVo);
 
-				// 제휴사 확인
-				boolean isPartner = isPartnerGolf(cbReceiptInfoVo.getSendGolfSeq()) || isPartnerGolf(cbReceiptInfoVo.getRecvGolfSeq());
+				// 공통 할인 계산
+				applyDiscountAndFees(receiptInfVO, cbReceiptInfoVo);
 
-				/**
-				 * 2024.11.27
-				 * 골프전산 기록 api와 아이콘택배(고객)접수 api에서 <br>
-				 * preInsertReceiptInfo() -> searchIsl() 함수가 <br>
-				 * 동일하게 호출되므로, 별도로 하단에 수수료 계산을 추가. <br>
-				 * 아이콘택배(고객)는 아이콘수수료 할인 미적용가 표기<br>
-				 * 골프택배(전산)에는 아이콘수수료 할인 적용가 표기
-				 */
-				/*if(("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind()))  // 웹, 모바일 + 코참
-						&& cbReceiptInfoVo.getPdCnt() > 0 // 골프백
-						&& cbReceiptInfoVo.getBostonCnt() > 0) {// 보스턴수 0이상
-//						&& receiptInfVO.getDiscountTotal() > 0) { // 보스턴 할인가 0이상
-					if (cbReceiptInfoVo.getCouponDiscount() <= 0) {
-						int bostonDiscount = 3000;
-						int discount =  bostonDiscount * cbReceiptInfoVo.getBostonCnt(); // receiptInfVO.getDiscountTotal();
-						int iconPay = receiptInfVO.getIconFee();
-						if ("1".equals(cbReceiptInfoVo.getDelKind())) { // 편도
-							iconPay = iconPay - discount;
-						} else if ("2".equals(cbReceiptInfoVo.getDelKind())) { // 왕복
-							discount = discount/2;
-							iconPay = iconPay - discount;
-						}
-						receiptInfVO.setIconFee(iconPay < 0 ? 0 : iconPay);
-						receiptInfVO.setPdPay(receiptInfVO.getPdPay()-discount);
-					} else {
-						logger.info("### [보라전산] 쿠폰 적용건으로 보스턴백 자동 할인 제외");
-					}
-				}else */
-				// 결제 도입으로 전산과 접수의 할인 로직 일원화
-				if (("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind()))
-						&& cbReceiptInfoVo.getPdCnt() > 0
-						&& cbReceiptInfoVo.getBostonCnt() > 0) {
-
-					if (cbReceiptInfoVo.getCouponDiscount() <= 0) {
-						int bostonDiscount = 3000;
-						int discount = bostonDiscount * cbReceiptInfoVo.getBostonCnt();
-
-						// 아이콘 수수료(IconFee)와 최종 결제금액(PdPay) 모두 차감
-						int iconPay = receiptInfVO.getIconFee();
-						if ("1".equals(cbReceiptInfoVo.getDelKind())) {
-							iconPay = iconPay - discount;
-						} else if ("2".equals(cbReceiptInfoVo.getDelKind())) {
-							discount = discount / 2; // 왕복일 경우 절반 차감
-							iconPay = iconPay - discount;
-						}
-						receiptInfVO.setIconFee(Math.max(0, iconPay));
-						receiptInfVO.setPdPay(receiptInfVO.getPdPay() - discount);
-
-						// 할인 총액 업데이트
-						receiptInfVO.setDiscountTotal(receiptInfVO.getDiscountTotal() + discount);
-						logger.info("### [보스턴백 할인] 자동 적용: {}원", discount);
-					} else {
-						logger.info("### [보스턴백 할인] 쿠폰 적용건으로 자동 할인 제외");
-					}
-				}
-
-				if(("9".equals(cbReceiptInfoVo.getRcpKind()))){//팬스타그루즈 할인금액적용
-                    int bostonDiscount = 2000 * cbReceiptInfoVo.getBostonCnt();
-                    int golfBagDiscount = 3000 * cbReceiptInfoVo.getPdCnt();
-                    int totalDiscount = (bostonDiscount + golfBagDiscount)/2;
-                    if("2".equals(cbReceiptInfoVo.getDelKind())){//왕복만
-                        receiptInfVO.setPdPay(receiptInfVO.getPdPay()-totalDiscount);
-                    }
-                }
-
-				/**
-				 * 2025.01.22
-				 * 인천공항 구분용 preInsertReceiptInfo 함수 호출후.
-				 * 접수시 내륙금액이나, 추가 수수료 5000원 적용
-				 */
-				if("A".equals(list.get(0).getRcpType())) {
-					logger.debug("##############################################################");
-					logger.debug("인천공항 골프 getPdCnt : "  + cbReceiptInfoVo.getPdCnt());
-					logger.debug("인천공항 골프 getIconFee : "  + receiptInfVO.getIconFee());
-					logger.debug("인천공항 결제정의전 log... {}", new Gson().toJson(receiptInfVO));
-					logger.debug("##############################################################");
-
-
-					int addPay = 5000; // 인천공항 추가수수료.
-					int golfAddPay =  addPay * cbReceiptInfoVo.getPdCnt();
-					int iconPay = receiptInfVO.getIconFee();
-					if ("1".equals(cbReceiptInfoVo.getDelKind())) { // 편도
-						iconPay = iconPay + golfAddPay;
-					}
-					receiptInfVO.setIconFee(iconPay < 0 ? 0 : iconPay);
-					receiptInfVO.setPdPay(receiptInfVO.getPdPay() + golfAddPay);
-				}
-
-				int couponVal = cbReceiptInfoVo.getCouponDiscount();
-
-				if (couponVal > 0) {
-					// 제휴사 보정은 searchIsl()에서 완료
-					// 쿠폰 할인 금액(couponVal)만 반영
-					int currentPdPay = receiptInfVO.getPdPay();
-					receiptInfVO.setPdPay(Math.max(0, currentPdPay - couponVal));
-					// 할인 총액 업데이트
-					receiptInfVO.setDiscountTotal(receiptInfVO.getDiscountTotal() + couponVal);
-					logger.info("### 쿠폰 할인 적용 완료. 최종금액: {}원, 총할인액: {}",
-							receiptInfVO.getPdPay(), receiptInfVO.getDiscountTotal());
-				}
-
-				logger.info("챗봇 골프접수 데이터");
-				logger.info("-->"+new Gson().toJson(receiptInfVO));
 				_gDao.insert("golfReceipt.insertReceiptInfChat", receiptInfVO);
 				receiptList.add(receiptInfVO);
 //
@@ -1138,6 +1035,9 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 							infVo.setRcpInfStat(rcpInfStat);
 						}
 					}
+
+					// 공통 할인 계산
+					applyDiscountAndFees(infVo, cbReceiptInfoVO);
 					_gDao.update("golfReceiptInf.updateSelective", infVo);
 
 					if (!"".equals(payStat)) { // cbReceiptInfoVO.getPayStatus() 가 없으면 비어있음
@@ -1199,6 +1099,9 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					// 접수자전화번호
 					if ( cbReceiptInfoVO.getCusReceiptTelNum() != null && !"".equals(cbReceiptInfoVO.getCusReceiptTelNum()) ) infVo.setCusReceiptTelNum(cbReceiptInfoVO.getCusReceiptTelNum());
 					preInsertReceiptInfo(infVo, cbReceiptInfoVO);
+
+					// 공통 할인 계산
+					applyDiscountAndFees(infVo, cbReceiptInfoVO);
 
 					// 아이콘택배 → 골프전산 결제 상태 수정
 					String payStat = ""; // IconPayStatus 의 payStat 참조
@@ -1665,5 +1568,62 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			return (pdCnt * 10000) + (cbVo.getBostonCnt() * bostonDosunAmt);
 		}
 		return basePay;
+	}
+
+	/**
+	 * 할인 및 수수료 계산 공통 로직
+	 */
+	private void applyDiscountAndFees(GolfReceiptInfVO vo, CbReceiptInfoVO info) {
+		// 보스턴백 할인 (아이콘, 코참)
+		if (("0".equals(info.getRcpKind()) || "5".equals(info.getRcpKind()))
+				&& info.getPdCnt() > 0 && info.getBostonCnt() > 0) {
+
+			if (info.getCouponDiscount() <= 0) {
+				int bostonDiscount = 3000;
+				int discount = bostonDiscount * info.getBostonCnt();
+				int iconPay = vo.getIconFee();
+
+				if ("1".equals(info.getDelKind())) {
+					iconPay = iconPay - discount;
+				} else if ("2".equals(info.getDelKind())) {
+					discount = discount / 2;
+					iconPay = iconPay - discount;
+				}
+				vo.setIconFee(Math.max(0, iconPay));
+				vo.setPdPay(vo.getPdPay() - discount);
+				vo.setDiscountTotal(vo.getDiscountTotal() + discount);
+				logger.info("### [보스턴백 할인] 자동 적용: {}원", discount);
+			}
+		}
+
+		// 팬스타크루즈 할인
+		if ("9".equals(info.getRcpKind())) {
+			int bostonDiscount = 2000 * info.getBostonCnt();
+			int golfBagDiscount = 3000 * info.getPdCnt();
+			int totalDiscount = (bostonDiscount + golfBagDiscount) / 2;
+			if ("2".equals(info.getDelKind())) {
+				vo.setPdPay(vo.getPdPay() - totalDiscount);
+			}
+		}
+
+		// 인천공항 추가 수수료
+		if ("A".equals(info.getRcpType())) {
+			int addPay = 5000;
+			int golfAddPay = addPay * info.getPdCnt();
+			int iconPay = vo.getIconFee();
+			if ("1".equals(info.getDelKind())) {
+				iconPay = iconPay + golfAddPay;
+			}
+			vo.setIconFee(Math.max(0, iconPay));
+			vo.setPdPay(vo.getPdPay() + golfAddPay);
+		}
+
+		// 쿠폰 할인
+		int couponVal = info.getCouponDiscount();
+		if (couponVal > 0) {
+			vo.setPdPay(Math.max(0, vo.getPdPay() - couponVal));
+			vo.setDiscountTotal(vo.getDiscountTotal() + couponVal);
+			logger.info("### 쿠폰 할인 적용 완료. 최종금액: {}원, 총할인액: {}", vo.getPdPay(), vo.getDiscountTotal());
+		}
 	}
 }
