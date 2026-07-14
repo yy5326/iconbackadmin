@@ -20,7 +20,7 @@ public class CommonMessage {
 		// #{총결제금액}
 		final String payAmt = sendVO.getVbankPayAmt();
 		// #{추가할증금액}
-		final String etcPay = sendVO.getEtcPay();
+		final String etcPayAmt = sendVO.getEtcPayAmt();
 		// #{입금만료일시}
 		final String vbankExpDtm = sendVO.getVbankExpDtm();
 
@@ -28,7 +28,7 @@ public class CommonMessage {
 				.replace("#{고객명}", cusSendNm)
 				.replace("#{가상계좌}", vbankInfo)
 				.replace("#{총결제금액}", payAmt)
-				.replace("#{추가할증금액}", etcPay)
+				.replace("#{추가할증금액}", etcPayAmt)
 				.replace("#{입금만료일시}", vbankExpDtm);
 		return replaceTemplate;
 	}
