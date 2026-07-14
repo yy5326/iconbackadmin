@@ -1063,7 +1063,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					String historyMemo = company + " 골프 수정";
 					insertGolfHistory(String.valueOf(infVo.getRcpNumber()), historyMemo);
 					result.add( (GolfReceiptInfVO)_gDao.selectByKey("golfReceiptInf.selectDetailByRcpSeq", infVo) );
-				} else if (IconPayStatus.WAIT.getPayStat().equals(infVo.getPayStat())) {
+				} else if (IconPayStatus.UNPAID.getPayStat().equals(infVo.getPayStat()) || IconPayStatus.WAIT.getPayStat().equals(infVo.getPayStat())) {
 					String historyMemo = "스마트 스코어 골프 수정";
 
 					if(infVo.getRcpKind().equals("1")) { //카카오
