@@ -250,7 +250,36 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					} else {
 						logger.info("### [보라전산] 쿠폰 적용건으로 보스턴백 자동 할인 제외");
 					}
-				}else */if(("9".equals(cbReceiptInfoVo.getRcpKind()))){//팬스타그루즈 할인금액적용
+				}else */
+				// 결제 도입으로 전산과 접수의 할인 로직 일원화
+				if (("0".equals(cbReceiptInfoVo.getRcpKind()) || "5".equals(cbReceiptInfoVo.getRcpKind()))
+						&& cbReceiptInfoVo.getPdCnt() > 0
+						&& cbReceiptInfoVo.getBostonCnt() > 0) {
+
+					if (cbReceiptInfoVo.getCouponDiscount() <= 0) {
+						int bostonDiscount = 3000;
+						int discount = bostonDiscount * cbReceiptInfoVo.getBostonCnt();
+
+						// 아이콘 수수료(IconFee)와 최종 결제금액(PdPay) 모두 차감
+						int iconPay = receiptInfVO.getIconFee();
+						if ("1".equals(cbReceiptInfoVo.getDelKind())) {
+							iconPay = iconPay - discount;
+						} else if ("2".equals(cbReceiptInfoVo.getDelKind())) {
+							discount = discount / 2; // 왕복일 경우 절반 차감
+							iconPay = iconPay - discount;
+						}
+						receiptInfVO.setIconFee(Math.max(0, iconPay));
+						receiptInfVO.setPdPay(receiptInfVO.getPdPay() - discount);
+
+						// 할인 총액 업데이트
+						receiptInfVO.setDiscountTotal(receiptInfVO.getDiscountTotal() + discount);
+						logger.info("### [보스턴백 할인] 자동 적용: {}원", discount);
+					} else {
+						logger.info("### [보스턴백 할인] 쿠폰 적용건으로 자동 할인 제외");
+					}
+				}
+
+				if(("9".equals(cbReceiptInfoVo.getRcpKind()))){//팬스타그루즈 할인금액적용
                     int bostonDiscount = 2000 * cbReceiptInfoVo.getBostonCnt();
                     int golfBagDiscount = 3000 * cbReceiptInfoVo.getPdCnt();
                     int totalDiscount = (bostonDiscount + golfBagDiscount)/2;

@@ -178,7 +178,8 @@ public class CbReceiveController {
 						|| (list.get(0).getCouponDiscount() > 0);
 
 				// 보스턴백 세트 할인 로직 적용 ( 수정 시 /commission 부분과 교차검증 필요)
-				int bostonCnt = list.get(0).getBostonCnt();
+				// 서비스단으로 할인 로직 이동 (할인 로직 일원화)
+				/*int bostonCnt = list.get(0).getBostonCnt();
 				if (!isCouponApplied && bostonCnt > 0) {
 					long bostonDiscount = 3000L * bostonCnt;
 					totalPay -= bostonDiscount;
@@ -189,7 +190,7 @@ public class CbReceiveController {
 						logger.info("### [보스턴백 할인] 쿠폰 사용으로 인해 세트 할인 제외");
 					}
 					data.put("discountTotal", 0);
-				}
+				}*/
 				data.put("cbPay", totalPay);
 				data.put("etcPay", receiptList.get(0).getPdEtcPay());
 				data.put("dosunPay", receiptList.get(0).getPdDosunPay());
