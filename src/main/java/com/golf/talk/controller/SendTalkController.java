@@ -39,7 +39,6 @@ public class SendTalkController {
 				// 편도
 				logger.info("결제요청알림톡(편도)");
 				String message = PayRequestMessage.getOneWayMessage(list.get(0));				
-				//_sendTalkService.sendPayRequest(list, message);
 			} else if ( list.size() == 2 ) {
 				// 왕복
 				logger.info("결제요청알림톡(왕복)");
@@ -195,6 +194,31 @@ public class SendTalkController {
 			for (SendRequestVO sendVO : list) {
 				String message = ReceiptNoticeMessage.makeForUserByIcon(sendVO, PrdType.fromValue(sendVO.getPrdType()));
 				_sendTalkService.sendTalk(list, message);
+			}
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
+
+		return "jsonView";
+	}
+
+	/**
+	 * 결제 완료
+	 * @param list
+	 * @return
+	 */
+	@PostMapping("/sendPayCompleteMessageForUser")
+	public String sendPayCompleteMessageForUser(@RequestBody List<Map<String, SendRequestVO>> list) {
+
+		try {
+			logger.info("결제 완료 알림");
+			for (Map<String, SendRequestVO> sendRequestMap : list) {
+				final SendRequestVO startRequestVO = sendRequestMap.get("startRequestVO");
+				final SendRequestVO roundRequestVO = sendRequestMap.get("roundRequestVO") != null ? sendRequestMap.get("roundRequestVO") : null;
+				String message = PayCompleteMessage.makeForUserByIcon(startRequestVO, roundRequestVO, PrdType.fromValue(startRequestVO.getPrdType()));
+				List<SendRequestVO> sendRequestList = new ArrayList<>();
+				sendRequestList.add(startRequestVO);
+				_sendTalkService.sendTalk(sendRequestList, message);
 			}
 		} catch ( Exception e ) {
 			e.printStackTrace();
