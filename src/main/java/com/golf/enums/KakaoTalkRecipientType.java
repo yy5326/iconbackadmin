@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum KakaoTalkRecipientType {
     USER("사용자", null, null),
-    MANAGER("관리자", "01047630961", "이인규");
+    MANAGER("관리자", " 01047630983", "박병준");
 
     private final String description;
     private final String phoneNumber;

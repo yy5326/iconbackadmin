@@ -186,9 +186,8 @@ public class SendTalkServiceImpl {
 
 				KaKaoUtil.getTempleteForEtc(etc, sendVo);
 			} else {
-				sendVo.setReceiverNum("01047630961");
-				//sendVo.setReceiverNum("01095949204");
-				sendVo.setReceiver("이인규");
+				sendVo.setReceiverNum(KakaoTalkRecipientType.MANAGER.getPhoneNumber());
+				sendVo.setReceiver(KakaoTalkRecipientType.MANAGER.getRecipentName());
 				KaKaoUtil.getIconTempleteForEtc(etc, sendVo);
 			}
 
@@ -449,7 +448,7 @@ public class SendTalkServiceImpl {
 			userlist.add(sendVo);
 
 			SendRequestVO iconSendVo = new SendRequestVO();
-			iconSendVo.setReceiverNum("01047630961");
+			iconSendVo.setReceiverNum(KakaoTalkRecipientType.MANAGER.getPhoneNumber());
 			iconSendVo.setRcpNumber(receiptInfoVO.getRcpNumber());
 			iconSendVo.setCusSendNm(receiptInfoVO.getCusSendNm());
 			iconSendVo.setCusReNm(receiptInfoVO.getCusReNm());
@@ -530,8 +529,7 @@ public class SendTalkServiceImpl {
 			userlist.add(sendVo);
 
 			SendRequestVO iconSendVo = new SendRequestVO();
-			iconSendVo.setReceiverNum("01047630961");
-			//iconSendVo.setReceiverNum("01095949204");
+			iconSendVo.setReceiverNum(KakaoTalkRecipientType.MANAGER.getPhoneNumber());
 
 			iconSendVo.setRcpNumber(receiptInfoVO.getRcpNumber());
 			iconSendVo.setCusSendNm(receiptInfoVO.getCusSendNm());
@@ -621,7 +619,7 @@ public class SendTalkServiceImpl {
     		requestSend.put("sender_key",templCodeList.getKakaoInfoVO().getSenderKey()); // 발신 프로필키
     		requestSend.put("phone_number", templCodeList.getPhoneNumber()); // 수신번호
     		requestSend.put("template_code", templCodeList.getTemplateCode()); // 템플릿 코드
-    		requestSend.put("sender_no", "01047630961");	 	 //보내는 번호	- 아이콘 담당자 전번 hard coding
+    		requestSend.put("sender_no", KakaoTalkRecipientType.MANAGER.getPhoneNumber());	 	 //보내는 번호	- 아이콘 담당자 전번 hard coding
     		requestSend.put("message", message);
 
 
@@ -727,7 +725,7 @@ public class SendTalkServiceImpl {
     		requestSend.put("sender_key",templCodeList.getKakaoInfoVO().getSenderKey()); // 발신 프로필키
     		requestSend.put("phone_number", templCodeList.getPhoneNumber()); // 수신번호
     		requestSend.put("template_code", templCodeList.getTemplateCode()); // 템플릿 코드
-    		requestSend.put("sender_no", "01047630961");	 	 //보내는 번호	- 아이콘 담당자 전번 hard coding
+    		requestSend.put("sender_no", KakaoTalkRecipientType.MANAGER.getPhoneNumber());	 	 //보내는 번호	- 아이콘 담당자 전번 hard coding
     		requestSend.put("message", sendRequestVO.getTalkMessage());
 
     		// send start

@@ -386,7 +386,7 @@ public class CarrierApiController extends PrtController  {
 //						//운송장번호
 //						sendTalk.setPdBarcode(vo.getPdBarcode());
 //						//수신 연락처
-//						sendTalk.setReceiverNum("01047630961");
+//						sendTalk.setReceiverNum(KakaoTalkRecipientType.MANAGER.getPhoneNumber());
 //						//템플릿코드
 //						sendTalk.setEtc1("hdexp_0011");
 //						//예약자
