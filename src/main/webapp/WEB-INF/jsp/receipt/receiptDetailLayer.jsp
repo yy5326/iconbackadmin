@@ -197,8 +197,24 @@
                                 </tr>
                                 <tr>
                                     <th>아이콘수수료</th>
-                                    <td><fmt:formatNumber value="${vo.iconFee}" pattern="#,###"/><span class="unit">원</span></td>
-                                    <td class="th">총 합계</th>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${vo.discountAmt > 0}">
+                                                <%-- 할인액이 있을 경우 --%>
+                                                <span style="text-decoration: line-through; color: #888; font-size: 0.9em;">
+                                                    <fmt:formatNumber value="${vo.iconFee}" pattern="#,###"/>원
+                                                </span>
+                                                <strong style="color: #d9534f; margin-left: 5px;">
+                                                    <fmt:formatNumber value="${vo.iconFee - vo.discountAmt}" pattern="#,###"/>원
+                                                </strong>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <%-- 할인액이 없을 경우 --%>
+                                                <fmt:formatNumber value="${vo.iconFee}" pattern="#,###"/><span class="unit">원</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td class="th">총 합계</td>
                                     <td colspan="3"><fmt:formatNumber value="${vo.pdPay}" pattern="#,###"/><span class="unit">원</span></td>
                                 </tr>
                                 <tr>

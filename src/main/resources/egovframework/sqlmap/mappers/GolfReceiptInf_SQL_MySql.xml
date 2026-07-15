@@ -76,6 +76,7 @@
 		<result column="PAY_GUBUN" jdbcType="VARCHAR" property="payGubun" />
 
 		<result column="ICON_FEE" jdbcType="INTEGER" property="iconFee" />
+        <result column="DISCOUNT_AMT" jdbcType="INTEGER" property="discountAmt" />
 		<result column="FILE_NM" jdbcType="INTEGER" property="fileNm" />
 
 		<result column="ORDER_ID" jdbcType="VARCHAR" property="orderId" />
@@ -252,6 +253,8 @@
 	<select id="selectDetailByKey" parameterType="Integer" resultMap="BaseResultMap">
 		SELECT
 			<include refid="select" />
+
+            , IFNULL(A.DISCOUNT_AMT, 0) AS DISCOUNT_AMT
 
 			, (SELECT GOLF_NAME FROM GOLF_INF WHERE GOLF_SEQ = A.SEND_GOLF_SEQ) AS SEND_GOLF_NAME
 			, (SELECT GOLF_NAME FROM GOLF_INF WHERE GOLF_SEQ = A.RECV_GOLF_SEQ) AS RECV_GOLF_NAME

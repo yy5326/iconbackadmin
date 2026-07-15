@@ -672,6 +672,9 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			}
 		}
 
+		int couponDiscount = cbReceiptInfoVo.getCouponDiscount();
+		receiptInfVO.setDiscountAmt(couponDiscount);
+
 		receiptInfVO.setPdDosunPay(pdDosunPay);
 		receiptInfVO.setPdDeliPay(pdDeliPay);
 		receiptInfVO.setIconFee(iconPay);

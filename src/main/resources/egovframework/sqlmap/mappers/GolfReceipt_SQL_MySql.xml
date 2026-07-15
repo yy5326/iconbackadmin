@@ -632,6 +632,9 @@
 			<if test="changeDeltypeYn != null">
 				change_deltype_yn,
 			</if>
+            <if test="discountAmt != null">
+                discount_amt,
+            </if>
 			<if test="rcpType != null and !''.equals(rcpType)">
 				RCP_TYPE,
 			</if>
@@ -780,6 +783,9 @@
 			<if test="changeDeltypeYn != null">
 				#{changeDeltypeYn,jdbcType=VARCHAR},
 			</if>
+            <if test="discountAmt != null">
+                #{discountAmt,jdbcType=INTEGER},
+            </if>
 			<if test="rcpType != null and !''.equals(rcpType)">
 				#{rcpType},
 			</if>
