@@ -180,18 +180,28 @@ public @Data class CbReceiptInfoVO {
 	@ApiModelProperty(position = 37, notes = "결제 상태")
 	private String payStatus;
 
+	// 배송 건 별 결제 금액, 수정 시에만 사용
+	@ApiParam(value="배송 건 별 결제 금액")
+	@ApiModelProperty(position = 38, notes = "배송 건 별 결제 금액")
+	private Integer diTotalPay;
+
+	// 취소 사유
+	@ApiParam(value="취소 사유")
+	@ApiModelProperty(position = 39, notes = "취소 사유")
+	private String canReason;
+
 	// 가상계좌 결제금액
 	@ApiParam(value="가상계좌 결제금액")
-	@ApiModelProperty(position = 38, notes = "가상계좌 결제금액")
+	@ApiModelProperty(position = 40, notes = "가상계좌 결제금액")
 	private String vbankPayAmt;
 
 	// 가상계좌
 	@ApiParam(value="가상계좌")
-	@ApiModelProperty(position = 39, notes = "가상계좌")
+	@ApiModelProperty(position = 41, notes = "가상계좌")
 	private String vbankInfo;
 
 	// 입금만료일시
 	@ApiParam(value="입금만료일시")
-	@ApiModelProperty(position = 40, notes = "입금만료일시")
+	@ApiModelProperty(position = 42, notes = "입금만료일시")
 	private String vbankExpDtm;
 }

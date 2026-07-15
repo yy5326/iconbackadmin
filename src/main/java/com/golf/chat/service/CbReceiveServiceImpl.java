@@ -999,6 +999,9 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		for ( CbReceiptInfoVO cbReceiptInfoVO : list ) {
 			infVo.setRcpNumber(cbReceiptInfoVO.getRcpNumber());
 			infVo = (GolfReceiptInfVO)_gDao.selectByKey("golfReceiptInf.selectDetailByRcpNumber", infVo);
+			if (cbReceiptInfoVO.getDiTotalPay() != null) {
+				infVo.setPayAmt(cbReceiptInfoVO.getDiTotalPay());
+			}
 			// 골프접수 상태는 모든 정보 수정 가능(주소가 바뀌면 금액도 업데이트 됨)
 			// 결제가 완료되어서 픽업요청 상태인 경우 일부정보만 수정 가능
 			// 택배 접수가 되면 모든 정보 수정 불가
@@ -1036,6 +1039,11 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 							payStat = iconPayStatus.getPayStat();
 							final String rcpInfStat = iconPayStatus.getRcpInfStat();
 							infVo.setRcpInfStat(rcpInfStat);
+
+							if (IconPayStatus.CANCELLED.equals(iconPayStatus)
+									&& cbReceiptInfoVO.getCanReason() != null) {
+								infVo.setCanReason(cbReceiptInfoVO.getCanReason());
+							}
 						}
 					}
 
@@ -1047,7 +1055,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 						if (IconPayStatus.CANCELLED.equals(iconPayStatus)) {
 							// 기존 편도 데이터 payAmt 변경
 							GolfReceiptPayVO payVO = new GolfReceiptPayVO();
-							payVO.setPayAmt(infVo.getPdPay());
+							payVO.setPayAmt(infVo.getPayAmt());
 							payVO.setRcpInfSeq(infVo.getRcpInfSeq());
 							payVO.setPayStat(payStat);
 							_gDao.update("golfReceiptPay.updateSelectiveByRcpInfSeq", payVO);
@@ -1066,7 +1074,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					String historyMemo = company + " 골프 수정";
 					insertGolfHistory(String.valueOf(infVo.getRcpNumber()), historyMemo);
 					result.add( (GolfReceiptInfVO)_gDao.selectByKey("golfReceiptInf.selectDetailByRcpSeq", infVo) );
-				} else if (IconPayStatus.WAIT.getPayStat().equals(infVo.getPayStat())) {
+				} else if (IconPayStatus.UNPAID.getPayStat().equals(infVo.getPayStat()) || IconPayStatus.WAIT.getPayStat().equals(infVo.getPayStat())) {
 					String historyMemo = "스마트 스코어 골프 수정";
 
 					if(infVo.getRcpKind().equals("1")) { //카카오

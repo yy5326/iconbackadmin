@@ -208,6 +208,9 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 	// 입금만료일시
 	private String vbankExpDtm;
 
+	// 결제금액
+	private Integer payAmt;
+
 	// 상품별 할인액
 	private int discountAmt = 0;
 
