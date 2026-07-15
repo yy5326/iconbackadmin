@@ -208,6 +208,9 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 	// 입금만료일시
 	private String vbankExpDtm;
 
+	// 결제금액
+	private Integer payAmt;
+
 	/*
 	public String getCusReTelnum() {
 		return this.getCusReTelnumNo().getNo();
