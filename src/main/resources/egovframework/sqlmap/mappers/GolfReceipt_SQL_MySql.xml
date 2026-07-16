@@ -798,4 +798,54 @@
 	<select id="getRcpAirSeq"  resultType="Integer">
  			SELECT NEXT VALUE FOR RCP_AIR_SEQ
   	</select>
+
+	<!-- 골프 접수 발송 목록 조회 (RCP_NUMBER IN절) -->
+	<select id="selectReceiptInfList" parameterType="com.golf.service.model.GolfReceiptInfVO" resultType="com.golf.service.model.GolfReceiptInfVO">
+		SELECT
+			RCP_NUMBER
+			, RCP_INF_SEQ
+			, RCP_SEQ
+			, RCP_INF_STAT
+			, SR_TYPE
+			, RT_NUMBER
+			, PAY_TYPE
+			, CUS_SEND_NM
+			, CUS_SEND_TELNUM
+			, CUS_SEND_ZIP
+			, CUS_SEND_ADDR1
+			, CUS_SEND_ADDR2
+			, CUS_RE_NM
+			, CUS_RE_TELNUM
+			, CUS_RE_ZIP
+			, CUS_RE_ADDR1
+			, CUS_RE_ADDR2
+			, SEND_GOLF_SEQ
+			, RECV_GOLF_SEQ
+			, PD_NM
+			, PD_PACK
+			, PD_GOLF_CNT
+			, PD_CNT
+			, PD_PAY
+			, PD_DELI_PAY
+			, PD_DOSUN_PAY
+			, PD_ETC_PAY
+			, ICON_FEE
+			, RCP_KIND
+			, USER_ID
+			, BR_STR_NM
+			, BR_STR_CODE
+			, BR_END_NM
+			, BR_END_CODE
+			, PIC_REQ_DT
+			, PD_REC_DT
+			, CAN_REASON
+			, REG_DATE
+			, MOD_DATE
+		FROM GOLF_RECEIPT_INF
+		WHERE RCP_NUMBER IN
+		<foreach collection="rcpNumberArray" item="rcpNumber" open="(" separator="," close=")">
+			#{rcpNumber}
+		</foreach>
+		ORDER BY RCP_INF_SEQ
+	</select>
 </mapper>
