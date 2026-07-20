@@ -184,20 +184,14 @@ public class CarrierApiController extends PrtController  {
 			
 			data.put("status", "200");	
 			data.put("discount", receiptInfVO.getDiscount());
-			if("2".equals(receiptInfVO.getDelKind())) {
-				data.put("pdDosunPay", receiptInfVO.getPdDosunPay() * 2);
-				data.put("pdDeliPay", (receiptInfVO.getPdDeliPay() + receiptInfVO.getIconFee()) *2);
-				data.put("pdEtcPay", receiptInfVO.getPdEtcPay() * 2);
-				data.put("pdPay", receiptInfVO.getPdPay() * 2);
-                data.put("discount",receiptInfVO.getDiscount());
-                data.put("discountTotal",receiptInfVO.getDiscountTotal());
-			}else {
-				data.put("pdDosunPay", receiptInfVO.getPdDosunPay());
-				data.put("pdDeliPay", receiptInfVO.getPdDeliPay() + receiptInfVO.getIconFee());
-				data.put("pdEtcPay", receiptInfVO.getPdEtcPay());
-				data.put("pdPay", receiptInfVO.getPdPay());
-			}
+			data.put("discount",receiptInfVO.getDiscount());
+			data.put("discountTotal",receiptInfVO.getDiscountTotal());
+			data.put("pdDosunPay", receiptInfVO.getPdDosunPay());
+			data.put("pdDeliPay", receiptInfVO.getPdDeliPay() + receiptInfVO.getIconFee());
+			data.put("pdEtcPay", receiptInfVO.getPdEtcPay());
+			data.put("pdPay", receiptInfVO.getPdPay());
 			data.put("roundTripDiscountAmt", receiptInfVO.getRoundTripDiscountAmt()); // 편도-왕복 차액
+			data.put("iconFee", receiptInfVO.getIconFee());
 			
 		} catch ( Exception e ) {
 			data.put("status", "500");	
