@@ -54,6 +54,10 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 	private int bostonDosunAmt = 6000;	//보스턴백 편도 도선
 	private int bostonDosunAmtR = 6000;	//보스턴백 왕복 도선
 
+	// 제주,여수경도 특수구간 운임
+	private int specialRouteGolfDosunAmt = 10000;  // 5000 + 5000
+	private int specialRouteBostonDosunAmt = 11000;  // 6000 + 5000
+
 	@Autowired
 	private GeneralDAOImpl _gDao;
 
@@ -1576,7 +1580,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				|| (isRecvJeju && rcpVo.getSendGolfSeq() == 211);
 		// 특수 구간일 경우 재계산
 		if (isSpecialRoute) {
-			return (pdCnt * 10000) + (cbVo.getBostonCnt() * bostonDosunAmt);
+			return (pdCnt * specialRouteGolfDosunAmt) + (cbVo.getBostonCnt() * specialRouteBostonDosunAmt);
 		}
 		return basePay;
 	}
