@@ -56,7 +56,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 	// 제주,여수경도 특수구간 운임
 	private int specialRouteGolfDosunAmt = 10000;  // 5000 + 5000
-	private int specialRouteBostonDosunAmt = 11000;  // 6000 + 5000
+	private int specialRouteBostonDosunAmt = 12000;  // 6000 + 6000
 
 	@Autowired
 	private GeneralDAOImpl _gDao;
