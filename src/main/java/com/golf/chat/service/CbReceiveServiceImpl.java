@@ -469,12 +469,12 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			// 편도
 			pdPay += extraPrice + iconPay;
 
-			if(RcpKind.HDCARD.getValue().equals(cbReceiptInfoVo.getRcpKind())) {
+/*			if(RcpKind.HDCARD.getValue().equals(cbReceiptInfoVo.getRcpKind())) {
 				int hdDiscount = hdCardDiscount_OneWay * cbReceiptInfoVo.getPdCnt();
 				pdPay -= hdDiscount;
 				iconPay -= hdDiscount;
 				receiptInfVO.setDiscountTotal(hdDiscount);
-			}
+			}*/
 
             // 편도일경우 discout값을 0으로해서 할인금액 표시안되도록
             if(RcpKind.PANSTAR.getValue().equals(cbReceiptInfoVo.getRcpKind())) {
@@ -688,6 +688,16 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 		int couponDiscount = cbReceiptInfoVo.getCouponDiscount();
 		receiptInfVO.setDiscountAmt(couponDiscount);
+		if (RcpKind.HDCARD.getValue().equals(cbReceiptInfoVo.getRcpKind())) {
+			int hdDiscount = 0;
+			if (TripType.ONE_WAY.getCode().equals(cbReceiptInfoVo.getDelKind())) {
+				hdDiscount = hdCardDiscount_OneWay * cbReceiptInfoVo.getPdCnt(); // 편도 4,000원 * 수량
+			} else {
+				hdDiscount = hdCardDiscount_Round * cbReceiptInfoVo.getPdCnt();  // 왕복 1,000원 * 수량
+			}
+			//할인 총액 세팅
+			receiptInfVO.setDiscountTotal(hdDiscount);
+		}
 
 		receiptInfVO.setPdDosunPay(pdDosunPay);
 		receiptInfVO.setPdDeliPay(pdDeliPay);
