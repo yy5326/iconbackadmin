@@ -226,6 +226,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 				preInsertReceiptInfo(receiptInfVO, cbReceiptInfoVo);
 
+				logger.info("### [할인 계산 호출 전] receiptProcConfirm : applyDiscountAndFees");
 				// 공통 할인 계산
 				applyDiscountAndFees(receiptInfVO, cbReceiptInfoVo);
 
@@ -1079,6 +1080,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 						}
 					}
 
+					logger.info("### [할인 계산 호출 전] updateReceipt111 : applyDiscountAndFees");
 					// 공통 할인 계산
 					applyDiscountAndFees(infVo, cbReceiptInfoVO);
 					_gDao.update("golfReceiptInf.updateSelective", infVo);
@@ -1143,6 +1145,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					if ( cbReceiptInfoVO.getCusReceiptTelNum() != null && !"".equals(cbReceiptInfoVO.getCusReceiptTelNum()) ) infVo.setCusReceiptTelNum(cbReceiptInfoVO.getCusReceiptTelNum());
 					preInsertReceiptInfo(infVo, cbReceiptInfoVO);
 
+					logger.info("### [할인 계산 호출 전] updateReceipt222 : applyDiscountAndFees");
 					// 공통 할인 계산
 					applyDiscountAndFees(infVo, cbReceiptInfoVO);
 
@@ -1636,10 +1639,12 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					discount = discount / 2;
 					iconPay = iconPay - discount;
 				}
+				long beforePdPay = vo.getPdPay(); // 할인 전 총금액
 				vo.setIconFee(Math.max(0, iconPay));
 				vo.setPdPay(vo.getPdPay() - discount);
 				vo.setDiscountTotal(vo.getDiscountTotal() + discount);
 				logger.info("### [보스턴백 할인] 자동 적용: {}원", discount);
+				logger.info("### [보스턴백 할인] 할인 전 pdPay: {}원, 할인 후 pdPay: {}원 (적용 할인액: {}원)", beforePdPay, vo.getPdPay(), discount);
 			}
 		}
 
@@ -1649,7 +1654,10 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			int golfBagDiscount = 3000 * info.getPdCnt();
 			int totalDiscount = (bostonDiscount + golfBagDiscount) / 2;
 			if (TripType.ROUND_TRIP.equals(TripType.fromCode(info.getDelKind()))) {
+				long beforePdPay = vo.getPdPay(); // 할인 전 총금액
 				vo.setPdPay(vo.getPdPay() - totalDiscount);
+
+				logger.info("### [팬스타크루즈 할인] 할인 전 pdPay: {}원, 할인 후 pdPay: {}원 (적용 할인액: {}원)", beforePdPay, vo.getPdPay(), totalDiscount);
 			}
 		}
 
@@ -1661,16 +1669,20 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			if (TripType.ONE_WAY.equals(TripType.fromCode(info.getDelKind()))) {
 				iconPay = iconPay + golfAddPay;
 			}
+			long beforePdPay = vo.getPdPay();
 			vo.setIconFee(Math.max(0, iconPay));
 			vo.setPdPay(vo.getPdPay() + golfAddPay);
+
+			logger.info("### [인천공항 추가수수료] 적용 전 pdPay: {}원, 적용 후 pdPay: {}원 (가산액: {}원)", beforePdPay, vo.getPdPay(), golfAddPay);
 		}
 
 		// 쿠폰 할인
 		int couponVal = info.getCouponDiscount();
 		if (couponVal > 0) {
+			long beforePdPay = vo.getPdPay(); // 할인 전 총금액
 			vo.setPdPay(Math.max(0, vo.getPdPay() - couponVal));
 			vo.setDiscountTotal(vo.getDiscountTotal() + couponVal);
-			logger.info("### 쿠폰 할인 적용 완료. 최종금액: {}원, 총할인액: {}", vo.getPdPay(), vo.getDiscountTotal());
-		}
+			logger.info("### [쿠폰 할인] 할인 전 pdPay: {}원, 할인 후 pdPay: {}원 (쿠폰 할인액: {}원, 총 할인액: {}원)",
+					beforePdPay, vo.getPdPay(), couponVal, vo.getDiscountTotal());		}
 	}
 }
