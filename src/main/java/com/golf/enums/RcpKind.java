@@ -9,7 +9,7 @@ public enum RcpKind {
 	KAKAO("1", "카카오"),
 	SMARTSCORE("2", "스마트스코어"),
 	HDCARD("3", "현대카드"),
-	LOTTERENT("4", "롯데렌터카"),
+	ZIMCARRY("4", "짐캐리"),
 	KORCHAM("5", "대한상의"),
 	ICON_RENTAL_WEB("6", "아이콘렌탈"),
 	ICON_RENTAL_MOBILE("7", "아이콘렌탈"),

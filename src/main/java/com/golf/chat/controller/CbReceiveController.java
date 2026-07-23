@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import javax.annotation.Resource;
 
+import com.golf.enums.TripType;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -153,12 +154,13 @@ public class CbReceiveController {
 				data.put("cbPay", 0);
 				data.put("cbReceiptStatus", "-1"); // 0이 접수대기
 				data.put("errorMsg", "요청한 데이터 없음");
-			} else if ( "2".equals(list.get(0).getDelKind()) && list.size() != 2 ) {
+			} else if ( TripType.ROUND_TRIP.equals(TripType.fromCode(list.get(0).getDelKind())) && list.size() != 2 ) {
 				logger.info("왕복 건 입력 오류(왕복 건은 데이터가 2개 입력되어야 합니다)");
 				data.put("cbPay", 0);
 				data.put("cbReceiptStatus", "-1"); // 0이 접수대기
 				data.put("errorMsg", "왕복 건 입력 오류(왕복 건은 데이터가 2개 입력되어야 합니다)");
-			} else if ( !"1".equals(list.get(0).getDelKind()) && !"2".equals(list.get(0).getDelKind()) ) {
+			} else if ( !TripType.ONE_WAY.getCode().equals(list.get(0).getDelKind())
+							&& !TripType.ROUND_TRIP.getCode().equals(list.get(0).getDelKind()) ) {
 				logger.info("왕복 유형 코드 오류");
 				data.put("cbPay", 0);
 				data.put("cbReceiptStatus", "-1"); // 0이 접수대기
@@ -167,7 +169,7 @@ public class CbReceiveController {
 				String regDate = _receiptService.selectDetailByRcpSeq(receiptList.get(0).getRcpSeq(), "S").getRegDate();
 
 				long totalPay = 0;
-				if ( "2".equals(list.get(0).getDelKind()) ) {
+				if (TripType.ROUND_TRIP.equals(TripType.fromCode(list.get(0).getDelKind()))) {
 					totalPay = receiptList.get(0).getPdPay() + receiptList.get(1).getPdPay();
 				} else {
 					totalPay = receiptList.get(0).getPdPay();
@@ -205,12 +207,12 @@ public class CbReceiveController {
 				String orderId = ""; // 결제용 묶음코드
 				if (list.get(0).getOrderNumber() != null) {
 					orderId = list.get(0).getOrderNumber();
-					if ( "2".equals(list.get(0).getDelKind()) ) {
+					if (TripType.ROUND_TRIP.equals(TripType.fromCode(list.get(0).getDelKind()))) {
 						data.put("sRoundTripDiscountAmt", receiptList.get(0).getRoundTripDiscountAmt()); // 왕복 1차 편도-왕복 차액
 						data.put("rRoundTripDiscountAmt", receiptList.get(1).getRoundTripDiscountAmt()); // 왕복 2차 편도-왕복 차액
 					}
 				} else {
-					if ( "2".equals(list.get(0).getDelKind()) ) {
+					if (TripType.ROUND_TRIP.equals(TripType.fromCode(list.get(0).getDelKind()))) {
 						orderId = "GRP"+receiptList.get(0).getRcpSeq(); // 챗봇접수번호 - 왕복시 그룹번호 참조 create
 					} else {
 						orderId = receiptList.get(0).getRcpNumber(); // 챗봇접수번호 - 편도시 rcpNumber

@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 
+import com.golf.enums.TripType;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -109,7 +110,7 @@ public class CarrierApiController extends PrtController  {
 			String rcpNumber = "";
 			String regDate = _receiptService.selectDetailByRcpSeq(receiptList.get(0).getRcpSeq(), "S").getRegDate();
 
-			if("2".equals(list.get(0).getDelKind())) {
+			if (TripType.ROUND_TRIP.equals(TripType.fromCode(list.get(0).getDelKind()))) {
 				data.put("cbPay", receiptList.get(0).getPdPay()*2);
 			}else {
 				data.put("cbPay", receiptList.get(0).getPdPay());
@@ -118,7 +119,7 @@ public class CarrierApiController extends PrtController  {
 			String orderId = ""; // 결제용 묶음코드
 			if (list.get(0).getOrderNumber() != null) {
 				orderId = list.get(0).getOrderNumber();
-				if ( "2".equals(list.get(0).getDelKind()) ) {
+				if (TripType.ROUND_TRIP.equals(TripType.fromCode(list.get(0).getDelKind()))) {
 					data.put("sRoundTripDiscountAmt", receiptList.get(0).getRoundTripDiscountAmt()); // 왕복 1차 편도-왕복 차액
 					data.put("rRoundTripDiscountAmt", receiptList.get(1).getRoundTripDiscountAmt()); // 왕복 2차 편도-왕복 차액
 				}

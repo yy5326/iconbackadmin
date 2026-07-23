@@ -492,16 +492,16 @@ public class GolfReceiptController extends PrtController {
 	public String partnerReceiptProc(GolfReceiptMstVO mstVO, GolfReceiptInfVO listVO, RedirectAttributes rttr) throws Exception {
 		try {
 			if ("zimcarry_111".equals(mstVO.getPartner())) {
-				mstVO.setDelKind("1"); // 편도 고정
+				mstVO.setDelKind(TripType.ONE_WAY.getCode()); // 편도 고정
 
 				GolfReceiptInfVO firstInf = listVO.getList().get(0);
 
 				// [추가] 짐캐리 전용 기본값 세팅
-				firstInf.setSrType("S");
-				firstInf.setRcpKind("4");
-				firstInf.setRcpInfStat("0"); // 골프접수 상태
-				firstInf.setPayStat("1");    // 결제완료 상태
-				firstInf.setPrdType(1);      // 골프택배
+				firstInf.setSrType(SrType.S.getCode());
+				firstInf.setRcpKind(RcpKind.ZIMCARRY.getValue());
+				firstInf.setRcpInfStat(RcpInfStat.RECEIPT.code());	// 골프접수 상태
+				firstInf.setPayStat(PayStat.COMPLETE.getValue());	// 결제완료 상태
+				firstInf.setPrdType(PrdType.GOLF.getValue());		// 골프택배
 
 				// [영업소 코드 매칭] 우편번호로 실제 6자리 영업소 코드를 조회.
 				try {

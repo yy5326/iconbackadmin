@@ -7,8 +7,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import com.golf.enums.PayStat;
-import com.golf.enums.RcpInfStat;
+import com.golf.enums.*;
 import com.golf.service.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +54,8 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 				// [보정] 짐캐리가 아닐 때만 기존의 할인 로직 수행
 				if (!"zimcarry_111".equals(mstVO.getPartner())) {
 					// 중복 if문 하나로 정리
-					if (("0".equals(rcpKind) || "5".equals(rcpKind)) && "1".equals(mstVO.getFareType())) {
+					if ((RcpKind.ICON.getValue().equals(rcpKind) || RcpKind.KORCHAM.getValue().equals(rcpKind))
+							&& "1".equals(mstVO.getFareType())) {
 						if (receiptInfVO.getBostonCnt() > 0 && receiptInfVO.getPdCnt() > 0) {
 							int bostonDiscount = 3000;
 							int discount = bostonDiscount * receiptInfVO.getBostonCnt();
@@ -66,10 +66,10 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 								discount = bostonDiscount * receiptInfVO.getPdCnt();
 							}
 
-							if ("1".equals(mstVO.getDelKind())) { // 편도
+							if (TripType.ONE_WAY.getCode().equals(mstVO.getDelKind())) { // 편도
 								iconPay = iconPay - discount;
 								receiptInfVO.setDiscount(pdPay - discount);
-							} else if ("2".equals(mstVO.getDelKind())) { // 왕복
+							} else if (TripType.ROUND_TRIP.getCode().equals(mstVO.getDelKind())) { // 왕복
 								receiptInfVO.setDiscount((pdPay * 2) - discount);
 								discount = discount / 2;
 								iconPay = iconPay - discount;
@@ -90,10 +90,10 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 
 				// 짐캐리 제휴사는 바로 결제완료(1) 처리, 나머지는 결제대기(0)
 				if ("zimcarry_111".equals(mstVO.getPartner())) {
-					payVO.setPayStat("1");  // 결제완료
+					payVO.setPayStat(PayStat.COMPLETE.code());  // 결제완료
 					payVO.setPayGubun("0"); // 일반결제(아이콘)
 				} else {
-					payVO.setPayStat("0");  // 결제대기
+					payVO.setPayStat(PayStat.STAY.code());  // 결제대기
 					payVO.setPayGubun("0");
 				}
 
@@ -107,9 +107,9 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 				} else {
 					// 일반 접수 로직
 					if(receiptInfVO.getSrType() != null) {
-						if(receiptInfVO.getSrType().equals("S")) {
+						if(receiptInfVO.getSrType().equals(SrType.S.getCode())) {
 							historyMemo = "아이콘 택배접수 왕복1차";
-						} else if(receiptInfVO.getSrType().equals("R")) {
+						}else if(receiptInfVO.getSrType().equals(SrType.R.getCode())) {
 							historyMemo = "아이콘 택배접수 왕복2차";
 						}
 						orderId = "GRP" + mstVO.getRcpSeq();
@@ -240,7 +240,7 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 
 			//스마트스코어 취소 경우 (전체취소, 결제취소)
 			// 스마트스코어(2) 거나 짐캐리(4)인 경우 일반적인 취소 로직(편도 전환 등)을 타지 않게 함
-			if("2".equals(rcpKind) || "4".equals(rcpKind)) {
+			if(RcpKind.SMARTSCORE.getValue().equals(rcpKind) || RcpKind.ZIMCARRY.getValue().equals(rcpKind)) {
 			//if("2".equals(rcpKind)) {
 				historyMemo = "스마트스코어 골프, 결제 취소";
 				receiptVo.setRcpInfStat(RcpInfStat.RECEIPT_CANCEL.code());
@@ -360,18 +360,22 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 			}
 		}
 
-		boolean rentalFlag = Arrays.asList("6", "7", "8").contains(rcpKind); // 렌탈 웹 모바일 기타
+		boolean rentalFlag = Arrays
+				.asList(RcpKind.ICON_RENTAL_WEB.getValue(), RcpKind.ICON_RENTAL_MOBILE.getValue(), RcpKind.ICON_RENTAL_ETC.getValue())
+				.contains(rcpKind); // 렌탈 웹 모바일 기타
 
 		//히스토리 등록 및 API 전송
 		// 수정: "4" (짐캐리) 조건 추가
-		if("2".equals(rcpKind) || "0".equals(rcpKind) || "4".equals(rcpKind) || "5".equals(rcpKind) || rentalFlag ) {
-		//if("2".equals(rcpKind) || "0".equals(rcpKind) || "5".equals(rcpKind) ||  rentalFlag ) { // 코참추가..
+		if(RcpKind.SMARTSCORE.getValue().equals(rcpKind)
+				|| RcpKind.ICON.getValue().equals(rcpKind)
+				|| RcpKind.ZIMCARRY.getValue().equals(rcpKind)
+				|| RcpKind.KORCHAM.getValue().equals(rcpKind) || rentalFlag ) {
 
 			GolfReceiptInfVO api =  (GolfReceiptInfVO)getDAO().selectOne("golfReceiptInf.selectDetailByRcpNumber", infVo.getRcpNumber());
 
 			System.out.println("에이피아이첫" + api);
 
-			if(!infVo.getRcpInfStat().equals(RcpInfStat.RECEIPT_CANCEL.code())) {
+			if (!infVo.getRcpInfStat().equals(RcpInfStat.RECEIPT_CANCEL.code())) {
 				rcpNumberArr = new ArrayList<String>();
 				rcpNumberArr.add(infVo.getRcpNumber());
 				//히스토리 등록용
@@ -379,7 +383,7 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 
 				//알림톡 발송용 (스마트스코어인 경우 알림톡 발송 안함)
 				infVo.setRcpNumber(rcpNumberArr.get(0));
-			}else if("2".equals(rcpKind)){
+			} else if (RcpKind.SMARTSCORE.getValue().equals(rcpKind)) {
 				//스마스스코어 취소 시 왕복등록건은 1차, 2차 모두 히스토리에 등록되고 알림톡 메세지에 rcmNumber 두개 표시 및 스마트스코어에 rcpNumber 2개 전송
 				api.setRcpNumber(String.join(" | ", rcpNumberArr));
 				api.setRcpNumberArray(rcpNumberArr);
@@ -416,7 +420,7 @@ public class GolfReceiptServiceImpl extends BaseServiceImpl {
 			// 스마트스코어(rcpKind: 2)이면서 취소 상태 코드면 외부 API 호출 금지
 			//boolean callExternalApi = !("2".equals(rcpKind) && isCancelStatus);
 			// 스마트스코어(2) 또는 짐캐리(4) 이면서 취소 상태일 때 외부 API 호출을 막음
-			boolean callExternalApi = !(("2".equals(rcpKind) || "4".equals(rcpKind)) && isCancelStatus);
+			boolean callExternalApi = !((RcpKind.SMARTSCORE.getValue().equals(rcpKind) || RcpKind.ZIMCARRY.getValue().equals(rcpKind)) && isCancelStatus);
 
 			if (callExternalApi) {
 				// 외주 업체 상태 변경 API
