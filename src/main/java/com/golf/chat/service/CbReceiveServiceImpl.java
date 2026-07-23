@@ -470,7 +470,10 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			pdPay += extraPrice + iconPay;
 
 			if(RcpKind.HDCARD.getValue().equals(cbReceiptInfoVo.getRcpKind())) {
-				receiptInfVO.setDiscount(pdPay - discount);
+				int hdDiscount = hdCardDiscount_OneWay * cbReceiptInfoVo.getPdCnt();
+				pdPay -= hdDiscount;
+				iconPay -= hdDiscount;
+				receiptInfVO.setDiscountTotal(hdDiscount);
 			}
 
             // 편도일경우 discout값을 0으로해서 할인금액 표시안되도록
