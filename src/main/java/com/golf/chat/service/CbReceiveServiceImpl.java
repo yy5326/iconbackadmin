@@ -470,12 +470,9 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			// 편도
 			pdPay += extraPrice + iconPay;
 
-/*			if(RcpKind.HDCARD.getValue().equals(cbReceiptInfoVo.getRcpKind())) {
-				int hdDiscount = hdCardDiscount_OneWay * cbReceiptInfoVo.getPdCnt();
-				pdPay -= hdDiscount;
-				iconPay -= hdDiscount;
-				receiptInfVO.setDiscountTotal(hdDiscount);
-			}*/
+			if(RcpKind.HDCARD.getValue().equals(cbReceiptInfoVo.getRcpKind())) {
+				receiptInfVO.setDiscount(pdPay - discount);
+			}
 
             // 편도일경우 discout값을 0으로해서 할인금액 표시안되도록
             if(RcpKind.PANSTAR.getValue().equals(cbReceiptInfoVo.getRcpKind())) {
@@ -689,16 +686,6 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 		int couponDiscount = cbReceiptInfoVo.getCouponDiscount();
 		receiptInfVO.setDiscountAmt(couponDiscount);
-		if (RcpKind.HDCARD.getValue().equals(cbReceiptInfoVo.getRcpKind())) {
-			int hdDiscount = 0;
-			if (TripType.ONE_WAY.getCode().equals(cbReceiptInfoVo.getDelKind())) {
-				hdDiscount = hdCardDiscount_OneWay * cbReceiptInfoVo.getPdCnt(); // 편도 4,000원 * 수량
-			} else {
-				hdDiscount = hdCardDiscount_Round * cbReceiptInfoVo.getPdCnt();  // 왕복 1,000원 * 수량
-			}
-			//할인 총액 세팅
-			receiptInfVO.setDiscountTotal(hdDiscount);
-		}
 
 		receiptInfVO.setPdDosunPay(pdDosunPay);
 		receiptInfVO.setPdDeliPay(pdDeliPay);
@@ -1080,7 +1067,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 						}
 					}
 
-					logger.info("### [할인 계산 호출 전] updateReceipt111 : applyDiscountAndFees");
+					logger.info("### [할인 계산 호출 전] updateReceipt1 : applyDiscountAndFees");
 					// 공통 할인 계산
 					applyDiscountAndFees(infVo, cbReceiptInfoVO);
 					_gDao.update("golfReceiptInf.updateSelective", infVo);
@@ -1145,7 +1132,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					if ( cbReceiptInfoVO.getCusReceiptTelNum() != null && !"".equals(cbReceiptInfoVO.getCusReceiptTelNum()) ) infVo.setCusReceiptTelNum(cbReceiptInfoVO.getCusReceiptTelNum());
 					preInsertReceiptInfo(infVo, cbReceiptInfoVO);
 
-					logger.info("### [할인 계산 호출 전] updateReceipt222 : applyDiscountAndFees");
+					logger.info("### [할인 계산 호출 전] updateReceipt2 : applyDiscountAndFees");
 					// 공통 할인 계산
 					applyDiscountAndFees(infVo, cbReceiptInfoVO);
 
@@ -1674,6 +1661,24 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			vo.setPdPay(vo.getPdPay() + golfAddPay);
 
 			logger.info("### [인천공항 추가수수료] 적용 전 pdPay: {}원, 적용 후 pdPay: {}원 (가산액: {}원)", beforePdPay, vo.getPdPay(), golfAddPay);
+		}
+
+		// 현대카드 할인
+		if (RcpKind.HDCARD.getValue().equals(info.getRcpKind())) {
+			int hdCardDiscount_OneWay = 4000;
+			int hdCardDiscount_Round = 1000;
+			int pdCnt = info.getPdCnt() > 0 ? info.getPdCnt() : 1;
+
+			int hdDiscount = TripType.ROUND_TRIP.equals(TripType.fromCode(info.getDelKind()))
+					? (hdCardDiscount_Round * pdCnt)
+					: (hdCardDiscount_OneWay * pdCnt);
+
+			long beforePdPay = vo.getPdPay(); // 할인 전 총금액
+			vo.setPdPay(Math.max(0, vo.getPdPay() - hdDiscount));
+			vo.setDiscountTotal(vo.getDiscountTotal() + hdDiscount);
+
+			logger.info("### [현대카드 할인] 할인 전 pdPay: {}원, 할인 후 pdPay: {}원 (현대카드 할인액: {}원)",
+					beforePdPay, vo.getPdPay(), hdDiscount);
 		}
 
 		// 쿠폰 할인
