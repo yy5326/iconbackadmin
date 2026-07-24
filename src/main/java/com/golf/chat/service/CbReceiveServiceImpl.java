@@ -1023,7 +1023,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public List<GolfReceiptInfVO> updateReceipt(List<CbReceiptInfoVO> list) throws Exception {
+	public List<GolfReceiptInfVO> updateGolfReceipt(List<CbReceiptInfoVO> list) throws Exception {
 		IconPayStatus iconPayStatus = null;
 		GolfReceiptInfVO infVo = new GolfReceiptInfVO();
 		List<GolfReceiptInfVO> result = new ArrayList<>();
@@ -1055,6 +1055,9 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 				// 결제가 완료된 골프접수 건은 일부정보만 수정 가능
 				// CUS_SEND_NM, CUS_SEND_TELNUM, CUS_RE_NM, CUS_RE_TELNUM, PD_MEMO
+				if (cbReceiptInfoVO.getPayStatus() != null && !cbReceiptInfoVO.getPayStatus().isEmpty()) {
+					iconPayStatus = IconPayStatus.valueOf(cbReceiptInfoVO.getPayStatus());
+				}
 				if (IconPayStatus.PAID.getPayStat().equals(infVo.getPayStat()) && infVo.getDelKind().equals(list.get(0).getDelKind())) {
 					// 골프접수 이고 결제 상태가 결제
 					if ( cbReceiptInfoVO.getCusReceiptNm() != null && !"".equals(cbReceiptInfoVO.getCusReceiptNm()) ) infVo.setCusReceiptNm(cbReceiptInfoVO.getCusReceiptNm());
@@ -1064,16 +1067,16 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					if ( cbReceiptInfoVO.getCusReTelNum() != null && !"".equals(cbReceiptInfoVO.getCusReTelNum()) ) infVo.setCusReTelnum2(cbReceiptInfoVO.getCusReTelNum());
 					if ( cbReceiptInfoVO.getPdMemo() != null && !"".equals(cbReceiptInfoVO.getPdMemo()) ) infVo.setPdMemo(cbReceiptInfoVO.getPdMemo());
 
-					// 아이콘택배 → 골프전산 결제 상태 수정
+					// [골프전산 결제완료 상태] 아이콘택배 → 골프전산 결제 상태 수정
 					String payStat = ""; // IconPayStatus 의 payStat 참조
 					if (cbReceiptInfoVO.getPayStatus() != null && !cbReceiptInfoVO.getPayStatus().isEmpty()) {
-						iconPayStatus = IconPayStatus.valueOf(cbReceiptInfoVO.getPayStatus());
-						if (IconPayStatus.isPaidOrCancelled(iconPayStatus)) {
+						if (IconPayStatus.isPaidOrTerminated(iconPayStatus)) {
 							payStat = iconPayStatus.getPayStat();
 							final String rcpInfStat = iconPayStatus.getRcpInfStat();
 							infVo.setRcpInfStat(rcpInfStat);
 
-							if (IconPayStatus.CANCELLED.equals(iconPayStatus)
+							// 아이콘에서 취소 or 입금기한만료시 골프전산에서 취소로 처리
+							if ((IconPayStatus.CANCELLED.equals(iconPayStatus) || IconPayStatus.EXPIRED.equals(iconPayStatus))
 									&& cbReceiptInfoVO.getCanReason() != null) {
 								infVo.setCanReason(cbReceiptInfoVO.getCanReason());
 							}
@@ -1086,7 +1089,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					_gDao.update("golfReceiptInf.updateSelective", infVo);
 
 					if (!"".equals(payStat)) { // cbReceiptInfoVO.getPayStatus() 가 없으면 비어있음
-						if (IconPayStatus.CANCELLED.equals(iconPayStatus)) {
+						if (IconPayStatus.CANCELLED.equals(iconPayStatus) || IconPayStatus.EXPIRED.equals(iconPayStatus)) {
 							// 기존 편도 데이터 payAmt 변경
 							GolfReceiptPayVO payVO = new GolfReceiptPayVO();
 							payVO.setPayAmt(infVo.getPayAmt());
@@ -1149,14 +1152,20 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					// 공통 할인 계산
 					applyDiscountAndFees(infVo, cbReceiptInfoVO);
 
-					// 아이콘택배 → 골프전산 결제 상태 수정
+					// [골프전산 미결제 or 결제대기 상태] 아이콘택배 → 골프전산 결제 상태 수정
 					String payStat = ""; // IconPayStatus 의 payStat 참조
 					if (cbReceiptInfoVO.getPayStatus() != null && !cbReceiptInfoVO.getPayStatus().isEmpty()) {
 						iconPayStatus = IconPayStatus.valueOf(cbReceiptInfoVO.getPayStatus());
-						if (IconPayStatus.isPaidOrCancelled(iconPayStatus)) {
+						if (IconPayStatus.isPaidOrTerminated(iconPayStatus)) {
 							payStat = iconPayStatus.getPayStat();
 							final String rcpInfStat = iconPayStatus.getRcpInfStat();
 							infVo.setRcpInfStat(rcpInfStat);
+
+							// 아이콘에서 취소 or 입금기한만료시 골프전산에서 취소로 처리
+							if ((IconPayStatus.CANCELLED.equals(iconPayStatus) || IconPayStatus.EXPIRED.equals(iconPayStatus))
+									&& cbReceiptInfoVO.getCanReason() != null) {
+								infVo.setCanReason(cbReceiptInfoVO.getCanReason());
+							}
 						}
 					}
 					_gDao.update("golfReceiptInf.updateSelective", infVo);

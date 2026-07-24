@@ -1,8 +1,6 @@
 package com.golf.chat.controller;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 
 import javax.annotation.Resource;
 
@@ -24,7 +22,6 @@ import com.golf.chat.vo.CbReceiptInfoVO;
 import com.golf.chat.vo.CbReceiveResultVO;
 import com.golf.service.model.GolfReceiptInfVO;
 import com.golf.talk.service.SendTalkServiceImpl;
-import com.google.gson.Gson;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -279,7 +276,7 @@ public class CbReceiveController {
 		JSONObject obj = new JSONObject();
 
 		try {
-			List<GolfReceiptInfVO> result = _receiptService.updateReceipt(list);
+			List<GolfReceiptInfVO> result = _receiptService.updateGolfReceipt(list);
 
 			obj.put("httpStatus","OK");
 			/*JSONArray kakaoArray = new JSONArray();

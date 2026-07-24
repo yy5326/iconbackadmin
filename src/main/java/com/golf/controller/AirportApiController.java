@@ -7,9 +7,6 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import com.golf.enums.KakaoTalkEtcType;
-import com.golf.enums.KakaoTalkRecipientType;
-import com.golf.enums.TripType;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -363,8 +360,8 @@ public class AirportApiController extends PrtController  {
 		JSONObject obj = new JSONObject();
 
 		try {
-			List<GolfReceiptInfVO> carrierResult = _carrierReceiptService.updateReceipt(list);
-			List<GolfReceiptInfVO> golfResult = _receiptService.updateReceipt(list);
+			List<GolfReceiptInfVO> carrierResult = _carrierReceiptService.updateCarrierReceipt(list);
+			List<GolfReceiptInfVO> golfResult = _receiptService.updateGolfReceipt(list);
 
 
 			logger.debug("업데이트 골프백 결과 {}", new Gson().toJson(golfResult));

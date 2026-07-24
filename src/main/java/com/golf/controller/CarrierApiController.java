@@ -222,7 +222,7 @@ public class CarrierApiController extends PrtController  {
 		JSONObject obj = new JSONObject();		
 		
 		try {
-			List<GolfReceiptInfVO> result = _carrierReceiptService.updateReceipt(list);
+			List<GolfReceiptInfVO> result = _carrierReceiptService.updateCarrierReceipt(list);
 
 			logger.debug("업데이트 결과 {}", new Gson().toJson(result));
 			obj.put("httpStatus","OK");
