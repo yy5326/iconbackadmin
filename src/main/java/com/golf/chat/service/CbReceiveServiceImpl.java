@@ -668,6 +668,20 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			}
 		}*/
 
+		// 제휴사 할인액 계산 로직
+		int standardBaseFee = 0;
+		if (TripType.ONE_WAY.equals(TripType.fromCode(cbReceiptInfoVo.getDelKind()))) {
+			standardBaseFee = (8000 * cbReceiptInfoVo.getPdCnt()) + (bostonAmt * bostonCnt);
+		} else {
+			standardBaseFee = (4500 * cbReceiptInfoVo.getPdCnt()) + (3000 * bostonCnt);
+		}
+		// 제휴사가 지정되어 있고(출발 또는 도착이 0 초과), 제휴 수수료가 기본 수수료보다 저렴할 경우 그 차액을 제휴사 할인액으로 설정
+		int partnerDiscount = 0;
+		if ((cbReceiptInfoVo.getSendGolfSeq() > 0 || cbReceiptInfoVo.getRecvGolfSeq() > 0) && standardBaseFee > iconPay) {
+			partnerDiscount = standardBaseFee - iconPay;
+		}
+		receiptInfVO.setPartnerDiscountValue(partnerDiscount);
+
 		// 골프장 제휴사 수수료 보정 로직
 		if (isPartnerGolf(cbReceiptInfoVo.getSendGolfSeq()) || isPartnerGolf(cbReceiptInfoVo.getRecvGolfSeq())) {
 			// 쿠폰 적용 시 수수료 정책: 골프백 8,000원 + 보스턴백 4,000원 = 12,000원

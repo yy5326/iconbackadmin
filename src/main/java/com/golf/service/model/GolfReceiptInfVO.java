@@ -214,6 +214,9 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 	// 상품별 할인액
 	private int discountAmt = 0;
 
+	// 제휴사 할인액
+	private int partnerDiscountValue = 0;
+
 	/*
 	public String getCusReTelnum() {
 		return this.getCusReTelnumNo().getNo();
