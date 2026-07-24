@@ -1683,7 +1683,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 		// 쿠폰 할인
 		int couponVal = info.getCouponDiscount();
-		if (couponVal > 0) {
+		if (couponVal > 0 && !"1".equals(vo.getPayStat()) && !"0".equals(vo.getPayStat())) {
 			long beforePdPay = vo.getPdPay(); // 할인 전 총금액
 			vo.setPdPay(Math.max(0, vo.getPdPay() - couponVal));
 			vo.setDiscountTotal(vo.getDiscountTotal() + couponVal);
