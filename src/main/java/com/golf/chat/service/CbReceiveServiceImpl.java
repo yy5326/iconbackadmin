@@ -91,8 +91,8 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		List<GolfReceiptInfVO> receiptList = new ArrayList<GolfReceiptInfVO>();
 
 		String rcpInfStat = RcpInfStat.WAIT.code();
-		String payStat = PayStat.COMPLETE.code();
-		String company = RcpKind.SMARTSCORE.getDescription();
+		String payStat = PayStat.UNPAID.code();
+		String company = RcpKind.ICON.getDescription();
 		String kakaoPayStat = "";
 		String kakaoPayMessage = "";
 		int bostonCnt = 0;
@@ -153,13 +153,21 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					kakaoPayMessage = "";
 				}
 
-				//스마트 스코어 일때 접수상태 골프접수,20260326 팬스타크루즈 추가
+				//스마트 스코어 일때 접수상태 골프접수
+				if (RcpKind.SMARTSCORE.getValue().equals(cbReceiptInfoVo.getRcpKind())) {
+					company = RcpKind.SMARTSCORE.getDescription();
+					payStat = PayStat.COMPLETE.code();
+					kakaoPayStat = "";
+					kakaoPayMessage = "";
+				}
+
+				// 20260326 팬스타크루즈 추가
 				if (RcpKind.SMARTSCORE.getValue().equals(cbReceiptInfoVo.getRcpKind())
 						|| RcpKind.ICON.getValue().equals(cbReceiptInfoVo.getRcpKind())
 						|| RcpKind.HDCARD.getValue().equals(cbReceiptInfoVo.getRcpKind())
 						|| RcpKind.KORCHAM.getValue().equals(cbReceiptInfoVo.getRcpKind())
 						|| RcpKind.PANSTAR.getValue().equals(cbReceiptInfoVo.getRcpKind())) {
-					if (PayStat.UNPAID.code().equals(payStat)) {
+					if (PayStat.UNPAID.code().equals(payStat) || PayStat.STAY.code().equals(payStat)) {
 						rcpInfStat = RcpInfStat.WAIT.code();
 					} else {
 						rcpInfStat = RcpInfStat.RECEIPT.code();

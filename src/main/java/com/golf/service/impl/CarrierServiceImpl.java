@@ -93,8 +93,8 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 		List<GolfReceiptInfVO> receiptList = new ArrayList<GolfReceiptInfVO>();
 
 		String rcpInfStat = RcpInfStat.WAIT.code();
-		String payStat = PayStat.COMPLETE.code();
-		String company = RcpKind.SMARTSCORE.getDescription();
+		String payStat = PayStat.UNPAID.code();
+		String company = RcpKind.ICON.getDescription();
 		String kakaoPayStat = "";
 		String kakaoPayMessage = "";
 		int bostonCnt = 0;
@@ -126,32 +126,39 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 
 				receiptInfVO.setRcpSeq(rcpSeq);
 
-				if("1".equals(cbReceiptInfoVO.getRcpKind())) { //결제상태 - 카카오 : 입금대기, 스마트스코어 : 결제완료
-					company = "카카오";
-					payStat = "0";
+				if(RcpKind.KAKAO.getValue().equals(cbReceiptInfoVO.getRcpKind())) { //결제상태 - 카카오 : 입금대기, 스마트스코어 : 결제완료
+					company = RcpKind.KAKAO.getDescription();
+					payStat = PayStat.STAY.code();
 					kakaoPayStat = "READY";
 					kakaoPayMessage = "결제요청";
 				}
-				if("0".equals(cbReceiptInfoVO.getRcpKind())) { //결제상태 - 카카오 : 입금대기, 스마트스코어 : 결제완료
-					company = "아이콘";
-					payStat = "0";
-					kakaoPayStat = "READY";
-					kakaoPayMessage = "결제요청";
+				if(RcpKind.ICON.getValue().equals(cbReceiptInfoVO.getRcpKind())) { //결제상태 - 카카오 : 입금대기, 스마트스코어 : 결제완료
+					company = RcpKind.ICON.getDescription();
+					payStat = cbReceiptInfoVO.getPayStat();
+					kakaoPayStat = "";
+					kakaoPayMessage = "";
 				}
 
-                if("9".equals(cbReceiptInfoVO.getRcpKind())) { // 결제 상태 - 팬스타크루즈
-                    company = "팬스타크루즈";
-                    payStat = "0";
-                    kakaoPayStat = "READY";
-                    kakaoPayMessage = "결제요청";
-                }
+				if(RcpKind.PANSTAR.getValue().equals(cbReceiptInfoVO.getRcpKind())) {
+					company = RcpKind.PANSTAR.getDescription();
+					payStat = cbReceiptInfoVO.getPayStat();
+					kakaoPayStat = "";
+					kakaoPayMessage = "";
+				}
 
 				//스마트 스코어 일때 접수상태 골프접수
-				if(RcpKind.SMARTSCORE.getValue().equals(cbReceiptInfoVO.getRcpKind())
+				if (RcpKind.SMARTSCORE.getValue().equals(cbReceiptInfoVO.getRcpKind())) {
+					company = RcpKind.SMARTSCORE.getDescription();
+					payStat = PayStat.COMPLETE.code();
+					kakaoPayStat = "";
+					kakaoPayMessage = "";
+				}
+
+				if (RcpKind.SMARTSCORE.getValue().equals(cbReceiptInfoVO.getRcpKind())
 						|| RcpKind.ICON.getValue().equals(cbReceiptInfoVO.getRcpKind())
 						|| RcpKind.HDCARD.getValue().equals(cbReceiptInfoVO.getRcpKind())
 						|| RcpKind.PANSTAR.getValue().equals(cbReceiptInfoVO.getRcpKind())) {
-					if (PayStat.UNPAID.code().equals(payStat)) {
+					if (PayStat.UNPAID.code().equals(payStat) || PayStat.STAY.code().equals(payStat)) {
 						rcpInfStat = RcpInfStat.WAIT.code();
 					} else {
 						rcpInfStat = RcpInfStat.RECEIPT.code();
