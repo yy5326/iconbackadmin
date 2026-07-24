@@ -386,6 +386,8 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		int pdDosunPay = 0;
 		int pdDeliPay = 0;
 		int iconPay = 0;
+		int golfPay = 0;
+		int bostonPay = 0;
 		int extraPrice = 0;
 		int pdPay = 0;
 		int bostonCnt = 0;
@@ -454,6 +456,8 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 			// 아이콘 수수료
 			iconPay = calculateIconFee(cbReceiptInfoVo, sendGolfInfVo, recvGolfInfVo);
+			golfPay = calculateGolfFee(cbReceiptInfoVo, sendGolfInfVo, recvGolfInfVo);
+			bostonPay = calculateBostonFee(cbReceiptInfoVo, sendGolfInfVo, recvGolfInfVo);
 
 			// 할증운임
 //			extraPrice = getExtraPrice(cbReceiptInfoVo.getPdIndivPrice());
@@ -538,6 +542,8 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 								System.out.println("bostonCnt : " + bostonCnt);
 				// 아이콘 수수료
 				iconPay = calculateIconFee(cbReceiptInfoVo, sendGolfInfVo, recvGolfInfVo);
+				golfPay = calculateGolfFee(cbReceiptInfoVo, sendGolfInfVo, recvGolfInfVo);
+				bostonPay = calculateBostonFee(cbReceiptInfoVo, sendGolfInfVo, recvGolfInfVo);
 
 				System.out.println("아이콘페이" + iconPay);
 				// 할증운임
@@ -604,6 +610,8 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				pdDeliPay = (amtArray[2]*cbReceiptInfoVo.getPdCnt()) + (bostonAmtR * bostonCnt);
 				// 아이콘 수수료
 				iconPay = calculateIconFee(cbReceiptInfoVo, sendGolfInfVo, recvGolfInfVo);
+				golfPay = calculateGolfFee(cbReceiptInfoVo, sendGolfInfVo, recvGolfInfVo);
+				bostonPay = calculateBostonFee(cbReceiptInfoVo, sendGolfInfVo, recvGolfInfVo);
 				// 할증운임
 //				extraPrice = getExtraPrice(cbReceiptInfoVo.getPdIndivPrice());
 				extraPrice = _kdngeApi.getExtraPrice(cbReceiptInfoVo.getPdIndivPrice());
@@ -704,6 +712,8 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		receiptInfVO.setPdDosunPay(pdDosunPay);
 		receiptInfVO.setPdDeliPay(pdDeliPay);
 		receiptInfVO.setIconFee(iconPay);
+		receiptInfVO.setGolfFee(golfPay);
+		receiptInfVO.setBostonFee(bostonPay);
 		receiptInfVO.setPdEtcPay(extraPrice);
 		receiptInfVO.setPdPay(pdPay);
 
@@ -878,6 +888,130 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			}
 		}
 		return sumIconFee;
+	}
+
+	public int calculateGolfFee(CbReceiptInfoVO cbReceiptInfoVo, GolfInfVO sendGolfInfVo, GolfInfVO recvGolfInfVo) {
+		int golfFee = 0;
+		int pdCnt = cbReceiptInfoVo.getPdCnt();
+		int sendApiGolfFee = 0;
+		int recvApiGolfFee = 0;
+
+		if (cbReceiptInfoVo.getSendGolfSeq() > 0) {
+			if (RcpKind.SMARTSCORE.getValue().equals(cbReceiptInfoVo.getRcpKind())
+					|| RcpKind.HDCARD.getValue().equals(cbReceiptInfoVo.getRcpKind())
+					|| RcpKind.ZIMCARRY.getValue().equals(cbReceiptInfoVo.getRcpKind())) {
+				sendApiGolfFee = apiFee(cbReceiptInfoVo.getDelKind(), "G");
+			} else {
+				if (TripType.ONE_WAY.equals(TripType.fromCode(cbReceiptInfoVo.getDelKind()))) {
+					sendApiGolfFee = sendGolfInfVo.getFee1();
+				} else {
+					sendApiGolfFee = sendGolfInfVo.getFee4();
+				}
+			}
+		}
+
+		if (cbReceiptInfoVo.getRecvGolfSeq() > 0) {
+			if (RcpKind.SMARTSCORE.getValue().equals(cbReceiptInfoVo.getRcpKind())
+					|| RcpKind.HDCARD.getValue().equals(cbReceiptInfoVo.getRcpKind())
+					|| RcpKind.ZIMCARRY.getValue().equals(cbReceiptInfoVo.getRcpKind())) {
+				recvApiGolfFee = apiFee(cbReceiptInfoVo.getDelKind(), "G");
+			} else {
+				if (TripType.ONE_WAY.equals(TripType.fromCode(cbReceiptInfoVo.getDelKind()))) {
+					recvApiGolfFee = recvGolfInfVo.getFee1();
+				} else {
+					recvApiGolfFee = recvGolfInfVo.getFee4();
+				}
+			}
+		}
+
+		boolean isOneWay = TripType.ONE_WAY.equals(TripType.fromCode(cbReceiptInfoVo.getDelKind()));
+		boolean hasSendGolf = cbReceiptInfoVo.getSendGolfSeq() > 0;
+		boolean hasRecvGolf = cbReceiptInfoVo.getRecvGolfSeq() > 0;
+
+		if (!hasSendGolf && !hasRecvGolf) {
+			golfFee = isOneWay ? (8000 * pdCnt) : (4500 * pdCnt);
+		} else if (hasSendGolf && !hasRecvGolf) {
+			golfFee = sendApiGolfFee * pdCnt;
+		} else if (!hasSendGolf && hasRecvGolf) {
+			golfFee = recvApiGolfFee * pdCnt;
+		} else {
+			int totalSendGolfFee = sendApiGolfFee * pdCnt;
+			int totalRecvGolfFee = recvApiGolfFee * pdCnt;
+			golfFee = totalSendGolfFee < totalRecvGolfFee ? totalSendGolfFee : totalRecvGolfFee;
+		}
+
+		return golfFee;
+	}
+
+	public int calculateBostonFee(CbReceiptInfoVO cbReceiptInfoVo, GolfInfVO sendGolfInfVo, GolfInfVO recvGolfInfVo) {
+		int bostonFee = 0;
+		int bostonCnt = 0;
+		int sendApiBostonFee = 0;
+		int recvApiBostonFee = 0;
+
+		if (RcpKind.SMARTSCORE.getValue().equals(cbReceiptInfoVo.getRcpKind())
+				|| RcpKind.ICON.getValue().equals(cbReceiptInfoVo.getRcpKind())
+				|| RcpKind.HDCARD.getValue().equals(cbReceiptInfoVo.getRcpKind())
+				|| RcpKind.ZIMCARRY.getValue().equals(cbReceiptInfoVo.getRcpKind())
+				|| RcpKind.KORCHAM.getValue().equals(cbReceiptInfoVo.getRcpKind())
+				|| RcpKind.PANSTAR.getValue().equals(cbReceiptInfoVo.getRcpKind())) {
+			bostonCnt = cbReceiptInfoVo.getBostonCnt();
+		}
+
+		if (cbReceiptInfoVo.getSendGolfSeq() > 0) {
+			if (RcpKind.SMARTSCORE.getValue().equals(cbReceiptInfoVo.getRcpKind())
+					|| RcpKind.HDCARD.getValue().equals(cbReceiptInfoVo.getRcpKind())
+					|| RcpKind.ZIMCARRY.getValue().equals(cbReceiptInfoVo.getRcpKind())) {
+				sendApiBostonFee = apiFee(cbReceiptInfoVo.getDelKind(), "B");
+			} else {
+				if (TripType.ONE_WAY.equals(TripType.fromCode(cbReceiptInfoVo.getDelKind()))) {
+					sendApiBostonFee = sendGolfInfVo.getFee7();
+				} else {
+					sendApiBostonFee = sendGolfInfVo.getFee10();
+				}
+			}
+		}
+
+		if (cbReceiptInfoVo.getRecvGolfSeq() > 0) {
+			if (RcpKind.SMARTSCORE.getValue().equals(cbReceiptInfoVo.getRcpKind())
+					|| RcpKind.HDCARD.getValue().equals(cbReceiptInfoVo.getRcpKind())
+					|| RcpKind.ZIMCARRY.getValue().equals(cbReceiptInfoVo.getRcpKind())) {
+				recvApiBostonFee = apiFee(cbReceiptInfoVo.getDelKind(), "B");
+			} else {
+				if (TripType.ONE_WAY.equals(TripType.fromCode(cbReceiptInfoVo.getDelKind()))) {
+					recvApiBostonFee = recvGolfInfVo.getFee7();
+				} else {
+					recvApiBostonFee = recvGolfInfVo.getFee10();
+				}
+			}
+		}
+
+		boolean isOneWay = TripType.ONE_WAY.equals(TripType.fromCode(cbReceiptInfoVo.getDelKind()));
+		boolean hasSendGolf = cbReceiptInfoVo.getSendGolfSeq() > 0;
+		boolean hasRecvGolf = cbReceiptInfoVo.getRecvGolfSeq() > 0;
+
+		if (!hasSendGolf && !hasRecvGolf) {
+			bostonFee = isOneWay ? (bostonAmt * bostonCnt) : (3000 * bostonCnt);
+		} else if (hasSendGolf && !hasRecvGolf) {
+			bostonFee = sendApiBostonFee * bostonCnt;
+		} else if (!hasSendGolf && hasRecvGolf) {
+			bostonFee = recvApiBostonFee * bostonCnt;
+		} else {
+			int totalSendBostonFee = sendApiBostonFee * bostonCnt;
+			int totalRecvBostonFee = recvApiBostonFee * bostonCnt;
+			// 골프백 수수료가 더 저렴했던 쪽의 보스턴백 수수료 정책을 따라가도록 기존 로직 호환 (또는 개별 비교)
+			int totalSendFee = (sendApiBostonFee * bostonCnt); // 단순 비교용 예시
+			int totalRecvFee = (recvApiBostonFee * bostonCnt);
+
+			// 양쪽 다 골프장일 때 기존 합산비교 로직에 맞추어 선택
+			int sendTotal = (sendApiBostonFee * bostonCnt); // 정확한 비교를 위해 기존 구조 유지 가능
+			int recvTotal = (recvApiBostonFee * bostonCnt);
+
+			// 기존에 골프백+보스턴백을 묶어서 비교하던 방식이 있다면 그에 따르되, 각각 리턴하도록 구성했습니다.
+			bostonFee = sendTotal < recvTotal ? sendTotal : recvTotal;
+		}
+
+		return bostonFee;
 	}
 
 	public int apiFee(String delKind, String gubun) {

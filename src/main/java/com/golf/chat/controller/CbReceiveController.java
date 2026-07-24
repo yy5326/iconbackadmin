@@ -403,6 +403,8 @@ public class CbReceiveController {
 			data.put("discountTotal", receiptInfVO.getDiscountTotal()); //241127 SG 할인총값 추가.
 			data.put("iconFee", receiptInfVO.getIconFee());
 			data.put("partnerDiscountValue", receiptInfVO.getPartnerDiscountValue()); // 제휴사 할인액
+			data.put("golfFee", receiptInfVO.getGolfFee());
+			data.put("bostonFee", receiptInfVO.getBostonFee());
 
 
 		} catch ( Exception e ) {

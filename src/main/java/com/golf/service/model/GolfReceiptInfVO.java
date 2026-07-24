@@ -140,6 +140,8 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 	private String cusReceiptTelNum;
 
 	private int iconFee;
+	private int golfFee;
+	private int bostonFee;
 
 	private String changeDeltypeYn;
 
