@@ -866,6 +866,9 @@
       <if test="changeDeltypeYn != null">
         CHANGE_DELTYPE_YN = #{changeDeltypeYn,jdbcType=VARCHAR},
       </if>
+      <if test="canReason != null">
+		  CAN_REASON = #{canReason,jdbcType=VARCHAR},
+      </if>
       MOD_DATE = NOW()
     </set>
     where RCP_INF_SEQ = #{rcpInfSeq,jdbcType=INTEGER}
