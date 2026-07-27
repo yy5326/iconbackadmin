@@ -1777,7 +1777,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 	 */
 	private void applyDiscountAndFees(GolfReceiptInfVO vo, CbReceiptInfoVO info) {
 		// 보스턴백 할인 (아이콘, 코참)
-		if ((RcpKind.ICON.getValue().equals(info.getRcpKind()) || RcpKind.KORCHAM.getValue().equals(info.getRcpKind()))
+		if ((RcpKind.ICON.getValue().equals(info.getRcpKind()) || RcpKind.KORCHAM.getValue().equals(info.getRcpKind()) || RcpKind.PANSTAR.getValue().equals(info.getRcpKind()))
 				&& info.getPdCnt() > 0 && info.getBostonCnt() > 0) {
 
 			if (info.getCouponDiscount() <= 0) {
@@ -1801,7 +1801,8 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		}
 
 		// 팬스타크루즈 할인
-		if (RcpKind.PANSTAR.getValue().equals(info.getRcpKind())) {
+		// 보스턴백 세트 할인 > 팬스타 할인
+		/*if (RcpKind.PANSTAR.getValue().equals(info.getRcpKind())) {
 			int bostonDiscount = 2000 * info.getBostonCnt();
 			int golfBagDiscount = 3000 * info.getPdCnt();
 			int totalDiscount = (bostonDiscount + golfBagDiscount) / 2;
@@ -1811,7 +1812,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 				logger.info("### [팬스타크루즈 할인] 할인 전 pdPay: {}원, 할인 후 pdPay: {}원 (적용 할인액: {}원)", beforePdPay, vo.getPdPay(), totalDiscount);
 			}
-		}
+		}*/
 
 		// 인천공항 추가 수수료
 		if (GoodsType.A.getValue().equals(info.getRcpType())) {
