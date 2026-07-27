@@ -1228,14 +1228,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 					logger.info("### [할인 계산 호출 전] updateReceipt1 : applyDiscountAndFees");
 					// 공통 할인 계산
-					//applyDiscountAndFees(infVo, cbReceiptInfoVO);
-					// 가상계좌일 경우 할인 계산
-					String payMethod = cbReceiptInfoVO.getPayMethod();
-					logger.info("### 가상계좌 할인 계산 적용1: {}", payMethod);
-					if (payMethod != null && ("VBANK".equals(payMethod) || "VIRTUAL".equals(payMethod))) {
-						applyDiscountAndFees(infVo, cbReceiptInfoVO);
-						logger.info("### 가상계좌 할인 계산 적용2: {}", payMethod);
-					}
+					applyDiscountAndFees(infVo, cbReceiptInfoVO);
 					_gDao.update("golfReceiptInf.updateSelective", infVo);
 
 					if (!"".equals(payStat)) { // cbReceiptInfoVO.getPayStatus() 가 없으면 비어있음
@@ -1300,7 +1293,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 					logger.info("### [할인 계산 호출 전] updateReceipt2 : applyDiscountAndFees");
 					// 공통 할인 계산
-					//applyDiscountAndFees(infVo, cbReceiptInfoVO);
+					applyDiscountAndFees(infVo, cbReceiptInfoVO);
 
 					// [골프전산 미결제 or 결제대기 상태] 아이콘택배 → 골프전산 결제 상태 수정
 					String payStat = ""; // IconPayStatus 의 payStat 참조
