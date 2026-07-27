@@ -1230,11 +1230,11 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					// 공통 할인 계산
 					//applyDiscountAndFees(infVo, cbReceiptInfoVO);
 					// 가상계좌일 경우 할인 계산
-					String vBankInfo = cbReceiptInfoVO.getVbankInfo();
-					logger.info("### 가상계좌 할인 계산 적용1: {}", vBankInfo);
-					if (vBankInfo != null && ("VBANK".equals(vBankInfo) || "VIRTUAL".equals(vBankInfo))) {
+					String payMethod = cbReceiptInfoVO.getPayMethod();
+					logger.info("### 가상계좌 할인 계산 적용1: {}", payMethod);
+					if (payMethod != null && ("VBANK".equals(payMethod) || "VIRTUAL".equals(payMethod))) {
 						applyDiscountAndFees(infVo, cbReceiptInfoVO);
-						logger.info("### 가상계좌 할인 계산 적용2: {}", vBankInfo);
+						logger.info("### 가상계좌 할인 계산 적용2: {}", payMethod);
 					}
 					_gDao.update("golfReceiptInf.updateSelective", infVo);
 

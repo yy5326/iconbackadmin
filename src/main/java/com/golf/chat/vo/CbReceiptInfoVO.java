@@ -204,4 +204,8 @@ public @Data class CbReceiptInfoVO {
 	@ApiParam(value="입금만료일시")
 	@ApiModelProperty(position = 42, notes = "입금만료일시")
 	private String vbankExpDtm;
+
+	@ApiParam(value="결제 수단")
+	@ApiModelProperty(position = 43, notes = "결제 수단")
+	private String payMethod; // 결제 수단
 }
