@@ -684,24 +684,25 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			}
 		}*/
 
-		// 제휴사 할인액 계산 로직
-		int standardBaseFee = 0;
-		if (TripType.ONE_WAY.equals(TripType.fromCode(cbReceiptInfoVo.getDelKind()))) {
-			standardBaseFee = (8000 * cbReceiptInfoVo.getPdCnt()) + (bostonAmt * bostonCnt);
-		} else {
-			standardBaseFee = (4500 * cbReceiptInfoVo.getPdCnt()) + (3000 * bostonCnt);
-		}
-		// 제휴사가 지정되어 있고(출발 또는 도착이 0 초과), 제휴 수수료가 기본 수수료보다 저렴할 경우 그 차액을 제휴사 할인액으로 설정
-		int partnerDiscount = 0;
-		if ((cbReceiptInfoVo.getSendGolfSeq() > 0 || cbReceiptInfoVo.getRecvGolfSeq() > 0) && standardBaseFee > iconPay) {
-			partnerDiscount = standardBaseFee - iconPay;
-		}
-		receiptInfVO.setPartnerDiscountValue(partnerDiscount);
-		receiptInfVO.setDiscountTotal(partnerDiscount);
-		pdDeliPay += partnerDiscount;
-
 		// 골프장 제휴사 수수료 보정 로직
 		if (isPartnerGolf(cbReceiptInfoVo.getSendGolfSeq()) || isPartnerGolf(cbReceiptInfoVo.getRecvGolfSeq())) {
+
+			// 제휴사 할인액 계산 로직
+			int standardBaseFee = 0;
+			if (TripType.ONE_WAY.equals(TripType.fromCode(cbReceiptInfoVo.getDelKind()))) {
+				standardBaseFee = (8000 * cbReceiptInfoVo.getPdCnt()) + (bostonAmt * bostonCnt);
+			} else {
+				standardBaseFee = (4500 * cbReceiptInfoVo.getPdCnt()) + (3000 * bostonCnt);
+			}
+			// 제휴사가 지정되어 있고(출발 또는 도착이 0 초과), 제휴 수수료가 기본 수수료보다 저렴할 경우 그 차액을 제휴사 할인액으로 설정
+			int partnerDiscount = 0;
+			if ((cbReceiptInfoVo.getSendGolfSeq() > 0 || cbReceiptInfoVo.getRecvGolfSeq() > 0) && standardBaseFee > iconPay) {
+				partnerDiscount = standardBaseFee - iconPay;
+			}
+			receiptInfVO.setPartnerDiscountValue(partnerDiscount);
+			receiptInfVO.setDiscountTotal(partnerDiscount);
+			pdDeliPay += partnerDiscount;
+
 			// 쿠폰 적용 시 수수료 정책: 골프백 8,000원 + 보스턴백 4,000원 = 12,000원
 			if (isCouponApplied) {
 				// 개별 단위 수수료 정의 (수량에 맞춰 계산)
@@ -1780,12 +1781,21 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 	 * 할인 및 수수료 계산 공통 로직
 	 */
 	private void applyDiscountAndFees(GolfReceiptInfVO vo, CbReceiptInfoVO info) {
-		// 보스턴백 할인 (아이콘, 코참)
+		// 보스턴백 할인
+		int bostonDiscount = 3000;
+		int calculatedDiscount = bostonDiscount * info.getBostonCnt();
+		if (TripType.ROUND_TRIP.equals(TripType.fromCode(info.getDelKind()))) {
+			calculatedDiscount = calculatedDiscount / 2;
+		}
+
+		// 제휴 골프장 할인 비교
+		int partnerDiscountValue = vo.getPartnerDiscountValue();
+		boolean isPartnerDiscountApplied = partnerDiscountValue < calculatedDiscount;
+
 		if ((RcpKind.ICON.getValue().equals(info.getRcpKind()) || RcpKind.KORCHAM.getValue().equals(info.getRcpKind()) || RcpKind.PANSTAR.getValue().equals(info.getRcpKind()))
-				&& info.getPdCnt() > 0 && info.getBostonCnt() > 0) {
+				&& info.getPdCnt() > 0 && info.getBostonCnt() > 0 && isPartnerDiscountApplied) {
 
 			if (info.getCouponDiscount() <= 0) {
-				int bostonDiscount = 3000;
 				int discount = bostonDiscount * info.getBostonCnt();
 				int iconPay = vo.getIconFee();
 
