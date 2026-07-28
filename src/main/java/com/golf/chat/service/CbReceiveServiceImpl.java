@@ -697,6 +697,8 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			partnerDiscount = standardBaseFee - iconPay;
 		}
 		receiptInfVO.setPartnerDiscountValue(partnerDiscount);
+		receiptInfVO.setDiscountTotal(partnerDiscount);
+		pdDeliPay += partnerDiscount;
 
 		// 골프장 제휴사 수수료 보정 로직
 		if (isPartnerGolf(cbReceiptInfoVo.getSendGolfSeq()) || isPartnerGolf(cbReceiptInfoVo.getRecvGolfSeq())) {
@@ -710,6 +712,8 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				pdPay = pdPay - iconPay + newTotalIconPay;
 				// iconPay 갱신
 				iconPay = newTotalIconPay;
+				golfPay = targetGolfBagFee;
+				pdDeliPay -= partnerDiscount;
 				logger.info("### 제휴사 쿠폰 적용(12,000원 정책): 골프백={}, 보스턴백={}, 최종 pdPay={}", targetGolfBagFee, targetBostonFee, pdPay);
 			}
 		}
@@ -1849,7 +1853,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 		// 쿠폰 할인
 		int couponVal = info.getCouponDiscount();
-		if (couponVal > 0 && !"1".equals(vo.getPayStat())) {
+		if (couponVal > 0 && !"1".equals(vo.getPayStat()) && !"0".equals(vo.getPayStat())) {
 			long beforePdPay = vo.getPdPay(); // 할인 전 총금액
 			vo.setPdPay(Math.max(0, vo.getPdPay() - couponVal));
 			vo.setDiscountTotal(vo.getDiscountTotal() + couponVal);
