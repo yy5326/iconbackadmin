@@ -699,15 +699,18 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			if ((cbReceiptInfoVo.getSendGolfSeq() > 0 || cbReceiptInfoVo.getRecvGolfSeq() > 0) && standardBaseFee > iconPay) {
 				partnerDiscount = standardBaseFee - iconPay;
 			}
-			receiptInfVO.setPartnerDiscountValue(partnerDiscount);
-			receiptInfVO.setDiscountTotal(partnerDiscount);
-			pdDeliPay += partnerDiscount;
+			receiptInfVO.setPartnerDiscountValue(partnerDiscount); // 제휴사 할인액 저장
+			receiptInfVO.setDiscountTotal(partnerDiscount); // 쿠폰적용일 경우 영수증에 할인액을 세팅해도 되는지 확인 필요. setDiscountTotal(쿠폰할인액)
+			pdDeliPay += partnerDiscount;					// 쿠폰 적용을 하든 안하든 배송비는 제휴할인 전 값으로 표기해야함.
 
 			// 쿠폰 적용 시 수수료 정책: 골프백 8,000원 + 보스턴백 4,000원 = 12,000원
+			// 이지만 26.07.29 : 해당 하는 값을 쿠폰에서 적용하기 위해 아래 값 기본으로 설정
 			if (isCouponApplied) {
 				// 개별 단위 수수료 정의 (수량에 맞춰 계산)
+
+				// 타겟 값이 왕복일 경우 고려해야함. 왕복에 쿠폰 적용 시 위쪽에 왕복(4500) 분기 필요.
 				int targetGolfBagFee = 8000 * cbReceiptInfoVo.getPdCnt();
-				int targetBostonFee = 4000 * cbReceiptInfoVo.getBostonCnt();
+				int targetBostonFee = 6000 * cbReceiptInfoVo.getBostonCnt();
 				int newTotalIconPay = targetGolfBagFee + targetBostonFee;
 				// pdPay에서 기존 iconPay를 빼고, 새 수수료를 더함
 				pdPay = pdPay - iconPay + newTotalIconPay;
@@ -2039,10 +2042,10 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 		// 쿠폰 할인
 		int couponVal = info.getCouponDiscount();
-		if (couponVal > 0 && !"1".equals(vo.getPayStat()) && !"0".equals(vo.getPayStat())) {
+		if (couponVal > 0 && !"1".equals(vo.getPayStat())) {
 			long beforePdPay = vo.getPdPay(); // 할인 전 총금액
 			vo.setPdPay(Math.max(0, vo.getPdPay() - couponVal));
-			vo.setDiscountTotal(vo.getDiscountTotal() + couponVal);
+			vo.setDiscountTotal(couponVal);
 			logger.info("### [쿠폰 할인] 할인 전 pdPay: {}원, 할인 후 pdPay: {}원 (쿠폰 할인액: {}원, 총 할인액: {}원)",
 					beforePdPay, vo.getPdPay(), couponVal, vo.getDiscountTotal());		}
 	}
