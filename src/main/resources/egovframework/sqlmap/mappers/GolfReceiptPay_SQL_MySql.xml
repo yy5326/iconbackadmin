@@ -68,7 +68,7 @@
 				#{rcpInfSeq,jdbcType=INTEGER},
 			</if>
 			<if test="orderId != null">
-				#{orderId,jdbcType=INTEGER},
+				#{orderId,jdbcType=VARCHAR},
 			</if>
 			<if test="payMeans != null">
 				#{payMeans,jdbcType=VARCHAR},
@@ -109,9 +109,6 @@
       <if test="rcpInfSeq != null">
         RCP_INF_SEQ = #{rcpInfSeq,jdbcType=INTEGER},
       </if>
-	  <if test="orderId != null">
-		ORDER_ID = #{orderId,jdbcType=INTEGER},
-	  </if>
       <if test="payMeans != null">
         PAY_MEANS = #{payMeans,jdbcType=VARCHAR},
       </if>
@@ -136,6 +133,9 @@
       <if test="useYn != null">
         USE_YN = #{useYn,jdbcType=VARCHAR},
       </if>
+	  <if test="orderId != null">
+		ORDER_ID = #{orderId,jdbcType=VARCHAR},
+	  </if>
     </set>
     WHERE PAY_SEQ = #{paySeq,jdbcType=INTEGER}
   </update>
@@ -147,9 +147,6 @@
       <if test="rcpInfSeq != null">
         RCP_INF_SEQ = #{rcpInfSeq,jdbcType=INTEGER},
       </if>
-	  <if test="orderId != null">
-		ORDER_ID = #{orderId,jdbcType=INTEGER},
-	  </if>
       <if test="payMeans != null">
         PAY_MEANS = #{payMeans,jdbcType=VARCHAR},
       </if>
