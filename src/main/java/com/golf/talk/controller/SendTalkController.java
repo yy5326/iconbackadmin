@@ -1,9 +1,13 @@
 package com.golf.talk.controller;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
+import com.golf.enums.PrdType;
+import com.golf.talk.message.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,12 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.golf.service.GlobalProperty;
-import com.golf.talk.message.FileUploadMessage;
-import com.golf.talk.message.PayExpireMessage;
-import com.golf.talk.message.PayRequestMessage;
-import com.golf.talk.message.ReceiptCancelMessage;
-import com.golf.talk.message.ReceiptCompleteMessage;
-import com.golf.talk.message.ReceiptUnableMessage;
 import com.golf.talk.service.SendTalkServiceImpl;
 import com.golf.talk.vo.SendRequestVO;
 
@@ -41,7 +39,6 @@ public class SendTalkController {
 				// 편도
 				logger.info("결제요청알림톡(편도)");
 				String message = PayRequestMessage.getOneWayMessage(list.get(0));				
-				//_sendTalkService.sendPayRequest(list, message);
 			} else if ( list.size() == 2 ) {
 				// 왕복
 				logger.info("결제요청알림톡(왕복)");
@@ -160,6 +157,95 @@ public class SendTalkController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return "jsonView";
+	}
+
+	/**
+	 * 가상계좌안내
+	 * @param list
+	 * @return
+	 */
+	@PostMapping("/sendVbankMessageForUser")
+	public String sendVbankMessageForUser(@RequestBody List<SendRequestVO> list) {
+
+		try {
+			logger.info("[공통] 가상계좌안내");
+			for (SendRequestVO sendVO : list) {
+				String message = CommonMessage.makeVBankForUserByIcon(sendVO);
+				_sendTalkService.sendTalk(list, message);
+			}
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
+
+		return "jsonView";
+	}
+
+	/**
+	 * 접수 안내
+	 * @param list
+	 * @return
+	 */
+	@PostMapping("/sendReceiptNoticeMessageForUser")
+	public String sendReceiptNoticeMessageForUser(@RequestBody List<SendRequestVO> list) {
+
+		try {
+			logger.info("접수 안내");
+			for (SendRequestVO sendVO : list) {
+				String message = ReceiptNoticeMessage.makeForUserByIcon(sendVO, PrdType.fromValue(sendVO.getPrdType()));
+				_sendTalkService.sendTalk(list, message);
+			}
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
+
+		return "jsonView";
+	}
+
+	/**
+	 * 결제 완료
+	 * @param list
+	 * @return
+	 */
+	@PostMapping("/sendPayCompleteMessageForUser")
+	public String sendPayCompleteMessageForUser(@RequestBody List<Map<String, SendRequestVO>> list) {
+
+		try {
+			logger.info("결제 완료 알림");
+			for (Map<String, SendRequestVO> sendRequestMap : list) {
+				final SendRequestVO startRequestVO = sendRequestMap.get("startRequestVO");
+				final SendRequestVO roundRequestVO = sendRequestMap.get("roundRequestVO") != null ? sendRequestMap.get("roundRequestVO") : null;
+				String message = PayCompleteMessage.makeForUserByIcon(startRequestVO, roundRequestVO, PrdType.fromValue(startRequestVO.getPrdType()));
+				List<SendRequestVO> sendRequestList = new ArrayList<>();
+				sendRequestList.add(startRequestVO);
+				_sendTalkService.sendTalk(sendRequestList, message);
+			}
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
+
+		return "jsonView";
+	}
+
+	/**
+	 * 취소 완료
+	 * @param list
+	 * @return
+	 */
+	@PostMapping("/sendPayCancelMessageForUser")
+	public String sendPayCancelMessageForUser(@RequestBody List<SendRequestVO> list) {
+
+		try {
+			logger.info("취소 완료 알림");
+
+			for (SendRequestVO sendVO : list) {
+				String message = PayCancelMessage.makeForUserByIcon(sendVO, PrdType.fromValue(sendVO.getPrdType()));
+				_sendTalkService.sendTalk(list, message);
+			}
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
+
 		return "jsonView";
 	}
 }

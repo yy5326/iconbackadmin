@@ -2,6 +2,7 @@ package com.golf.talk.message;
 
 import java.util.List;
 
+import com.golf.enums.RcpKind;
 import com.golf.talk.vo.SendRequestVO;
 
 public class ReceiptCompleteMessage {
@@ -249,14 +250,14 @@ public class ReceiptCompleteMessage {
 	}
 
 	public static String getForUserRound(SendRequestVO startRequestVO, SendRequestVO roundRequestVO) {
-		if ( "0".equals(startRequestVO.getRcpKind()) ) {
+		if (RcpKind.ICON.getValue().equals(startRequestVO.getRcpKind()) ) {
 			// 관리자 접수, 편도
 			return makeForUserRoundByIcon(startRequestVO, roundRequestVO, startRequestVO.getPrdType());
-		} else if ( "1".equals(startRequestVO.getRcpKind()) ) {
+		} else if ( RcpKind.KAKAO.getValue().equals(startRequestVO.getRcpKind()) ) {
 			// 챗봇 접수, 왕복
 			return makeForUserRoundByChat(startRequestVO, roundRequestVO);
-		} else if ( "2".equals(startRequestVO.getRcpKind()) ) {
-			// 어플 접수, 왕복
+		} else if ( RcpKind.SMARTSCORE.getValue().equals(startRequestVO.getRcpKind()) ) {
+			// 스마트스코어 접수, 왕복
 			return makeForUserRoundByIcon(startRequestVO, roundRequestVO, startRequestVO.getPrdType());
 		} else {
 			// 구분값 없을시
@@ -346,7 +347,7 @@ public class ReceiptCompleteMessage {
 		StringBuffer sb = new StringBuffer();
 		sb.append("[아이콘] 접수 완료 \n\n");
 
-		if ( "0".equals(sendRequestVO.getRcpKind()) || "5".equals(sendRequestVO.getRcpKind()) ) { // 교참
+		if ( "0".equals(sendRequestVO.getRcpKind()) || "5".equals(sendRequestVO.getRcpKind()) ) { // 코참
 			// 아이콘접수일 경우 받는분
 			sb.append("예약자 : "+sendRequestVO.getCusReNm()+" \n");
 		} else if ( "1".equals(sendRequestVO.getRcpKind()) ) {
@@ -361,7 +362,7 @@ public class ReceiptCompleteMessage {
 		sb.append(itemName+"수량 : "+sendRequestVO.getPdCnt()+"\n");
 
 		if(prdType != 3 ) {
-			sb.append("보스턴백수량 : "+sendRequestVO.getBoston()+"\n");
+			sb.append("보스턴백수량 : "+sendRequestVO.getBostonCnt()+"\n");
 			sb.append("라운딩일정 : "+gameDt+"\n");
 			sb.append("픽업희망일 : "+sendRequestVO.getPicReqDt()+"\n");
 			sb.append("총합계 : "+sendRequestVO.getPdPay()+"원 \n");
@@ -398,7 +399,7 @@ public class ReceiptCompleteMessage {
 		StringBuffer sb = new StringBuffer();
 		sb.append("[아이콘] 접수 완료 \n\n");
 
-		if ( "0".equals(list.get(0).getRcpKind()) ||  "5".equals(list.get(0).getRcpKind()) ) { // 교참
+		if ( "0".equals(list.get(0).getRcpKind()) ||  "5".equals(list.get(0).getRcpKind()) ) { // 코참
 			// 아이콘접수일 경우 받는분
 			sb.append("예약자 : "+list.get(0).getCusReNm()+" \n");
 		} else if ( "1".equals(list.get(0).getRcpKind()) ) {
@@ -411,7 +412,7 @@ public class ReceiptCompleteMessage {
 		sb.append("연락처 : "+list.get(0).getReceiverNum()+"\n");
 		sb.append(itemName+"수량 : "+list.get(0).getPdCnt()+"\n");
 		if(prdType != 3 ) {
-			sb.append("보스턴백수량 : "+list.get(0).getBoston()+"\n");
+			sb.append("보스턴백수량 : "+list.get(0).getBostonCnt()+"\n");
 			sb.append("라운딩일정 : "+gameDt+"\n");
 			sb.append("픽업희망일 : "+list.get(0).getPicReqDt()+"\n");
 			sb.append("총합계 : "+list.get(0).getPdPay()+"원 \n");
@@ -444,7 +445,7 @@ public class ReceiptCompleteMessage {
 		StringBuffer sb = new StringBuffer();
 		sb.append("[아이콘] 접수 완료 \n\n");
 		if ( roundRequestVO != null ) {
-			if ( "0".equals(startRequestVO.getRcpKind()) ||  "5".equals(startRequestVO.getRcpKind())) { //교참
+			if ( "0".equals(startRequestVO.getRcpKind()) ||  "5".equals(startRequestVO.getRcpKind())) { //코참
 				// 아이콘접수일 경우 받는분
 				sb.append("예약자 : "+startRequestVO.getCusReNm()+" \n");
 			} else if ( "1".equals(startRequestVO.getRcpKind()) ) {
@@ -457,7 +458,7 @@ public class ReceiptCompleteMessage {
 			sb.append("연락처 : "+startRequestVO.getReceiverNum()+"\n");
 			sb.append(itemName+"수량 : "+startRequestVO.getPdCnt()+"\n");
 			if(prdType != 3 ) {
-				sb.append("보스턴백수량 : "+startRequestVO.getBoston()+"\n");
+				sb.append("보스턴백수량 : "+startRequestVO.getBostonCnt()+"\n");
 				sb.append("라운딩일정 : "+gameDt+"\n");
 				sb.append("픽업희망일 : "+startRequestVO.getPicReqDt()+"\n");
 				sb.append("총합계 : "+startRequestVO.getPdPay()+"원 \n");
@@ -469,7 +470,7 @@ public class ReceiptCompleteMessage {
 			}
 
 		} else {
-			if ( "0".equals(startRequestVO.getRcpKind()) || "5".equals(startRequestVO.getRcpKind())) { // 교참
+			if ( "0".equals(startRequestVO.getRcpKind()) || "5".equals(startRequestVO.getRcpKind())) { // 코참
 				// 아이콘접수일 경우 받는분
 				sb.append("예약자 : "+startRequestVO.getCusReNm()+" \n");
 			} else if ( "1".equals(startRequestVO.getRcpKind()) ) {
@@ -481,7 +482,7 @@ public class ReceiptCompleteMessage {
 			sb.append("접수번호 : "+startRequestVO.getRcpNumber()+" \n");
 			sb.append(itemName+"수량 : "+startRequestVO.getPdCnt()+"\n");
 			if(prdType != 3 ) {
-				sb.append("보스턴백수량 : "+startRequestVO.getBoston()+"\n");
+				sb.append("보스턴백수량 : "+startRequestVO.getBostonCnt()+"\n");
 				sb.append("라운딩일정 : "+gameDt+"\n");
 				sb.append("픽업희망일 : "+startRequestVO.getPicReqDt()+"\n");
 				sb.append("총합계 : "+startRequestVO.getPdPay()+"원 \n");

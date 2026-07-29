@@ -151,8 +151,61 @@ public @Data class CbReceiptInfoVO {
 	@ApiModelProperty(position = 31, notes = "캐리어수량")
 	private int crCnt; //캐리어수량
 	private int rcpSeqNo; //그룹
-	private String rcpType; //구분
+	private String rcpType; //
 
-	/* 아이콘 렌탈용 결제여부 확인 전달값 */
+	@ApiParam(value="결제 상태")
+	@ApiModelProperty(position = 32, notes = "결제 상태")
 	private String payStat; // 결제상태 (0: 입금대기, 1: 결제완료, 9: 결제취소)
+
+	@ApiParam(value="쿠폰 일련번호")
+	@ApiModelProperty(position = 33, notes = "쿠폰 일련번호")
+	private int couponSeq;
+
+	@ApiParam(value="쿠폰 코드")
+	@ApiModelProperty(position = 34, notes = "쿠폰 코드")
+	private String couponCode;
+
+	// 쿠폰 할인 금액
+	@ApiParam(value="쿠폰 할인 금액")
+	@ApiModelProperty(position = 35, notes = "쿠폰 할인 금액")
+	private int couponDiscount;
+
+	// 주문 번호
+	@ApiParam(value="주문 번호")
+	@ApiModelProperty(position = 36, notes = "주문 번호")
+	private String orderNumber;
+
+	// 결제 상태
+	@ApiParam(value="결제 상태")
+	@ApiModelProperty(position = 37, notes = "결제 상태")
+	private String payStatus;
+
+	// 배송 건 별 결제 금액, 수정 시에만 사용
+	@ApiParam(value="배송 건 별 결제 금액")
+	@ApiModelProperty(position = 38, notes = "배송 건 별 결제 금액")
+	private Integer diTotalPay;
+
+	// 취소 사유
+	@ApiParam(value="취소 사유")
+	@ApiModelProperty(position = 39, notes = "취소 사유")
+	private String canReason;
+
+	// 가상계좌 결제금액
+	@ApiParam(value="가상계좌 결제금액")
+	@ApiModelProperty(position = 40, notes = "가상계좌 결제금액")
+	private String vbankPayAmt;
+
+	// 가상계좌
+	@ApiParam(value="가상계좌")
+	@ApiModelProperty(position = 41, notes = "가상계좌")
+	private String vbankInfo;
+
+	// 입금만료일시
+	@ApiParam(value="입금만료일시")
+	@ApiModelProperty(position = 42, notes = "입금만료일시")
+	private String vbankExpDtm;
+
+	@ApiParam(value="결제 수단")
+	@ApiModelProperty(position = 43, notes = "결제 수단")
+	private String payMethod; // 결제 수단
 }

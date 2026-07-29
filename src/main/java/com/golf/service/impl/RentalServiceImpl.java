@@ -70,7 +70,7 @@ public class RentalServiceImpl extends BaseServiceImpl {
 			logger.info("insertReceiptMst 실행 이후 rcpSeq - {}",mstVO.getRcpSeq());
 
 
-			// RcpKind : 0: 아이콘, 1: 카카오, 5: 교참, 6 아이콘렌탈로하자
+			// RcpKind : 0: 아이콘, 1: 카카오, 5: 코참, 6 아이콘렌탈
 			for ( CbReceiptInfoVO cbReceiptInfoVo : list ){
 
 				GolfReceiptInfVO receiptInfVO = new GolfReceiptInfVO();

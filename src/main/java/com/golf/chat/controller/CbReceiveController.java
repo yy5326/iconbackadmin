@@ -1,11 +1,10 @@
 package com.golf.chat.controller;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 
 import javax.annotation.Resource;
 
+import com.golf.enums.TripType;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -23,7 +22,6 @@ import com.golf.chat.vo.CbReceiptInfoVO;
 import com.golf.chat.vo.CbReceiveResultVO;
 import com.golf.service.model.GolfReceiptInfVO;
 import com.golf.talk.service.SendTalkServiceImpl;
-import com.google.gson.Gson;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -107,6 +105,13 @@ public class CbReceiveController {
 		return obj;
 	}
 
+	/**
+	 * 골프택배접수
+	 * /kakao/cbReceive/receiptProcConfirm
+	 *
+	 * @param list
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	@PostMapping("/receiptProcConfirm")
 	@ApiOperation(value = "골프 접수/수정/예상운임비 확인", notes = "<DR-3>")
@@ -146,12 +151,13 @@ public class CbReceiveController {
 				data.put("cbPay", 0);
 				data.put("cbReceiptStatus", "-1"); // 0이 접수대기
 				data.put("errorMsg", "요청한 데이터 없음");
-			} else if ( "2".equals(list.get(0).getDelKind()) && list.size() != 2 ) {
+			} else if ( TripType.ROUND_TRIP.equals(TripType.fromCode(list.get(0).getDelKind())) && list.size() != 2 ) {
 				logger.info("왕복 건 입력 오류(왕복 건은 데이터가 2개 입력되어야 합니다)");
 				data.put("cbPay", 0);
 				data.put("cbReceiptStatus", "-1"); // 0이 접수대기
 				data.put("errorMsg", "왕복 건 입력 오류(왕복 건은 데이터가 2개 입력되어야 합니다)");
-			} else if ( !"1".equals(list.get(0).getDelKind()) && !"2".equals(list.get(0).getDelKind()) ) {
+			} else if ( !TripType.ONE_WAY.getCode().equals(list.get(0).getDelKind())
+							&& !TripType.ROUND_TRIP.getCode().equals(list.get(0).getDelKind()) ) {
 				logger.info("왕복 유형 코드 오류");
 				data.put("cbPay", 0);
 				data.put("cbReceiptStatus", "-1"); // 0이 접수대기
@@ -159,15 +165,57 @@ public class CbReceiveController {
 			} else {
 				String regDate = _receiptService.selectDetailByRcpSeq(receiptList.get(0).getRcpSeq(), "S").getRegDate();
 
-				String orderId = ""; // 결제용 묶음코드
-				if ( "2".equals(list.get(0).getDelKind()) ) {
-					orderId = "GRP"+receiptList.get(0).getRcpSeq(); // 챗봇접수번호 - 왕복시 그룹번호 참조 create
-					data.put("cbPay", receiptList.get(0).getPdPay()+receiptList.get(1).getPdPay());
+				long totalPay = 0;
+				if (TripType.ROUND_TRIP.equals(TripType.fromCode(list.get(0).getDelKind()))) {
+					totalPay = receiptList.get(0).getPdPay() + receiptList.get(1).getPdPay();
 				} else {
-					orderId = receiptList.get(0).getRcpNumber(); // 챗봇접수번호 - 편도시 rcpNumber
-					data.put("cbPay", receiptList.get(0).getPdPay());
+					totalPay = receiptList.get(0).getPdPay();
 				}
-				data.put("orderId",orderId);
+
+				// 쿠폰 사용 여부 판단
+				boolean isCouponApplied = (list.get(0).getCouponCode() != null && !list.get(0).getCouponCode().isEmpty() && !"0".equals(list.get(0).getCouponCode()))
+						|| (list.get(0).getCouponDiscount() > 0);
+
+				// 보스턴백 세트 할인 로직 적용 ( 수정 시 /commission 부분과 교차검증 필요)
+				// 서비스단으로 할인 로직 이동 (할인 로직 일원화)
+				/*int bostonCnt = list.get(0).getBostonCnt();
+				if (!isCouponApplied && bostonCnt > 0) {
+					long bostonDiscount = 3000L * bostonCnt;
+					totalPay -= bostonDiscount;
+					data.put("discountTotal", bostonDiscount);
+					logger.info("### [보스턴백 할인] 쿠폰 미사용으로 할인 적용: {}원", bostonDiscount);
+				} else {
+					if (isCouponApplied) {
+						logger.info("### [보스턴백 할인] 쿠폰 사용으로 인해 세트 할인 제외");
+					}
+					data.put("discountTotal", 0);
+				}*/
+				data.put("cbPay", totalPay);
+				data.put("etcPay", receiptList.get(0).getPdEtcPay());
+				data.put("dosunPay", receiptList.get(0).getPdDosunPay());
+				data.put("deliPay", receiptList.get(0).getPdDeliPay());
+
+				int discountAmount = 0;
+				for (GolfReceiptInfVO vo : receiptList) {
+					discountAmount += vo.getDiscountTotal();
+				}
+				data.put("discountAmount", discountAmount);
+
+				String orderId = ""; // 결제용 묶음코드
+				if (list.get(0).getOrderNumber() != null) {
+					orderId = list.get(0).getOrderNumber();
+					if (TripType.ROUND_TRIP.equals(TripType.fromCode(list.get(0).getDelKind()))) {
+						data.put("sRoundTripDiscountAmt", receiptList.get(0).getRoundTripDiscountAmt()); // 왕복 1차 편도-왕복 차액
+						data.put("rRoundTripDiscountAmt", receiptList.get(1).getRoundTripDiscountAmt()); // 왕복 2차 편도-왕복 차액
+					}
+				} else {
+					if (TripType.ROUND_TRIP.equals(TripType.fromCode(list.get(0).getDelKind()))) {
+						orderId = "GRP"+receiptList.get(0).getRcpSeq(); // 챗봇접수번호 - 왕복시 그룹번호 참조 create
+					} else {
+						orderId = receiptList.get(0).getRcpNumber(); // 챗봇접수번호 - 편도시 rcpNumber
+					}
+				}
+				data.put("orderId", orderId);
 
 				String rcpNumber = "";
 				for(GolfReceiptInfVO vo : receiptList) {
@@ -208,6 +256,13 @@ public class CbReceiveController {
 		return obj;
 	}
 
+	/**
+	 * 골프택배접수 수정
+	 * /kakao/cbReceive/updateReceipt
+	 *
+	 * @param list
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	@PostMapping("/updateReceipt")
 	@ApiOperation(value = "접수 수정", notes = "<TT-3-33-331> 접수 상태 체크 후 골프 접수 상태까지 변경 가능, 각 항목 업데이트, 편도<->왕복은 오프라인 연결")
@@ -221,7 +276,7 @@ public class CbReceiveController {
 		JSONObject obj = new JSONObject();
 
 		try {
-			List<GolfReceiptInfVO> result = _receiptService.updateReceipt(list);
+			List<GolfReceiptInfVO> result = _receiptService.updateGolfReceipt(list);
 
 			obj.put("httpStatus","OK");
 			/*JSONArray kakaoArray = new JSONArray();
@@ -327,7 +382,13 @@ public class CbReceiveController {
 			receiptInfVO.setCusReAddr1(cbReceiptInfoVo.getCusReAddr1());
 			receiptInfVO.setCusReAddr2(cbReceiptInfoVo.getCusReAddr2());
 
+			// 운임 계산
 			_receiptService.preInsertReceiptInfo(receiptInfVO, cbReceiptInfoVo);
+			logger.info("### preInsert 이후 배송비 확인: pdDeliPay={}, pdPay={}", receiptInfVO.getPdDeliPay(), receiptInfVO.getPdPay());
+
+			// 제휴사 판별 (출발지 또는 도착지가 제휴사이면 true)
+ 			boolean isPartner = _receiptService.isPartnerGolf(cbReceiptInfoVo.getSendGolfSeq()) ||
+					_receiptService.isPartnerGolf(cbReceiptInfoVo.getRecvGolfSeq());
 
 			data.put("status", "200");
 			data.put("pdDosunPay", receiptInfVO.getPdDosunPay());
@@ -335,7 +396,12 @@ public class CbReceiveController {
 			data.put("pdEtcPay", receiptInfVO.getPdEtcPay());
 			data.put("discount", receiptInfVO.getDiscount());
 			data.put("pdPay", receiptInfVO.getPdPay());
+			data.put("roundTripDiscountAmt", receiptInfVO.getRoundTripDiscountAmt()); // 편도-왕복 차액
 			data.put("discountTotal", receiptInfVO.getDiscountTotal()); //241127 SG 할인총값 추가.
+			data.put("iconFee", receiptInfVO.getIconFee());
+			data.put("partnerDiscountValue", receiptInfVO.getPartnerDiscountValue()); // 제휴사 할인액
+			data.put("golfFee", receiptInfVO.getGolfFee());
+			data.put("bostonFee", receiptInfVO.getBostonFee());
 
 
 		} catch ( Exception e ) {
@@ -348,4 +414,65 @@ public class CbReceiveController {
 
 	}
 
+
+	/**
+	 * 골프택배접수 상태만 수정
+	 * /kakao/cbReceive/updateReceiptStatus
+	 *
+	 * @param list
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	@PostMapping("/updateReceiptStatus")
+	@ApiOperation(value = "접수 상태 수정", notes = "<TT-3-33-332> 접수 상태 체크 후 골프 접수 상태만 변경")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "확인 성공", response = CbReceiveResultVO.class),
+			@ApiResponse(code = 311, message = "접수번호 오류")
+			, @ApiResponse(code = 312, message = "접수상태 오류")
+	})
+	public JSONObject updateReceiptStatus(@RequestBody List<CbReceiptInfoVO> list) throws Exception {
+
+		JSONObject obj = new JSONObject();
+
+		try {
+			List<GolfReceiptInfVO> result = _receiptService.updateGolfReceiptStatus(list);
+
+			obj.put("httpStatus", "OK");
+			/*JSONArray kakaoArray = new JSONArray();
+
+			for ( GolfReceiptInfVO info : result ) {
+				JSONObject data = new JSONObject();
+				data.put("resultStatus", "Y");
+				data.put("cbReceiptStatus", info.getRcpInfStat());
+				data.put("rcpNumber", info.getRcpNumber());
+				data.put("cbPay", info.getPdPay());
+				kakaoArray.add(data);
+			}*/
+
+			JSONObject data = new JSONObject();
+			String rcpNumber = "";
+			int cbPay = 0;
+			for (GolfReceiptInfVO vo : result) {
+				rcpNumber += vo.getRcpNumber() + "|";
+				data.put("cbReceiptStatus", vo.getRcpInfStat());
+				cbPay += vo.getPdPay();
+				data.put("resultStatus", "Y");
+			}
+			data.put("cbPay", cbPay);
+			rcpNumber = rcpNumber.substring(0, rcpNumber.length() - 1);
+			data.put("rcpNumber", rcpNumber);
+			data.put("orderId", result.get(0).getOrderId());
+			obj.put("result", data);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			JSONObject data = new JSONObject();
+			data.put("resultStatus", "N");
+			obj.put("result", data);
+		}
+
+		obj.put("httpStatus", "OK");
+
+		return obj;
+	}
 }

@@ -1,18 +1,12 @@
 package com.golf.talk.service;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.cert.X509Certificate;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.net.ssl.HttpsURLConnection;
@@ -26,8 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,13 +28,8 @@ import com.golf.service.GlobalProperty;
 import com.golf.service.dao.GeneralDAOImpl;
 import com.golf.service.impl.GolfReceiptServiceImpl;
 import com.golf.service.model.GolfReceiptInfVO;
-import com.golf.service.model.StatusVO;
-import com.golf.talk.message.KaKaoUtil;
-import com.golf.talk.message.PayExpireMessage;
-import com.golf.talk.message.PayRequestMessage;
-import com.golf.talk.vo.SendRequestVO;
+import com.golf.enums.RcpInfStat;
 import com.golf.util.EgovMapDeserializer;
-import com.golf.util.HolidayUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -96,7 +83,7 @@ public class ScTimeSchedulerServiceImpl implements InitializingBean {
 			JSONObject requestSearch = new JSONObject();
 			JSONParser jsonParser = new JSONParser();
 			for(int i=0; i<receiptList.size();i++) {
-				if(receiptList.get(i).getPdBarcode()!=null && receiptList.get(i).getScTime()==null && receiptList.get(i).getRcpInfStat().equals(StatusVO.Delivery.code())) {
+				if(receiptList.get(i).getPdBarcode()!=null && receiptList.get(i).getScTime()==null && receiptList.get(i).getRcpInfStat().equals(RcpInfStat.DELIVERY.code())) {
 					apiArray.add(receiptList.get(i).getPdBarcode());
 				}
 			}
@@ -119,7 +106,7 @@ public class ScTimeSchedulerServiceImpl implements InitializingBean {
 
 								if (apiMapList.get(i).get("deliDate") != null) {
 									receiptList.get(i).setScTime(apiMapList.get(i).get("deliDate").toString());
-									receiptList.get(i).setRcpInfStat(StatusVO.Complete.code());
+									receiptList.get(i).setRcpInfStat(RcpInfStat.COMPLETE.code());
 									log.debug("중간확인 {}", receiptList);
 									_gDao.update("golfReceipt.updateGolfInfScTime", receiptList.get(i));
 
@@ -150,7 +137,7 @@ public class ScTimeSchedulerServiceImpl implements InitializingBean {
 //						if(apiMapList.get(i).get("scTime")!=null) {
 //							//update
 //							receiptList.get(j).setScTime(apiMapList.get(i).get("scTime").toString());
-//							receiptList.get(j).setRcpInfStat(StatusVO.Complete.code());
+//							receiptList.get(j).setRcpInfStat(RcpInfStat.Complete.code());
 //							_gDao.update("golfReceipt.updateGolfInfScTime", receiptList.get(j));
 //
 //							receiptList.get(j).setCanReason("");

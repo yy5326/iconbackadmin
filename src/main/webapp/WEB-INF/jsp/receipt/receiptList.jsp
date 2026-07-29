@@ -7,15 +7,24 @@
 		<div class="contents inqueryCont">
 
 			<div class="top_btn clearfix">
-				<div class="left">
-					<!-- <a href="#" class="search_btn" style="margin-left: 0;">입금대기</a> -->
-					<!-- <a href="#" class="search_btn" style="margin-left: 0;">결제취소</a> -->
-					<a href="javascript:;" onclick="javascript:setGolfDeliveryCancel();" class="search_btn" class="chk" style="margin-left: 0;">선택취소</a>
-					<a href="javascript:setGolfDeliveryPayment('완료');" class="search_btn">결제완료</a>
-					<a href="javascript:setGolfDeliveryPayment('취소');" class="search_btn">결제취소</a>
-					<a href="javascript:setGolfDelivery();" class="search_btn">픽업요청</a>
-					<a href="javascript:setGolfWait();" class="search_btn">골프접수</a>
-				</div>
+                <div class="left">
+                    <c:set var="isB2BPartner" value="${partner == 'zimcarry_111' || partner == 'other_b2b_code'}" />
+
+                    <c:if test="${!isB2BPartner}">
+                        <%-- 일반 파트너에게만 노출되는 관리 버튼 --%>
+                        <a href="javascript:;" onclick="setGolfDeliveryCancel();" class="search_btn">선택취소</a>
+                        <a href="javascript:setGolfDeliveryPayment('완료');" class="search_btn">결제완료</a>
+                        <a href="javascript:setGolfDeliveryPayment('취소');" class="search_btn">결제취소</a>
+                        <a href="javascript:setGolfWait();" class="search_btn">골프접수</a>
+                    </c:if>
+
+                    <a href="javascript:setGolfDelivery();" class="search_btn">픽업요청</a>
+
+                    <%-- 특정 파트너 전용 기능 --%>
+                    <c:if test="${partner == 'zimcarry_111'}">
+                        <a href="javascript:fn_printZimcarry();" class="search_btn">송장출력</a>
+                    </c:if>
+                </div>
 				<div class="right">
 					<a class="search_btn" href="javascript:$.Nav('excel','./receiptListExcel.do');">엑셀저장</a>
 				</div>
@@ -84,7 +93,7 @@
 							<th>상품구분</th>
 							<th>접수상태</th>
 							<th>구분</th>
-							<th>그룹번호</th>
+							<th>주문번호</th>
 							<th>픽업희망일</th>
 							<th>골프 접수번호</th>
 							<th>결제상태</th>
@@ -130,52 +139,21 @@
 	</c:if>
 							</td>
 
-<c:set var ="rowSpan" value = "1"/>
-<c:if test = "${list[ss.index + 1].rcpSeq == m.rcpSeq }">
-		<c:set var ="rowSpan" value = "2"/>
-</c:if>
 
-<c:choose>
-	<c:when test="${m.delKind eq '2' && m.srType eq 'R'  && rowSpan == 2}">
-	<!-- 왕복 1,2차 모두 표시되는 경우 -->
-							<td rowspan="${rowSpan}">
-								GRP${m.rcpSeq }
-							</td>
-	</c:when>
-
-	<c:when test="${m.delKind eq '2' && rowSpan == 1 && list[ss.index - 1].rcpSeq != m.rcpSeq}">
-	<!-- 이전 그룹번호와 같지 않고 왕복 1,2차 중 한개만 표시되는 경우 -->
-								<td>
-									GRP${m.rcpSeq }
-								</td>
-	</c:when>
-
-	<c:otherwise>
-		<!-- 편도는 그룹번호 표시 안함 -->
-		<c:if test="${m.delKind eq '1'}">
-			<c:set var ="rowAirSpan" value = "1"/>
-			<c:if test = "${list[ss.index + 1].rcpAirSeq == m.rcpAirSeq }">
-				<c:set var ="rowAirSpan" value = "2"/>
-			</c:if>
-
-			<c:choose>
-				<c:when test="${m.rcpType eq 'A' && m.rcpAirSeq ne ''}">
-					<c:if test="${rowAirSpan eq '2'}">
-						<td rowspan="${rowAirSpan}">
-							인천공항
-						</td>
-					</c:if>
-					<c:if test="${rowAirSpan eq '1' && list[ss.index - 1].rcpAirSeq != m.rcpAirSeq}">
-						<td>인천공항</td>
-					</c:if>
-				</c:when>
-				<c:otherwise>
-					<td></td>
-				</c:otherwise>
-			</c:choose>
-		</c:if>
-	</c:otherwise>
-</c:choose>
+						<%-- 1. 이전 행과 orderId가 같은지 확인 --%>
+						<c:set var="isSameAsPrev" value="${ss.index > 0 && list[ss.index - 1].orderId eq m.orderId}" />
+						<%-- 2. 현재 행이 그룹의 시작인지 확인 (이전 행과 다르거나, 첫 번째 행일 때) --%>
+						<c:if test="${!isSameAsPrev}">
+							<c:set var="count" value="0" />
+							<%-- 3. 현재부터 끝까지 동일한 orderId가 몇 개인지 카운트 --%>
+							<c:forEach var="item" items="${list}" begin="${ss.index}">
+								<c:if test="${item.orderId eq m.orderId}">
+									<c:set var="count" value="${count + 1}" />
+								</c:if>
+							</c:forEach>
+							<%-- 4. td 출력 --%>
+							<td rowspan="${count}">${m.orderId}</td>
+						</c:if>
 
 							<td>${fn:substring(m.picReqDt, 2, 10) }</td>
 							<td>${m.rcpNumber }
@@ -183,13 +161,13 @@
 							</td>
 							<td>${m.payStatName }</td>
 							<td>${fn:substring(m.pdRecDt, 2, 10) }</td>
-							<td>
-								${m.pdBarcode }
+                            <td>
+                                    ${m.pdBarcode }
 <!-- 인수완료시간 -->
 <%-- <c:if test="${m.scTime ne ''}">
-								${fn:substring(m.scTime, 2, 16) }
+                                ${fn:substring(m.scTime, 2, 16) }
 </c:if> --%>
-							</td>
+                            </td>
 							<td>${m.brStrNm }</td>
 							<td>${m.brEndNm }<input type ="hidden" name="cancelBrEndNm" id="${m.brEndNm}"/></td>
 							<td>${m.extComp }</td>
@@ -280,6 +258,17 @@
 	var chan_val = year+mon+ day;
 	var allChk = true;
 	var stateChk = "";
+
+    // 전역 경로 설정 (확장 고려)
+    var gContextPath = "${pageContext.request.contextPath}";
+    if(gContextPath === "/") gContextPath = "";
+    var gPartner = "${partner}";
+    // 페이지 리로드 공통 함수
+    function reloadPage() {
+        var url = gPartner ? gContextPath + '/receipt/' + gPartner + '/receiptList.do'
+            : gContextPath + '/receipt/receiptList.do';
+        $.Nav('self', url + '${pageContext.request.queryString}');
+    }
 
 	$(document).ready(function() {
 		// 상세보기 가능한 영역에 손바닥 표시
@@ -375,43 +364,24 @@
 	});
 
 	//픽업요청, 선택취소 시 상태체크
-	var getState = function(seq, target){
-		var retData = {};
-		$.ajax({
-			type : "POST",
-			async: false ,
-			url : "/common/getState.do",
-			data: {
-				rcpInfSeq: seq,
-				action: target
-			},
-			success : function(data) {
-				retData = data;
-	        },error : function(xhr, status, error) {
-				alert("에러발생  " + xhr.status + "관리자에게 문의 바랍니다.");
-			}
-		});
-
-		// var isCheck = false;
-		// if(retData != "success"){
-		// 	if(retData == "error1"){
-		// 		alert("픽업요청은 골프접수 단계에서만 가능합니다.");
-		// 	}else if(retData == "error3"){
-		// 		alert("결제완료는 골프접수 단계에서만 가능합니다.");
-		// 	}else if(retData == "error4"){
-		// 		alert("결제취소는 골프취소,픽업취소,택배취소 단계에서만 가능합니다.");
-		// 	}else if(retData == "error2"){
-		// 		alert("취소는 접수대기, 골프접수 또는 픽업요청 단계에서만 가능합니다.");
-		// 	}else if(retData == "error5"){
-		// 		alert("픽업요청은 결제가 완료되어야 가능합니다.");
-		// 	}else if(retData == "error6"){
-		// 		alert("골프접수는 접수대기 단계에서만 가능합니다.");
-		// 	}
-		// }else{
-		var isCheck = true;
-		// }
-		return isCheck;
-	}
+    var getState = function(seq, target){
+        var isCheck = false;
+        $.ajax({
+            type : "POST",
+            async: false,
+            url : gContextPath + "/common/getState.do",
+            data: { rcpInfSeq: seq, action: target },
+            success : function(data) {
+                var result = data.replace(/\"/g, "").trim();
+                if(result == "success") {
+                    isCheck = true;
+                } else {
+                    alert(result); // 에러일 때만 알림을 띄웁니다.
+                }
+            }
+        });
+        return isCheck;
+    }
 
 	//결제완료 및 결제취소
 	function setGolfDeliveryPayment(strType){
@@ -515,35 +485,39 @@
 				}
 			});
 
-			$.ajaxSettings.traditional = true;
-			if(state==true){
-				if(confirm("픽업요청 하시겠습니까?")){
-					$.ajax({
-						type : "POST",
-						async: false ,
-						url : "/common/setGolfDeliveryArr.do",
-						data: {
-							rcpInfSeqArray: seqArray
-						   ,rcpNumberArray: rcpNumberArray
-						},
-						success : function(data) {
-							if(data == "success"){
-								alert("픽업요청이 완료되었습니다.");
-								$.Nav('self','./receiptList.do?${pageContext.request.queryString }');
-							}else{
-								alert("접수번호 "+data+" 에러발생 관리자에게 문의 바랍니다.");
-							}
-				        },error : function(xhr, status, error) {
-							alert("에러발생  " + xhr.status + "관리자에게 문의 바랍니다.");
-						}
-					});
-				}
-			}
-		}else{
-			alert("픽업요청 대상을 선택해 주세요.");
-			return;
-		}
-	}
+            $.ajaxSettings.traditional = true;
+
+            if(state == true){
+                if(confirm("픽업요청 하시겠습니까?")){
+                    $.ajax({
+                        type : "POST",
+                        async: false ,
+                        url : gContextPath + "/common/setGolfDeliveryArr.do",
+                        data: {
+                            rcpInfSeqArray: seqArray,
+                            rcpNumberArray: rcpNumberArray
+                        },
+                        success : function(data) {
+                            var result = data.replace(/\"/g, "").trim();
+                            if(result == "success"){
+                                alert("픽업요청이 완료되었습니다.");
+                                // [수정] 사전에 정의한 reloadPage() 함수 사용
+                                reloadPage();
+                            }else{
+                                alert("접수번호 " + result + " 에러발생 관리자에게 문의 바랍니다.");
+                            }
+                        },
+                        error : function(xhr, status, error) {
+                            alert("서버 통신 에러: " + xhr.status + " 관리자에게 문의 바랍니다.");
+                        }
+                    });
+                }
+            }
+        }else{
+            alert("픽업요청 대상을 선택해 주세요.");
+            return;
+        }
+    }
 
 	//접수대기 -> 골프접수로 변경
 	function setGolfWait(){
@@ -578,24 +552,21 @@
 		$.ajaxSettings.traditional = true;
 		if(state==true){
 			if(confirm("골프접수 신청을 하시겠습니까?")){
-				$.ajax({
-					type : "POST",
-					async: false ,
-					url : "./receiptReceiptArray.do",
-					data: {
-						rcpInfSeqArray: rcpInfSeqArray
-					},
-					success : function(data) {
-						if(data == "success"){
-							alert("골프접수 신청이 완료되었습니다.");
-							$.Nav('self','./receiptList.do?${pageContext.request.queryString }');
-						}else{
-							alert("접수번호 "+data+" 에러발생 관리자에게 문의 바랍니다.");
-						}
-			        },error : function(xhr, status, error) {
-						alert("에러발생  " + xhr.status + "관리자에게 문의 바랍니다.");
-					}
-				});
+                $.ajax({
+                    type : "POST",
+                    async: false,
+                    url : gContextPath + "/receipt/receiptReceiptArray.do",
+                    data: { rcpInfSeqArray: rcpInfSeqArray },
+                    success : function(data) {
+                        var result = data.replace(/\"/g, "").trim();
+                        if(result == "success"){
+                            alert("골프접수 신청이 완료되었습니다.");
+                            reloadPage();
+                        } else {
+                            alert("처리 결과: " + result);
+                        }
+                    }
+                });
 			}
 		}
 	}
@@ -698,5 +669,56 @@
 	$('#endBr').on('click',function(){
 		sortingForBranch("endBr")
 	})
+
+    // 짐캐리 송장 출력 함수
+    function fn_printZimcarry() {
+        var $checked = $(".golfChk:checked");
+        if ($checked.length === 0) {
+            alert("출력할 대상을 선택해 주세요.");
+            return;
+        }
+        if ($checked.length > 1) {
+            alert("송장 출력은 한 건씩만 가능합니다.");
+            return;
+        }
+
+        var $tr = $checked.closest("tr");
+
+        // 1. 택배접수일 확인 (10번째 TD: eq(9))
+        var recDate = $tr.find("td:eq(9)").text().trim();
+        // 2. 운송장번호 확인 (11번째 TD: eq(10))
+        var prodCode = $tr.find("td:eq(10)").text().trim();
+
+        console.log("검증 데이터 -> 접수일:", recDate, "/ 운송장번호:", prodCode);
+
+        // [경고문구 분기]
+        if (!recDate || recDate === "") {
+            alert("픽업요청이 완료되지 않은 건입니다.\n먼저 [픽업요청] 버튼을 클릭해 주세요.");
+            return;
+        }
+        if (!prodCode || prodCode === "") {
+            alert("[회수완료] 처리가 되지 않아 운송장 번호가 없습니다.\n회수 완료 후 출력이 가능합니다.");
+            return;
+        }
+
+        // 3. 정상 진행
+        $.ajax({
+            url: gContextPath + "/receipt/getZimcarryLabelData.do",
+            type: "POST",
+            data: { "prodCode": prodCode },
+            success: function(res) {
+                if (res && res.indexOf("ERROR") == -1) {
+                    localStorage.setItem("data", res);
+                    var url = gContextPath + "/receipt/labelPrint.do";
+                    window.open(url, "labelPopup", "width=450, height=800, scrollbars=yes");
+                } else {
+                    alert("송장 데이터를 가져오지 못했습니다.\n사유: " + res);
+                }
+            },
+            error: function(xhr) {
+                console.error("AJAX 에러:", xhr.status);
+            }
+        });
+    }
 </script>
 </html>

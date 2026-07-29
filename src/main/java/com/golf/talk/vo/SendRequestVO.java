@@ -40,7 +40,7 @@ public @Data class SendRequestVO {
 	// 회수도착지(왕복도착지주소) - 발송구분이 R인 row의 받는 분 주소+받는 분 상세주소
 	private String rCusReAddr;
 	// 총합계
-	private Integer PdPay;
+	private Integer pdPay;
 	// 추가할증 or 할증운임
 	private Integer pdEtcPay;
 	// 할인 적용
@@ -59,10 +59,23 @@ public @Data class SendRequestVO {
 
 	private int prdType;
 
-	private int boston;
+	// 보스턴백 수량
+	private int bostonCnt;
 
 	// 캐리어 수량
 	private Integer boxCnt;
 
 	private String rcpNumbers;
+
+	// 결제금액
+	private String payAmt;
+
+	// 결제금액
+	private String vbankPayAmt;
+	// 가상계좌
+	private String vbankInfo;
+	// 입금만료일시
+	private String vbankExpDtm;
+	// 추가할증금액
+	private String etcPayAmt;
 }

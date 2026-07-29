@@ -65,7 +65,7 @@ public class ReceiptCancelMessage {
 	}
 	
 	public static String getForUserRound(List<SendRequestVO> list) {
-		if ( "0".equals(list.get(0).getRcpKind()) ||  "3".equals(list.get(0).getRcpKind()) || "5".equals(list.get(0).getRcpKind())) { //교참
+		if ( "0".equals(list.get(0).getRcpKind()) ||  "3".equals(list.get(0).getRcpKind()) || "5".equals(list.get(0).getRcpKind())) { //코참
 			// 관리자 접수, 왕복
 			return makeForUserRoundByIcon(list,list.get(0).getPrdType());
 		} else if ( "1".equals(list.get(0).getRcpKind()) ) {
@@ -187,7 +187,7 @@ public class ReceiptCancelMessage {
 		StringBuffer sb = new StringBuffer();
 		sb.append("[아이콘] 접수 취소 완료 \n\n");
 
-		if ( "0".equals(sendRequestVO.getRcpKind()) || "5".equals(sendRequestVO.getRcpKind()) ) { //교참
+		if ( "0".equals(sendRequestVO.getRcpKind()) || "5".equals(sendRequestVO.getRcpKind()) ) { //코참
 			// 아이콘접수일 경우 받는분
 			sb.append("예약자 : "+sendRequestVO.getCusReNm()+" \n");
 		} else if ( "1".equals(sendRequestVO.getRcpKind()) ) {
@@ -201,7 +201,7 @@ public class ReceiptCancelMessage {
 		
 		if(prdType != 3) {
 			sb.append("골프백수량 : "+sendRequestVO.getPdCnt()+"\n");
-			sb.append("보스턴백수량 : "+sendRequestVO.getBoston()+"\n");
+			sb.append("보스턴백수량 : "+sendRequestVO.getBostonCnt()+"\n");
 			sb.append("라운딩일정 : "+gameDt+"\n");
 			sb.append("픽업희망일 : "+sendRequestVO.getPicReqDt()+"\n");
 			sb.append("총합계 : "+sendRequestVO.getPdPay()+"원 \n");
@@ -227,7 +227,7 @@ public class ReceiptCancelMessage {
 		StringBuffer sb = new StringBuffer();
 		sb.append("[아이콘] 접수 취소 완료 \n\n");
 
-		if ( "0".equals(list.get(0).getRcpKind()) || "5".equals(list.get(0).getRcpKind())) { //교참
+		if ( "0".equals(list.get(0).getRcpKind()) || "5".equals(list.get(0).getRcpKind())) { //코참
 			// 아이콘접수일 경우 받는분
 			sb.append("예약자 : "+list.get(0).getCusReNm()+" \n");
 		} else if ( "1".equals(list.get(0).getRcpKind()) ) {
@@ -240,7 +240,7 @@ public class ReceiptCancelMessage {
 		sb.append("연락처 : "+list.get(0).getReceiverNum()+"\n");
 		if(prdType != 3) {
 			sb.append("골프백수량 : "+list.get(0).getPdCnt()+"\n");
-			sb.append("보스턴백수량 : "+list.get(0).getBoston()+"\n");
+			sb.append("보스턴백수량 : "+list.get(0).getBostonCnt()+"\n");
 			sb.append("라운딩일정 : "+gameDt+"\n");
 			sb.append("픽업희망일 : "+list.get(0).getPicReqDt()+"\n");
 			sb.append("총합계 : "+(list.get(0).getPdPay()+list.get(1).getPdPay())+"원 \n");
@@ -266,7 +266,7 @@ public class ReceiptCancelMessage {
 		sb.append("[아이콘] 접수 취소 완료 \n\n");
 		
 		if ( roundRequestVO != null ) {
-			if ( "0".equals(startRequestVO.getRcpKind()) || "5".equals(startRequestVO.getRcpKind())) { // 교참
+			if ( "0".equals(startRequestVO.getRcpKind()) || "5".equals(startRequestVO.getRcpKind())) { // 코참
 				// 아이콘접수일 경우 받는분
 				sb.append("예약자 : "+startRequestVO.getCusReNm()+" \n");
 			} else if ( "1".equals(startRequestVO.getRcpKind()) ) {
@@ -279,7 +279,7 @@ public class ReceiptCancelMessage {
 			sb.append("연락처 : "+startRequestVO.getReceiverNum()+"\n");
 			if(prdType != 3) {
 				sb.append("골프백수량 : "+startRequestVO.getPdCnt()+"\n");
-				sb.append("보스턴백수량 : "+startRequestVO.getBoston()+"\n");
+				sb.append("보스턴백수량 : "+startRequestVO.getBostonCnt()+"\n");
 				sb.append("라운딩일정 : "+gameDt+"\n");
 				sb.append("픽업희망일 : "+startRequestVO.getPicReqDt()+"\n");
 				sb.append("총합계 : "+(startRequestVO.getPdPay()+roundRequestVO.getPdPay())+"원 \n");
@@ -293,7 +293,7 @@ public class ReceiptCancelMessage {
 			
 			
 		} else {
-			if ( "0".equals(startRequestVO.getRcpKind()) || "5".equals(startRequestVO.getRcpKind())) { //교참
+			if ( "0".equals(startRequestVO.getRcpKind()) || "5".equals(startRequestVO.getRcpKind())) { //코참
 				// 아이콘접수일 경우 받는분
 				sb.append("예약자 : "+startRequestVO.getCusReNm()+" \n");
 			} else if ( "1".equals(startRequestVO.getRcpKind()) ) {
@@ -306,7 +306,7 @@ public class ReceiptCancelMessage {
 			sb.append("연락처 : "+startRequestVO.getReceiverNum()+"\n");
 			if(prdType != 3) {
 				sb.append("골프백수량 : "+startRequestVO.getPdCnt()+"\n");
-				sb.append("보스턴백수량 : "+startRequestVO.getBoston()+"\n");
+				sb.append("보스턴백수량 : "+startRequestVO.getBostonCnt()+"\n");
 				sb.append("라운딩일정 : "+gameDt+"\n");
 				sb.append("픽업희망일 : "+startRequestVO.getPicReqDt()+"\n");
 				sb.append("총합계 : "+startRequestVO.getPdPay()+"원 \n");

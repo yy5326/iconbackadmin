@@ -76,8 +76,10 @@
 		<result column="PAY_GUBUN" jdbcType="VARCHAR" property="payGubun" />
 
 		<result column="ICON_FEE" jdbcType="INTEGER" property="iconFee" />
+        <result column="DISCOUNT_AMT" jdbcType="INTEGER" property="discountAmt" />
 		<result column="FILE_NM" jdbcType="INTEGER" property="fileNm" />
 
+		<result column="ORDER_ID" jdbcType="VARCHAR" property="orderId" />
 	</resultMap>
 
 
@@ -93,7 +95,7 @@
    		 WHEN A.RCP_KIND ='1' THEN '카카오'
    		 WHEN A.RCP_KIND ='2' THEN '스마트'
    		 WHEN A.RCP_KIND ='3' THEN '현대C'
-   		 WHEN A.RCP_KIND ='4' THEN '롯데R'
+   		 WHEN A.RCP_KIND ='4' THEN '짐캐리'
    		 WHEN A.RCP_KIND ='5' THEN '코참'
    		 WHEN A.RCP_KIND ='6' THEN '렌탈(W)'
    		 WHEN A.RCP_KIND ='7' THEN '렌탈(M)'
@@ -160,7 +162,8 @@
 					AND A.RCP_NUMBER LIKE '%${searchWord}%'
 				</when>
 				<when test="type3 == 'orderId'">
-					AND CONCAT('GRP', A.RCP_SEQ) LIKE '%${searchWord}%' AND B.DEL_KIND = '2'
+					AND (CONCAT(D.ORDER_ID) LIKE '%${searchWord}%'
+							OR (CONCAT('GRP', A.RCP_SEQ) LIKE '%${searchWord}%' AND B.DEL_KIND = '2'))
 				</when>
 				<when test="type3 == 'brStrNm'">
 					AND A.BR_STR_NM LIKE '%${searchWord}%'
@@ -203,6 +206,7 @@
 			, C.GOLF_NAME AS RECV_GOLF_NAME
 			, D.PAY_STAT
 			, D.PAY_GUBUN
+			, D.ORDER_ID
 			, A.PRD_TYPE
 			, A.RCP_TYPE
 			, A.RCP_AIR_SEQ
@@ -215,6 +219,7 @@
 			ON D.RCP_INF_SEQ = A.RCP_INF_SEQ
 		WHERE A.USE_YN = 'Y'
 			AND B.USE_YN = 'Y'
+			AND D.PAY_STAT != '-1'
 			<include refid="whereClause" />
 		ORDER BY
 		<if test="type7 != '' and type7 != null">
@@ -249,6 +254,8 @@
 	<select id="selectDetailByKey" parameterType="Integer" resultMap="BaseResultMap">
 		SELECT
 			<include refid="select" />
+
+            , IFNULL(A.DISCOUNT_AMT, 0) AS DISCOUNT_AMT
 
 			, (SELECT GOLF_NAME FROM GOLF_INF WHERE GOLF_SEQ = A.SEND_GOLF_SEQ) AS SEND_GOLF_NAME
 			, (SELECT GOLF_NAME FROM GOLF_INF WHERE GOLF_SEQ = A.RECV_GOLF_SEQ) AS RECV_GOLF_NAME
@@ -337,6 +344,7 @@
 			, B.GAME_DT
 			, B.FARE_TYPE
 
+			, C.ORDER_ID
 			, C.PAY_STAT
 			, C.PAY_GUBUN
 			, A.PRD_TYPE
@@ -859,6 +867,9 @@
       <if test="changeDeltypeYn != null">
         CHANGE_DELTYPE_YN = #{changeDeltypeYn,jdbcType=VARCHAR},
       </if>
+      <if test="canReason != null">
+		  CAN_REASON = #{canReason,jdbcType=VARCHAR},
+      </if>
       MOD_DATE = NOW()
     </set>
     where RCP_INF_SEQ = #{rcpInfSeq,jdbcType=INTEGER}
@@ -1363,6 +1374,7 @@
 			, C.GOLF_NAME AS RECV_GOLF_NAME
 			, D.PAY_STAT
 			, D.PAY_GUBUN
+			, D.ORDER_ID
 		 FROM GOLF_RECEIPT_INF A
 		 LEFT JOIN GOLF_RECEIPT_MST B ON B.RCP_SEQ = A.RCP_SEQ
 		 LEFT JOIN GOLF_INF C ON C.GOLF_SEQ = A.RECV_GOLF_SEQ
@@ -1383,4 +1395,24 @@
 		 WHERE RCP_NUMBER = #{rcpNumber}
 
 	</select>
+
+	<update id="updateRcpInfStat" parameterType="com.golf.service.model.GolfReceiptInfVO">
+		update GOLF_RECEIPT_INF
+		<set>
+			<if test="rcpInfStat != null">
+				RCP_INF_STAT = #{rcpInfStat,jdbcType=VARCHAR},
+			</if>
+			<if test="pdMemo != null">
+				PD_MEMO = #{pdMemo,jdbcType=VARCHAR},
+			</if>
+			<if test="picReqDt != null">
+				PIC_REQ_DT = #{picReqDt,jdbcType=VARCHAR},
+			</if>
+			<if test="canReason != null">
+				CAN_REASON = #{canReason,jdbcType=VARCHAR},
+			</if>
+			MOD_DATE = NOW()
+		</set>
+		where RCP_INF_SEQ = #{rcpInfSeq,jdbcType=INTEGER}
+	</update>
 </mapper>

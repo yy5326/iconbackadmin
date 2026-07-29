@@ -3,10 +3,6 @@ package com.golf.controller;
 import java.io.BufferedReader;
 
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -14,16 +10,14 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 
+import com.golf.enums.KakaoTalkRecipientType;
+import com.golf.enums.RcpInfStat;
+import com.golf.service.model.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.apache.commons.lang3.StringUtils;
-import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,32 +31,21 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.golf.model.common.PhoneVO;
 import com.golf.service.dao.GeneralDAOImpl;
 import com.golf.service.impl.GolfReceiptServiceImpl;
 import com.golf.service.impl.KdngeAPI;
-import com.golf.service.model.GolfInfVO;
-import com.golf.service.model.GolfReceiptInfVO;
-import com.golf.service.model.GolfReceiptMstVO;
-import com.golf.service.model.GolfReceiptPayVO;
 import com.golf.talk.vo.SendRequestVO;
-import com.golf.service.model.StatusVO;
 import com.golf.util.EgovMapDeserializer;
 import com.golf.util.StringUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import egovframework.rte.psl.dataaccess.util.EgovMap;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import lombok.Data;
 
 import com.golf.talk.controller.SendTalkController;
-import com.golf.talk.vo.SendRequestVO;
 import org.apache.commons.codec.binary.Base64;
 
 import com.golf.service.impl.GolfApi;
@@ -72,9 +55,6 @@ import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-
-import com.golf.service.impl.GolfReceiptServiceImpl;
 
 /**
  * API 컨트롤러
@@ -153,7 +133,7 @@ public class GolfApiController extends PrtController  {
 
 				//상태변경(최초 운송장번호 생성 및 택배접수일 전달, 택배접수)
 				if("U".equals(vo.getGolfUpdate())){
-					vo.setRcpInfStat(StatusVO.Delivery.code());
+					vo.setRcpInfStat(RcpInfStat.DELIVERY.code());
 
 					//골프백 사진 카톡 발송
 					List<SendRequestVO> sendTalkList =  new ArrayList<SendRequestVO>();
@@ -165,13 +145,25 @@ public class GolfApiController extends PrtController  {
 						
 						vo.setPdBarcode(vo.getRtNumber());
 						System.out.println("업데이트 요청");
+
+						// 도서산간운임비 초기화 되는 문제 해결
+						GolfReceiptInfVO origin = (GolfReceiptInfVO)_gDao.selectOne("golfReceiptInf.selectByPrimaryKey", vo.getRcpInfSeq());
+
+						if(origin != null) {
+							// 기사님 앱에서 금액을 안 보내서 0으로 들어온 경우, DB에 있던 원래 금액으로 복구
+							if(vo.getPdDosunPay() == 0) vo.setPdDosunPay(origin.getPdDosunPay());
+							if(vo.getPdDeliPay() == 0)  vo.setPdDeliPay(origin.getPdDeliPay());
+							if(vo.getPdPay() == 0)      vo.setPdPay(origin.getPdPay());
+							if(vo.getPdEtcPay() == 0)   vo.setPdEtcPay(origin.getPdEtcPay());
+							if(vo.getIconFee() == 0)    vo.setIconFee(origin.getIconFee());
+						}
 						_receiptService.updateReceipt(vo);
 
 						//api전송
 						vo.setRcpKind(golfReceiptList.get(0).getRcpKind());
 						golfApi.updateApi(vo, "update_cbag_status");
 
-						// 교참추가
+						// 코참추가
 						if(golfReceiptList.get(0).getRcpKind().equals("0") || golfReceiptList.get(0).getRcpKind().equals("5")) {
 							vo.setCusSendNm(golfReceiptList.get(0).getCusReNm());//관리자에서 접수 한 경우 보내는 사람이름이 아이콘이여서 받는사람으로 변경
 						}else {
@@ -183,7 +175,7 @@ public class GolfApiController extends PrtController  {
 						//운송장번호
 						sendTalk.setPdBarcode(vo.getRtNumber());
 						//수신 연락처
-						sendTalk.setReceiverNum("01047630961");
+						sendTalk.setReceiverNum(KakaoTalkRecipientType.MANAGER.getPhoneNumber());
 						//템플릿코드
 						sendTalk.setEtc1("hdexp_0011");
 						//예약자
@@ -209,14 +201,14 @@ public class GolfApiController extends PrtController  {
 				//상태변경(픽업취소)
 				}else if("C".equals(vo.getGolfUpdate())){
 					 //영업소 취소 요청 => 픽업취소 단계로 변경
-					 vo.setRcpInfStat(StatusVO.PickupCancel.code());
+					 vo.setRcpInfStat(RcpInfStat.PICKUP_CANCEL.code());
 					 vo.setCanReason("영업소 취소");
 					 _receiptService.updateReceiptInfSel(vo, false);
 
 				//상태변경(택배취소)
 				}else if("D".equals(vo.getGolfUpdate())){
 					 //영업소 삭제 요청 => 택배취소 단계로 변경
-					 vo.setRcpInfStat(StatusVO.DeliveryCancel.code());
+					 vo.setRcpInfStat(RcpInfStat.DELIVERY_CANCEL.code());
 					 vo.setCanReason("영업소 발송자료 삭제");
 					 _receiptService.updateReceiptInfSel(vo, false);
 

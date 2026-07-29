@@ -106,6 +106,8 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 	private int pdDeliPay = 0;
 	//총운임
 	private int pdPay = 0;
+	//왕복 할인액
+	private int roundTripDiscountAmt = 0;
 	//물품메모
 	private String pdMemo;
 	//픽업희망일
@@ -138,6 +140,8 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 	private String cusReceiptTelNum;
 
 	private int iconFee;
+	private int golfFee;
+	private int bostonFee;
 
 	private String changeDeltypeYn;
 
@@ -198,6 +202,23 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 	private Long irOrderNo; //아이콘렌탈용
 
 	private String type;
+
+	// 결제금액
+	private String vbankPayAmt;
+	// 가상계좌
+	private String vbankInfo;
+	// 입금만료일시
+	private String vbankExpDtm;
+
+	// 결제금액
+	private Integer payAmt;
+
+	// 상품별 할인액
+	private int discountAmt = 0;
+
+	// 제휴사 할인액
+	private int partnerDiscountValue = 0;
+
 	/*
 	public String getCusReTelnum() {
 		return this.getCusReTelnumNo().getNo();
@@ -308,6 +329,8 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 	public String getPayStatName() {
 		if (this.getPayStat() == null)
 			return "";
+		else if (this.getPayStat().equals("-1"))
+			return "미결제";
 		else if (this.getPayStat().equals("0"))
 			return "결제대기";
 		else if (this.getPayStat().equals("1"))

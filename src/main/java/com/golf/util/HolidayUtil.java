@@ -8,8 +8,28 @@ import java.util.Calendar;
 import com.ibm.icu.util.ChineseCalendar;
 
 public class HolidayUtil {
-    private static String[] solarArr = new String[]{"0101", "0301", "0505", "0606", "0815", "1225"};
-    private static String[] lunarArr = new String[]{"0101", "0102", "0408", "0814", "0815", "0816"};
+    private static String[] solarArr = new String[]{
+		"0101", //신정
+		"0301", //삼일절
+		"0501", //노동절
+		"0505", //어린이날
+		"0606", //현충일
+		"0717", //제헌절
+		"0815", //광복절
+		"1003", //개천절
+		"1009", //한글날
+		"1225"  //성탄절
+	};
+
+	//음력
+    private static String[] lunarArr = new String[]{
+		"0101", //설날
+		"0102", //설날 다음날
+		"0408", //부처님오신날
+		"0814", //추석 전날
+		"0815", //추석
+		"0816"  //추석 다음날
+	};
     
     public static String getBeforeNotHoliday(Calendar cal, SimpleDateFormat format) {
     	SimpleDateFormat holidayFormat = new SimpleDateFormat("yyyyMMdd");
@@ -73,7 +93,8 @@ public class HolidayUtil {
         String[] altHoliday = new String[] {
                 "20150929", "20160210", "20170130", "20180926", 
                 "20180507", "20190506", "20200127", "20220912", 
-                "20230124", "20240212", "20240506", "20251008", 
+                "20230124", "20240212", "20240506", "20251008",
+				"20260302", "20260525", "20260603", "20260817", "20261005", //삼일절, 부처님오신날, 지방선거일, 광복절, 개천절
                 "20270209", "20290924", "20290507"}; 
         
         return Arrays.asList(altHoliday).contains(date); 

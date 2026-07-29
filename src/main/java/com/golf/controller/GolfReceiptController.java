@@ -1,25 +1,23 @@
 package com.golf.controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.golf.enums.*;
+import com.golf.service.impl.KdngeAPI;
+import com.golf.util.IconGolfItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,25 +28,17 @@ import com.golf.model.common.StringPair;
 import com.golf.service.GlobalProperty;
 import com.golf.service.dao.GeneralDAOImpl;
 import com.golf.service.impl.GolfReceiptServiceImpl;
-import com.golf.service.model.GolfFileVO;
 import com.golf.service.model.GolfInfVO;
 import com.golf.service.model.GolfReceiptInfVO;
-import com.golf.service.model.GolfReceiptInfVOList;
 import com.golf.service.model.GolfReceiptMstVO;
-import com.golf.service.model.GroupVO;
-import com.golf.service.model.StatusPayVO;
-import com.golf.service.model.StatusVO;
 import com.golf.service.model.search.GolfReceiptSearchVO;
 import com.golf.talk.service.SendTalkServiceImpl;
 import com.golf.talk.vo.SendRequestVO;
 import com.golf.util.ExcelDownloadUtil;
 import com.golf.util.StringUtil;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
-import egovframework.rte.psl.dataaccess.util.EgovMap;
-
-import com.golf.controller.CommonController;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * 골프택배 컨트롤러
@@ -75,9 +65,12 @@ public class GolfReceiptController extends PrtController {
 	
 	@Autowired
 	GlobalProperty _globalProperty;
+
+	@Autowired
+	private KdngeAPI kdngeApi;
 	
 	/** 택배조회 리스트
-	 * 
+	 *
 	 * @param search
 	 * @param result
 	 * @param model
@@ -97,7 +90,9 @@ public class GolfReceiptController extends PrtController {
 		if(!(_globalProperty.getWebMode().equals("op"))) {
 			return "redirect:/receipt/" + session.getAttribute("partner") +"/receiptList.do";
 		} else {
-			
+			if(!"superUser_092_02".equals(session.getAttribute("partner"))) {
+                return "redirect:/receipt/" + session.getAttribute("partner") +"/receiptList.do";
+            }
 		
 		
 			if (search.getRecordCount() < 20)
@@ -164,7 +159,7 @@ public class GolfReceiptController extends PrtController {
 			// 검색조건
 			List<StringPair> type3 = new ArrayList<StringPair>();
 			type3.add(new StringPair("골프 접수번호", "rcpNumber"));
-			type3.add(new StringPair("그룹번호", "orderId"));
+			type3.add(new StringPair("주문번호", "orderId"));
 			type3.add(new StringPair("발송 영업소", "brStrNm"));
 			type3.add(new StringPair("도착 영업소", "brEndNm"));
 			type3.add(new StringPair("접수자", "cusReceiptNm"));
@@ -176,10 +171,10 @@ public class GolfReceiptController extends PrtController {
 			// 등록구분 상태
 			List<StringPair> type6 = new ArrayList<StringPair>();
 			type6.add(new StringPair("아이콘", "0"));
-			type6.add(new StringPair("카카오", "1"));
+//			type6.add(new StringPair("카카오", "1"));
 			type6.add(new StringPair("스마트", "2"));
 			type6.add(new StringPair("현대C", "3"));
-			type6.add(new StringPair("롯데R", "4"));
+			type6.add(new StringPair("짐캐리", "4"));
 			type6.add(new StringPair("팬스타", "9"));
 
 			model.addAttribute("search", search);
@@ -210,24 +205,34 @@ public class GolfReceiptController extends PrtController {
 		if(result.hasErrors())
 			return super.setBindingResult(result, model);
 		HttpSession session = request.getSession();
-		
+
+		boolean isValidPartner = true;
 		switch(partner) {
 		// 첫자리 : RcpKind , 두번쨰 : 연동방식(0:api 1:view 9:super) , 세번째 : 구현단계(0:개발, 1:테스트, 2:운영)
 			case "superUser_092_02" : search.setType6(""); // 아이콘 및 슈퍼유저
 				break;
-			case "kakao_102" : search.setType6("1"); // 카카오챗봇
-				break;
+//			case "kakao_102" : search.setType6("1"); // 카카오챗봇
+//				break;
 			case "score_202" : search.setType6("2"); // 스마트스코어
 				break;
 			case "hyundaiCard_311" : search.setType6("3"); // 현대카드
 				break;
-			case "lotteRent_401" : search.setType6("4"); // 롯데렌터카
-				break;
-				
-			default : search.setType6("99");
+//			case "lotteRent_401" : search.setType6("4"); // 롯데렌터카
+//				break;
+            case "zimcarry_111" : search.setType6("4"); // 짐캐리
+                break;
+			//default : search.setType6("99");
+			default :
+				isValidPartner = false; // 정의되지 않은 파트너
 				break;
 		}
-		
+
+		// 잘못된 경로로 접근 시 메인이나 에러페이지로 튕겨냄
+		if(!isValidPartner || "null".equals(partner)) {
+			session.removeAttribute("partner"); // 잘못된 파트너 정보 삭제
+			return "redirect:/receipt/receiptList.do";
+		}
+
 		session.setAttribute("partner", partner);
 		logger.info("파트너 정보 : {}", session.getAttribute("partner"));
 		
@@ -294,7 +299,7 @@ public class GolfReceiptController extends PrtController {
 		// 검색조건
 		List<StringPair> type3 = new ArrayList<StringPair>();
 		type3.add(new StringPair("골프 접수번호", "rcpNumber"));
-		type3.add(new StringPair("그룹번호", "orderId"));
+		type3.add(new StringPair("주문번호", "orderId"));
 		type3.add(new StringPair("발송 영업소", "brStrNm"));
 		type3.add(new StringPair("도착 영업소", "brEndNm"));
 		type3.add(new StringPair("접수자", "cusReceiptNm"));
@@ -309,7 +314,7 @@ public class GolfReceiptController extends PrtController {
 //		type6.add(new StringPair("카카오", "1"));
 //		type6.add(new StringPair("스마트", "2"));
 //		type6.add(new StringPair("현대C", "3"));
-//		type6.add(new StringPair("롯데R", "4"));
+//		type6.add(new StringPair("짐캐리", "4"));
 		
 		
 		model.addAttribute("search", search);
@@ -338,7 +343,9 @@ public class GolfReceiptController extends PrtController {
 	public String GolfReceiptWrite(GolfReceiptSearchVO search, BindingResult result, Model model) throws Exception {
 		if(result.hasErrors())
 			return super.setBindingResult(result, model);
-		
+		if(session.getAttribute("partner") != null) {
+            return "redirect:/receipt/" + session.getAttribute("partner") +"/receiptWrite.do";
+        }
 		if(!(_globalProperty.getWebMode().equals("op")) && !("superUser_092_02".equals(session.getAttribute("partner")))) {
 			return "redirect:/receipt/" + session.getAttribute("partner") +"/receiptList.do";
 		} else {
@@ -349,6 +356,47 @@ public class GolfReceiptController extends PrtController {
 			return "/receipt/receiptWrite";
 		}
 	}
+
+    /**
+     * 파트너 택배접수 뷰
+     * @param vo
+     * @param result
+     * @param model
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/{partner}/receiptWrite.do")
+    public String PartnerGolfReceiptWrite(@PathVariable String partner, GolfReceiptSearchVO search, BindingResult result, Model model) throws Exception {
+		// [유효성 검증] 허용된 파트너 리스트인지 확인
+		List<String> allowedPartners = Arrays.asList("superUser_092_02", "score_202", "hyundaiCard_311", "zimcarry_111");
+		if (partner == null || "null".equalsIgnoreCase(partner) || !allowedPartners.contains(partner)) {
+			// 유효하지 않은 파트너라면 목록 페이지로
+			return "redirect:/receipt/receiptList.do";
+		}
+
+		if(result.hasErrors()) {
+            return super.setBindingResult(result, model);
+        }
+            //국번 폰번호 불러오기
+            model.addAttribute("phoneList", StringUtil.getMobilePhoneList());
+            model.addAttribute("search", search);
+            model.addAttribute("partner", partner);
+
+			List<IconGolfItem> filteredItems;
+			if ("zimcarry_111".equals(partner)) {
+				// 짐캐리일 경우 RCP_KIND가 "4"인 아이템만 추출
+				filteredItems = Arrays.stream(IconGolfItem.values())
+						.filter(item -> "4".equals(item.getRcpKind()))
+						.collect(Collectors.toList());
+			} else {
+				// 그 외 파트너는 일단 전체를 주거나, 빈 리스트 혹은 기본 리스트 설정
+				filteredItems = Arrays.asList(IconGolfItem.values());
+			}
+			model.addAttribute("iconGolfItems", filteredItems);
+            return "/receipt/receiptWrite";
+
+    }
 	
 	/**
 	 * 택배접수 복사뷰
@@ -422,12 +470,6 @@ public class GolfReceiptController extends PrtController {
 		//등록
 		try {
 			_receiptService.insertReceipt(mstVO, list.getList());
-			// 알림톡 전송
-			list.getList().get(0).setDelKind(mstVO.getDelKind());
-			/*if ( !super.getConfig().getWebMode().equals("op") ) {
-				_sendTalkService.sendPayRequest(list.getList());
-			}*/
-			_sendTalkService.sendPayRequest(list.getList(), mstVO);
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -436,6 +478,84 @@ public class GolfReceiptController extends PrtController {
 		return new Gson().toJson("true");
 	}
 
+	/**
+	 * 제휴사 택배접수 등록 처리
+	 * @param vo
+	 * @param result
+	 * @param model
+	 * @param request
+	 * @return
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/partnerReceiptProc.do", method=RequestMethod.POST)
+	public String partnerReceiptProc(GolfReceiptMstVO mstVO, GolfReceiptInfVO listVO, RedirectAttributes rttr) throws Exception {
+		try {
+			if ("zimcarry_111".equals(mstVO.getPartner())) {
+				mstVO.setDelKind(TripType.ONE_WAY.getCode()); // 편도 고정
+
+				GolfReceiptInfVO firstInf = listVO.getList().get(0);
+
+				// [추가] 짐캐리 전용 기본값 세팅
+				firstInf.setSrType(SrType.S.getCode());
+				firstInf.setRcpKind(RcpKind.ZIMCARRY.getValue());
+				firstInf.setRcpInfStat(RcpInfStat.RECEIPT.code());	// 골프접수 상태
+				firstInf.setPayStat(PayStat.COMPLETE.getValue());	// 결제완료 상태
+				firstInf.setPrdType(PrdType.GOLF.getValue());		// 골프택배
+
+				// [영업소 코드 매칭] 우편번호로 실제 6자리 영업소 코드를 조회.
+				try {
+					GolfInfVO searchVO = new GolfInfVO();
+					searchVO.setType1("zipcode");
+					searchVO.setKeyword(firstInf.getCusSendZip()); // 보내는 분 우편번호 기준
+
+					Map<String, String> branchMap = kdngeApi.getBranchInfo(searchVO);
+					if (branchMap != null && branchMap.get("brCode") != null) {
+						firstInf.setBrStrCode(branchMap.get("brCode")); // 예: 311143
+						firstInf.setBrStrNm(branchMap.get("brNm"));
+					}
+
+					// 도착지는 보통 물류센터나 특정 골프장이므로 고정하거나 해당 우편번호로 조회
+					// 만약 고정이라면:
+					firstInf.setBrEndCode("331003");
+					firstInf.setBrEndNm("강원홍천상오안74");
+				} catch (Exception e) {
+					logger.error("경동 영업소 정보 조회 실패: " + e.getMessage());
+				}
+
+				// [단가 보정]단가가 0이면 거절, 최소 금액 강제로 세팅.
+				/*if (firstInf.getPdPay() <= 0) {
+					firstInf.setPdPay(1);     // 테스트 성공을 위한 임시금액 (1만원)
+					firstInf.setPdDeliPay(1);
+					firstInf.setPdIndivPrice("1");
+				}*/
+				if (firstInf.getPdIndivPrice() == null || "0".equals(firstInf.getPdIndivPrice()) || "".equals(firstInf.getPdIndivPrice())) {
+					firstInf.setPdIndivPrice("200");
+				}
+
+			}
+
+			_receiptService.insertReceipt(mstVO, listVO.getList());
+
+			rttr.addFlashAttribute("saveMsg", "정상적으로 접수되었습니다.");
+
+			// [수정] 파트너 코드가 있으면 해당 경로를 유지하도록 리다이렉트 경로 변경
+			if (mstVO.getPartner() != null && !mstVO.getPartner().isEmpty()) {
+				return "redirect:/receipt/" + mstVO.getPartner() + "/receiptWrite.do";
+			}
+
+			return "redirect:/receipt/receiptWrite.do";
+
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			rttr.addFlashAttribute("saveMsg", "저장에 실패하였습니다.");
+
+			if (mstVO.getPartner() != null && !mstVO.getPartner().isEmpty()) {
+				return "redirect:/receipt/" + mstVO.getPartner() + "/receiptWrite.do";
+			}
+			return "redirect:/receipt/receiptWrite.do";
+		}
+	}
 
 	/**
 	 * 택배조회 상세보기
@@ -721,8 +841,8 @@ public class GolfReceiptController extends PrtController {
 			
 			List<SendRequestVO> userList = new ArrayList<SendRequestVO>();
 			List<SendRequestVO> iconList = new ArrayList<SendRequestVO>();
-			String payFunction = StringUtils.isEmpty(infVo.getGolfUpdate()) ? StatusPayVO.Complete.code() : StatusPayVO.Cancel.code();
-			if(payFunction.equals(StatusPayVO.Cancel.code())){
+			String payFunction = StringUtils.isEmpty(infVo.getGolfUpdate()) ? PayStat.COMPLETE.code() : PayStat.CANCEL.code();
+			if(payFunction.equals(PayStat.CANCEL.code())){
 				//userList = _sendTalkService.createPaymentArrayUserList(receiptList, "hdexp_0006"); // 결제 취소, 알림톡 유저
 				//iconList = _sendTalkService.createPaymentArrayIconList(receiptList, "hdexp_0007"); // 결제 취소, 알림톡 관리자
 			} else {
@@ -775,8 +895,8 @@ public class GolfReceiptController extends PrtController {
 			
 			List<SendRequestVO> userList = new ArrayList<SendRequestVO>();
 			List<SendRequestVO> iconList = new ArrayList<SendRequestVO>();
-			String payFunction = StringUtils.isEmpty(infVo.getGolfUpdate()) ? StatusPayVO.Complete.code() : StatusPayVO.Cancel.code();
-			if(payFunction.equals(StatusPayVO.Cancel.code())){
+			String payFunction = StringUtils.isEmpty(infVo.getGolfUpdate()) ? PayStat.COMPLETE.code() : PayStat.CANCEL.code();
+			if(payFunction.equals(PayStat.CANCEL.code())){
 				//userList = _sendTalkService.createPaymentArrayUserList(receiptList, "hdexp_0006"); // 결제 취소, 알림톡 유저
 				//iconList = _sendTalkService.createPaymentArrayIconList(receiptList, "hdexp_0007"); // 결제 취소, 알림톡 관리자
 			} else {
@@ -828,7 +948,7 @@ public class GolfReceiptController extends PrtController {
 		List<GolfReceiptInfVO> kakao = new ArrayList<GolfReceiptInfVO>();
 		
 		for(GolfReceiptInfVO vo: receiptList) {		
-			vo.setRcpInfStat(StatusVO.Receipt.code());
+			vo.setRcpInfStat(RcpInfStat.RECEIPT.code());
 			_receiptService.updateReceiptInfSel(vo, false);
 			
 			//스마트스코어인 경우 알림톡 발송 안함
@@ -836,14 +956,6 @@ public class GolfReceiptController extends PrtController {
 				kakao.add(vo);
 			}
 		}
-		
-		// 골프접수 상태변경시 알림톡 전송
-		/*if ( !super.getConfig().getWebMode().equals("op") ) {
-			_sendTalkService.sendPayRequest(receiptList);
-		}*/
-		
-		//스마트스코어 접수건은 결제가 완료된 건으로 결제완료처리 알림톡 전송
-		_sendTalkService.sendPayRequest(kakao);
 		return  new Gson().toJson(returnVal); 
 	}
 
@@ -871,5 +983,22 @@ public class GolfReceiptController extends PrtController {
 		
 		model.addAttribute("rcpInfSeq", search.getRcpInfSeq());
 		return "/receipt/receiptPhotoLayer";
+	}
+
+	/**
+	 * 짐캐리 송장 출력 팝업 뷰
+	 */
+	@RequestMapping(value = "/labelPrint.do")
+	public String zimcarryLabelPrint(Model model) {
+		return "/label/zimcarryLabelPrint";
+	}
+
+	/**
+	 * 경동 API로부터 송장 HTML 데이터 가져오기 (AJAX용)
+	 */
+	@RequestMapping(value = "/getZimcarryLabelData.do", method = RequestMethod.POST, produces = "text/plain;charset=UTF-8")
+	@ResponseBody
+	public String getZimcarryLabelData(String prodCode) throws Exception {
+		return kdngeApi.getZimcarryLabelData(prodCode);
 	}
 }

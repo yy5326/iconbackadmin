@@ -1,43 +1,32 @@
 package com.golf.service.impl;
 
-import java.beans.Encoder;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.*;
 
-import javax.annotation.Resource;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import com.golf.service.model.StatusPayVO;
+import com.golf.enums.PayStat;
+import com.golf.enums.RcpInfStat;
+import com.golf.service.model.*;
 import com.golf.talk.service.SendTalkServiceImpl;
 import org.json.simple.JSONArray;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.golf.service.GlobalProperty;
 import com.golf.service.dao.GeneralDAOImpl;
-import com.golf.service.model.GolfInfVO;
-import com.golf.service.model.GolfReceiptInfVO;
-import com.golf.service.model.StatusVO;
 import com.golf.util.EgovMapDeserializer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.mysql.cj.xdevapi.JsonArray;
 
 import egovframework.rte.psl.dataaccess.util.EgovMap;
 import lombok.RequiredArgsConstructor;
@@ -211,7 +200,7 @@ public class KdngeAPI extends BaseServiceImpl{
 							infVO.setPdBarcode(rObj.get("prodCode").toString());
 							infVO.setPdRecDt(rObj.get("rsvtRegDt").toString());
 							infVO.setRcpNumber(rObj.get("prodRegNo").toString());
-							infVO.setRcpInfStat(StatusVO.Pickup.code());
+							infVO.setRcpInfStat(RcpInfStat.PICKUP.code());
 
 							GolfReceiptInfVO receipt =  (GolfReceiptInfVO) _gDao.selectOne("golfReceiptInf.selectDetailByKeyForKdnge", infVO.getRcpNumber());
 							//String rcpToInfSeq = rObj.get("prodRegNo").toString().substring(10);
@@ -392,10 +381,10 @@ public class KdngeAPI extends BaseServiceImpl{
 		String returnVal = "success";
 
 		//골프접수 -> 골프취소
-		if(StatusVO.Receipt.code().equals(vo.getRcpInfStat()) || StatusVO.Wait.code().equals(vo.getRcpInfStat())){
+		if(RcpInfStat.RECEIPT.code().equals(vo.getRcpInfStat()) || RcpInfStat.WAIT.code().equals(vo.getRcpInfStat())){
 
 			//골프취소 단계로 변경
-			infVO.setRcpInfStat(StatusVO.ReceiptCancel.code());
+			infVO.setRcpInfStat(RcpInfStat.RECEIPT_CANCEL.code());
 			infVO.setPrdType(vo.getPrdType());
 
 			_receiptService.updateReceiptInfSel(infVO, false);
@@ -433,9 +422,9 @@ public class KdngeAPI extends BaseServiceImpl{
 				if("API_PRC_S000".equals(apiMapList.get(0).get("code"))) {
 					infVO.setRtNumber(apiMapList.get(0).get("prodCode").toString());
 					//픽업취소 단계로 변경 및 취소사유 등록
-					infVO.setRcpInfStat(StatusVO.PickupCancel.code());
+					infVO.setRcpInfStat(RcpInfStat.PICKUP_CANCEL.code());
 					//픽업취소 시 입금대기 상태면 결제 상태값은 변경 안함
-					_receiptService.updateReceiptInfSel(infVO, !StatusPayVO.stay.code().equals(vo.getPayStat()) ? true : false);
+					_receiptService.updateReceiptInfSel(infVO, !PayStat.STAY.code().equals(vo.getPayStat()) ? true : false);
 
 				}else if("N".equals(apiMapList.get(0).get("result"))){
 					if("API_PRC_E009".equals(apiMapList.get(0).get("code"))){
@@ -736,5 +725,70 @@ public class KdngeAPI extends BaseServiceImpl{
 		return json;
 	}
 
+	/**
+	 * 짐캐리 송장(라벨) 출력 명령어 조회
+	 * @param prodCode 운송장번호 (RT_NUMBER)
+	 * @return 프린터 제어 명령어 (Raw Text)
+	 * @throws Exception
+	 */
+	public String getZimcarryLabelData(String prodCode) throws Exception {
+		String labelContent = "";
+		try {
+			// 1. 파라미터 세팅
+			String endPoint = "api/v1/label/print/LMTP0003/0002";
+			JSONObject jsonObject = new JSONObject();
+			JSONArray jsonArray = new JSONArray();
+			jsonArray.add(prodCode);
+			jsonObject.put("prodCodes", jsonArray);
+
+			Gson gson = new GsonBuilder().serializeNulls().create();
+			Object apiResponse = callUrl(getApiUrl(endPoint), gson.toJson(jsonObject), "POST");
+
+			if (apiResponse == null) return "ERROR: API 응답 없음";
+
+			Map<String, Object> dataMap = (Map<String, Object>) apiResponse;
+			Object contentsObj = dataMap.get("contents");
+			Map<String, Object> targetItem = null;
+
+			if (contentsObj instanceof Map) {
+				Map<String, Object> contentsMap = (Map<String, Object>) contentsObj;
+				// 로그에서 확인된 'listData' 키 내부의 리스트를 추출
+				if (contentsMap.containsKey("listData")) {
+					Object listDataObj = contentsMap.get("listData");
+					if (listDataObj instanceof List && !((List) listDataObj).isEmpty()) {
+						targetItem = (Map<String, Object>) ((List) listDataObj).get(0);
+					}
+				} else {
+					targetItem = contentsMap; // listData가 없는 일반 Map인 경우
+
+				}
+			} else if (contentsObj instanceof List) {
+				List<Map<String, Object>> contentsList = (List<Map<String, Object>>) contentsObj;
+				if (!contentsList.isEmpty()) targetItem = contentsList.get(0);
+			}
+
+			// 3. 데이터 추출
+			if (targetItem != null) {
+				String resCode = String.valueOf(targetItem.get("resultCode"));
+				if ("200".equals(resCode)) {
+					labelContent = (String) targetItem.get("content");
+				} else {
+					String resMsg = (String) targetItem.get("resultMessage");
+					return "ERROR: 경동 API 에러(" + resCode + ") - " + resMsg;
+				}
+			} else {
+				return "ERROR: 송장 데이터 구조 분석 실패 (listData를 찾을 수 없음)";
+			}
+
+		} catch (Exception e) {
+			log.error("라벨 출력 프로세스 에러", e);
+			return "ERROR: " + e.getMessage();
+		}
+
+		if (labelContent == null || labelContent.trim().isEmpty() || "null".equals(labelContent)) {
+			return "ERROR: 송장 HTML 내용이 비어있습니다.";
+		}
+		return labelContent.trim();
+	}
 
 }

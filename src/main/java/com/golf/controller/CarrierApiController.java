@@ -1,31 +1,19 @@
 package com.golf.controller;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
-
 import java.io.BufferedReader;
 
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 
+import com.golf.enums.TripType;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.apache.commons.lang3.StringUtils;
-import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,25 +24,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.golf.chat.service.CbReceiveServiceImpl;
 import com.golf.chat.vo.CbCommonVO;
 import com.golf.chat.vo.CbReceiptInfoVO;
-import com.golf.model.common.PhoneVO;
 import com.golf.service.dao.GeneralDAOImpl;
-import com.golf.service.impl.GolfReceiptServiceImpl;
-import com.golf.service.impl.UsedClubServiceImpl;
 import com.golf.service.model.GolfInfVO;
 import com.golf.service.model.GolfReceiptInfVO;
-import com.golf.service.model.GolfReceiptMstVO;
-import com.golf.service.model.GolfReceiptPayVO;
-import com.golf.talk.vo.SendRequestVO;
-import com.golf.service.model.StatusVO;
-import com.golf.service.model.UsedClubInfoVO;
 import com.golf.util.EgovMapDeserializer;
-import com.golf.util.StringUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -62,11 +40,8 @@ import egovframework.rte.psl.dataaccess.util.EgovMap;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import lombok.Data;
 
 import com.golf.talk.controller.SendTalkController;
-import com.golf.talk.vo.SendRequestVO;
-import org.apache.commons.codec.binary.Base64;
 
 import com.golf.service.impl.CarrierServiceImpl;
 import com.golf.service.impl.GolfApi;
@@ -76,9 +51,6 @@ import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-
-import com.golf.service.impl.GolfReceiptServiceImpl;
 
 /**
  * 캐리어 관련 API 컨트롤러
@@ -113,9 +85,12 @@ public class CarrierApiController extends PrtController  {
 	private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 	
 	/**
-	 * 캐리어 접수
-	 * 
-	 * */
+	 * 캐리어접수
+	 * /icon/carrier/receipt
+	 *
+	 * @param list
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	@PostMapping("/carrier/receipt")
 	public JSONObject carrierReceipt(@RequestBody List<CbReceiptInfoVO> list){
@@ -127,27 +102,38 @@ public class CarrierApiController extends PrtController  {
 		JSONArray kakaoArray = new JSONArray();
 		try {
 			
-			List<GolfReceiptInfVO> receiptList = _carrierReceiptService.receiptProcConfirm(list);			
+			List<GolfReceiptInfVO> receiptList = _carrierReceiptService.receiptProcConfirm(list);
 			logger.info("접수요청 확인");
 			
 			JSONObject data = new JSONObject();
 			
 			String rcpNumber = "";
 			String regDate = _receiptService.selectDetailByRcpSeq(receiptList.get(0).getRcpSeq(), "S").getRegDate();
-			String orderId = "";
-			
-			orderId = receiptList.get(0).getRcpNumber();
+
+			if (TripType.ROUND_TRIP.equals(TripType.fromCode(list.get(0).getDelKind()))) {
+				data.put("cbPay", receiptList.get(0).getPdPay()*2);
+			}else {
+				data.put("cbPay", receiptList.get(0).getPdPay());
+			}
+
+			String orderId = ""; // 결제용 묶음코드
+			if (list.get(0).getOrderNumber() != null) {
+				orderId = list.get(0).getOrderNumber();
+				if (TripType.ROUND_TRIP.equals(TripType.fromCode(list.get(0).getDelKind()))) {
+					data.put("sRoundTripDiscountAmt", receiptList.get(0).getRoundTripDiscountAmt()); // 왕복 1차 편도-왕복 차액
+					data.put("rRoundTripDiscountAmt", receiptList.get(1).getRoundTripDiscountAmt()); // 왕복 2차 편도-왕복 차액
+				}
+			} else {
+				orderId = receiptList.get(0).getRcpNumber();
+			}
 			data.put("orderId",orderId);
+
 			for(GolfReceiptInfVO vo : receiptList) {
 				rcpNumber += vo.getRcpNumber()+"|";
 			}
 			rcpNumber = rcpNumber.substring(0, rcpNumber.length()-1);
 			data.put("rcpNumber",rcpNumber);
-			if("2".equals(list.get(0).getDelKind())) {
-				data.put("cbPay", receiptList.get(0).getPdPay()*2);
-			}else {
-				data.put("cbPay", receiptList.get(0).getPdPay());
-			}
+
 			data.put("regDate", regDate);
 			kakaoArray.add(data);			
 			obj.put("result",kakaoArray);
@@ -199,20 +185,14 @@ public class CarrierApiController extends PrtController  {
 			
 			data.put("status", "200");	
 			data.put("discount", receiptInfVO.getDiscount());
-			if("2".equals(receiptInfVO.getDelKind())) {
-				data.put("pdDosunPay", receiptInfVO.getPdDosunPay() * 2);
-				data.put("pdDeliPay", (receiptInfVO.getPdDeliPay() + receiptInfVO.getIconFee()) *2);
-				data.put("pdEtcPay", receiptInfVO.getPdEtcPay() * 2);
-				data.put("pdPay", receiptInfVO.getPdPay() * 2);
-                data.put("discount",receiptInfVO.getDiscount());
-                data.put("discountTotal",receiptInfVO.getDiscountTotal());
-			}else {
-				data.put("pdDosunPay", receiptInfVO.getPdDosunPay());
-				data.put("pdDeliPay", receiptInfVO.getPdDeliPay() + receiptInfVO.getIconFee());
-				data.put("pdEtcPay", receiptInfVO.getPdEtcPay());
-				data.put("pdPay", receiptInfVO.getPdPay());
-			}
-			
+			data.put("discount",receiptInfVO.getDiscount());
+			data.put("discountTotal",receiptInfVO.getDiscountTotal());
+			data.put("pdDosunPay", receiptInfVO.getPdDosunPay());
+			data.put("pdDeliPay", receiptInfVO.getPdDeliPay() + receiptInfVO.getIconFee());
+			data.put("pdEtcPay", receiptInfVO.getPdEtcPay());
+			data.put("pdPay", receiptInfVO.getPdPay());
+			data.put("roundTripDiscountAmt", receiptInfVO.getRoundTripDiscountAmt()); // 편도-왕복 차액
+			data.put("iconFee", receiptInfVO.getIconFee());
 			
 		} catch ( Exception e ) {
 			data.put("status", "500");	
@@ -224,13 +204,14 @@ public class CarrierApiController extends PrtController  {
 		
 		
 	}
-	
-	
-	
+
 	/**
-	 * 캐리어 수정
-	 * 
-	 * */
+	 * 캐리어접수 수정
+	 * /icon/carrier/updateReceipt
+	 *
+	 * @param list
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	@PostMapping("/carrier/updateReceipt")
 	public JSONObject carrierUpdate(@RequestBody  List<CbReceiptInfoVO> list) throws Exception{
@@ -241,7 +222,7 @@ public class CarrierApiController extends PrtController  {
 		JSONObject obj = new JSONObject();		
 		
 		try {
-			List<GolfReceiptInfVO> result = _carrierReceiptService.updateReceipt(list);
+			List<GolfReceiptInfVO> result = _carrierReceiptService.updateCarrierReceipt(list);
 
 			logger.debug("업데이트 결과 {}", new Gson().toJson(result));
 			obj.put("httpStatus","OK");
@@ -373,7 +354,7 @@ public class CarrierApiController extends PrtController  {
 //				
 //				//상태변경(최초 운송장번호 생성 및 택배접수일 전달, 택배접수)
 //				if("U".equals(vo.getGolfUpdate())){
-//					vo.setRcpInfStat(StatusVO.Delivery.code());
+//					vo.setRcpInfStat(RcpInfStat.Delivery.code());
 //					
 //					//골프백 사진 카톡 발송
 //					List<SendRequestVO> sendTalkList =  new ArrayList<SendRequestVO>();
@@ -400,7 +381,7 @@ public class CarrierApiController extends PrtController  {
 //						//운송장번호
 //						sendTalk.setPdBarcode(vo.getPdBarcode());
 //						//수신 연락처
-//						sendTalk.setReceiverNum("01047630961");
+//						sendTalk.setReceiverNum(KakaoTalkRecipientType.MANAGER.getPhoneNumber());
 //						//템플릿코드
 //						sendTalk.setEtc1("hdexp_0011");
 //						//예약자
@@ -426,14 +407,14 @@ public class CarrierApiController extends PrtController  {
 //				//상태변경(픽업취소)
 //				}else if("C".equals(vo.getGolfUpdate())){
 //					 //영업소 취소 요청 => 픽업취소 단계로 변경
-//					 vo.setRcpInfStat(StatusVO.PickupCancel.code());
+//					 vo.setRcpInfStat(RcpInfStat.PickupCancel.code());
 //					 vo.setCanReason("영업소 취소");					 
 //					 _receiptService.updateReceiptInfSel(vo, false);
 //					 
 //				//상태변경(택배취소)
 //				}else if("D".equals(vo.getGolfUpdate())){
 //					 //영업소 삭제 요청 => 택배취소 단계로 변경
-//					 vo.setRcpInfStat(StatusVO.DeliveryCancel.code());
+//					 vo.setRcpInfStat(RcpInfStat.DeliveryCancel.code());
 //					 vo.setCanReason("영업소 발송자료 삭제");
 //					 _receiptService.updateReceiptInfSel(vo, false);
 //					

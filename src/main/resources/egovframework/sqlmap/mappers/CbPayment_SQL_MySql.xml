@@ -266,7 +266,7 @@
 				PAY_GUBUN = #{payGubun,jdbcType=VARCHAR},
 			  </if>
 	    </set>
-	    WHERE ORDER_ID = #{orderId,jdbcType=INTEGER}
+	    WHERE ORDER_ID = #{orderId,jdbcType=VARCHAR}
   </update>
   
 </mapper>

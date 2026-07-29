@@ -18,7 +18,11 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import com.golf.enums.PayStat;
+import com.golf.enums.RcpInfStat;
 import com.golf.service.impl.RentalServiceImpl;
+import com.golf.service.model.*;
+import com.golf.util.HolidayUtil;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -30,17 +34,12 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import com.golf.model.common.StringPair;
 import com.golf.service.dao.GeneralDAOImpl;
 import com.golf.service.impl.GolfReceiptServiceImpl;
 import com.golf.service.impl.KdngeAPI;
-import com.golf.service.model.GolfInfVO;
-import com.golf.service.model.GolfReceiptInfVO;
-import com.golf.service.model.StatusPayVO;
-import com.golf.service.model.StatusVO;
 import com.golf.service.model.search.GolfReceiptSearchVO;
 import com.golf.talk.service.SendTalkServiceImpl;
 import com.golf.util.EgovMapDeserializer;
@@ -171,6 +170,25 @@ public class CommonController extends PrtController {
 	}
 
 	/**
+	 * 공휴일 여부 조회
+	 */
+	@PostMapping("/isHoliday.do")
+	public @ResponseBody boolean isHoliday(@RequestBody Map<String, Object> paramMap) {
+		String date = String.valueOf(paramMap.get("date"));
+		return HolidayUtil.isHoliday(date.replace("-", ""));
+	}
+
+	/**
+	 * 객단가별 할증운임료 조회
+	 */
+	@PostMapping("/getExtraPriceByIndivPrice.do")
+	//public @ResponseBody int getExtraByIndivPrice(@RequestBody JSONObject param) {
+	public @ResponseBody int getExtraByIndivPrice(@RequestBody Map<String, Object> paramMap) {
+
+		return kdngeApi.getExtraPrice(String.valueOf(paramMap.get("pdIndivPrice")));
+	}
+
+	/**
 	 * 영업소 코드 업데이트
 	 * @param vo
 	 * @param result
@@ -268,36 +286,36 @@ public class CommonController extends PrtController {
 		//픽업요청
 		if("P".equals(action)){
 			//결제 체크(픽업요청 시 결제완료 상태 체크)
-			if(!StatusPayVO.Complete.code().equals(vo.getPayStat())){
+			if(!PayStat.COMPLETE.code().equals(vo.getPayStat())){
 				returnVal = "error5";
 			}
 			//골프접수 단계 체크
-			if(!StatusVO.Receipt.code().equals(vo.getRcpInfStat())){
+			if(!RcpInfStat.RECEIPT.code().equals(vo.getRcpInfStat())){
 				returnVal = "error1";
 			}
 		//결제완료처리
 		}else if("M".equals(action)){
 			//골프접수 단계 체크
-			if(!StatusVO.Receipt.code().equals(vo.getRcpInfStat())){
+			if(!RcpInfStat.RECEIPT.code().equals(vo.getRcpInfStat())){
 				returnVal = "error3";
 			}
 		//골프접수처리
 		}else if("W".equals(action)){
 			//접수대기 단계 체크
-			if(!StatusVO.Wait.code().equals(vo.getRcpInfStat())){
+			if(!RcpInfStat.WAIT.code().equals(vo.getRcpInfStat())){
 				returnVal = "error6";
 			}
 		//결제취소처리
 		}else if("C".equals(action)){
 			//골프접수 단계 체크
-			if(!StatusVO.Receipt.code().equals(vo.getRcpInfStat()) && !StatusVO.ReceiptCancel.code().equals(vo.getRcpInfStat()) && !StatusVO.PickupCancel.code().equals(vo.getRcpInfStat()) &&
-			   !StatusVO.DeliveryCancel.code().equals(vo.getRcpInfStat())){
+			if(!RcpInfStat.RECEIPT.code().equals(vo.getRcpInfStat()) && !RcpInfStat.RECEIPT_CANCEL.code().equals(vo.getRcpInfStat()) && !RcpInfStat.PICKUP_CANCEL.code().equals(vo.getRcpInfStat()) &&
+			   !RcpInfStat.DELIVERY_CANCEL.code().equals(vo.getRcpInfStat())){
 				returnVal = "error4";
 			}
 		//선택취소
 		}else{
 			//골프접수, 픽업요청 단계 체크
-			if(!StatusVO.Receipt.code().equals(vo.getRcpInfStat()) && !StatusVO.Pickup.code().equals(vo.getRcpInfStat())&& !StatusVO.Wait.code().equals(vo.getRcpInfStat())){
+			if(!RcpInfStat.RECEIPT.code().equals(vo.getRcpInfStat()) && !RcpInfStat.PICKUP.code().equals(vo.getRcpInfStat())&& !RcpInfStat.WAIT.code().equals(vo.getRcpInfStat())){
 				returnVal = "error2";
 			}
 		}
@@ -328,7 +346,7 @@ public class CommonController extends PrtController {
 		JSONObject requestSearch = new JSONObject();
 		JSONParser jsonParser = new JSONParser();
 		for(int i=0; i<receiptList.size();i++) {
-			if(receiptList.get(i).getPdBarcode()!=null && receiptList.get(i).getScTime()==null && receiptList.get(i).getRcpInfStat().equals(StatusVO.Delivery.code())) {
+			if(receiptList.get(i).getPdBarcode()!=null && receiptList.get(i).getScTime()==null && receiptList.get(i).getRcpInfStat().equals(RcpInfStat.DELIVERY.code())) {
 				apiArray.add(receiptList.get(i).getPdBarcode());
 			}
 		}
@@ -349,7 +367,7 @@ public class CommonController extends PrtController {
 
 							if (apiMapList.get(i).get("deliDate") != null) {
 								receiptList.get(i).setScTime(apiMapList.get(i).get("deliDate").toString());
-								receiptList.get(i).setRcpInfStat(StatusVO.Complete.code());
+								receiptList.get(i).setRcpInfStat(RcpInfStat.COMPLETE.code());
 								logger.debug("중간확인 {}", receiptList);
 								_gDao.update("golfReceipt.updateGolfInfScTime", receiptList.get(i));
 
@@ -384,7 +402,7 @@ public class CommonController extends PrtController {
 //						if(apiMapList.get(i).get("scTime")!=null) {
 //							//update
 //							receiptList.get(j).setScTime(apiMapList.get(i).get("scTime").toString());
-//							receiptList.get(j).setRcpInfStat(StatusVO.Complete.code());
+//							receiptList.get(j).setRcpInfStat(RcpInfStat.Complete.code());
 //							_gDao.update("golfReceipt.updateGolfInfScTime", receiptList.get(j));
 //
 //							receiptList.get(j).setCanReason("");
