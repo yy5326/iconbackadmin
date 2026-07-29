@@ -414,4 +414,65 @@ public class CbReceiveController {
 
 	}
 
+
+	/**
+	 * 골프택배접수 상태만 수정
+	 * /kakao/cbReceive/updateReceiptStatus
+	 *
+	 * @param list
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	@PostMapping("/updateReceiptStatus")
+	@ApiOperation(value = "접수 상태 수정", notes = "<TT-3-33-332> 접수 상태 체크 후 골프 접수 상태만 변경")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "확인 성공", response = CbReceiveResultVO.class),
+			@ApiResponse(code = 311, message = "접수번호 오류")
+			, @ApiResponse(code = 312, message = "접수상태 오류")
+	})
+	public JSONObject updateReceiptStatus(@RequestBody List<CbReceiptInfoVO> list) throws Exception {
+
+		JSONObject obj = new JSONObject();
+
+		try {
+			List<GolfReceiptInfVO> result = _receiptService.updateGolfReceiptStatus(list);
+
+			obj.put("httpStatus", "OK");
+			/*JSONArray kakaoArray = new JSONArray();
+
+			for ( GolfReceiptInfVO info : result ) {
+				JSONObject data = new JSONObject();
+				data.put("resultStatus", "Y");
+				data.put("cbReceiptStatus", info.getRcpInfStat());
+				data.put("rcpNumber", info.getRcpNumber());
+				data.put("cbPay", info.getPdPay());
+				kakaoArray.add(data);
+			}*/
+
+			JSONObject data = new JSONObject();
+			String rcpNumber = "";
+			int cbPay = 0;
+			for (GolfReceiptInfVO vo : result) {
+				rcpNumber += vo.getRcpNumber() + "|";
+				data.put("cbReceiptStatus", vo.getRcpInfStat());
+				cbPay += vo.getPdPay();
+				data.put("resultStatus", "Y");
+			}
+			data.put("cbPay", cbPay);
+			rcpNumber = rcpNumber.substring(0, rcpNumber.length() - 1);
+			data.put("rcpNumber", rcpNumber);
+			data.put("orderId", result.get(0).getOrderId());
+			obj.put("result", data);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			JSONObject data = new JSONObject();
+			data.put("resultStatus", "N");
+			obj.put("result", data);
+		}
+
+		obj.put("httpStatus", "OK");
+
+		return obj;
+	}
 }

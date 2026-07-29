@@ -1396,6 +1396,182 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		return result;
 	}
 
+	/**
+	 * 골프접수 상태 수정
+	 * @param url
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<GolfReceiptInfVO> updateGolfReceiptStatus(List<CbReceiptInfoVO> list) throws Exception {
+		IconPayStatus iconPayStatus = null;
+		GolfReceiptInfVO infVo = new GolfReceiptInfVO();
+		List<GolfReceiptInfVO> result = new ArrayList<>();
+
+		// 리스트로 들어온 각각의 데이터에 관해 수정작업
+		for ( CbReceiptInfoVO cbReceiptInfoVO : list ) {
+			infVo.setRcpNumber(cbReceiptInfoVO.getRcpNumber());
+			infVo = (GolfReceiptInfVO)_gDao.selectByKey("golfReceiptInf.selectDetailByRcpNumber", infVo);
+			if (cbReceiptInfoVO.getDiTotalPay() != null) {
+				infVo.setPayAmt(cbReceiptInfoVO.getDiTotalPay());
+			}
+			// 골프접수 상태는 모든 정보 수정 가능(주소가 바뀌면 금액도 업데이트 됨)
+			// 결제가 완료되어서 픽업요청 상태인 경우 일부정보만 수정 가능
+			// 택배 접수가 되면 모든 정보 수정 불가
+
+			if ( infVo == null ) {
+
+				logger.info("접수번호를 찾을 수 없습니다.");
+
+			} else if ( RcpInfStat.RECEIPT_CANCEL.code().equals(infVo.getRcpInfStat()) || RcpInfStat.PICKUP_CANCEL.code().equals(infVo.getRcpInfStat()) || RcpInfStat.DELIVERY_CANCEL.code().equals(infVo.getRcpInfStat()) ){
+				// 골프취소, 픽업취소, 택배취소
+				logger.info("이미 삭제된 접수번호 입니다. 확인 부탁드립니다.");
+
+			} else if ( RcpInfStat.DELIVERY.code().equals(infVo.getRcpInfStat()) || RcpInfStat.COMPLETE.code().equals(infVo.getRcpInfStat()) || RcpInfStat.PICKUP.code().equals(infVo.getRcpInfStat()) ){
+				// 택배접수, 배송완료, 픽업요청 - 수정불가
+				logger.info("운송장번호가 발급되어 수정이 불가합니다. 영업소 프로그램으로 확인 부탁드립니다.");
+
+			} else if ( RcpInfStat.RECEIPT.code().equals(infVo.getRcpInfStat()) || RcpInfStat.WAIT.code().equals(infVo.getRcpInfStat()) ){
+				/** 골프접수 or 접수대기 상태 **/
+				// 결제가 완료된 골프접수 건은 일부정보만 수정 가능
+				// CUS_SEND_NM, CUS_SEND_TELNUM, CUS_RE_NM, CUS_RE_TELNUM, PD_MEMO
+				if (cbReceiptInfoVO.getPayStatus() != null && !cbReceiptInfoVO.getPayStatus().isEmpty()) {
+					iconPayStatus = IconPayStatus.valueOf(cbReceiptInfoVO.getPayStatus());
+				}
+				if (IconPayStatus.PAID.getPayStat().equals(infVo.getPayStat()) && infVo.getDelKind().equals(list.get(0).getDelKind())) {
+					/** 결제완료 and 편도/왕복 구분 변경x **/
+					// 골프접수 이고 결제 상태가 결제
+					if ( cbReceiptInfoVO.getCusReceiptNm() != null && !"".equals(cbReceiptInfoVO.getCusReceiptNm()) ) infVo.setCusReceiptNm(cbReceiptInfoVO.getCusReceiptNm());
+					if ( cbReceiptInfoVO.getCusSendNm() != null && !"".equals(cbReceiptInfoVO.getCusSendNm()) ) infVo.setCusSendNm(cbReceiptInfoVO.getCusSendNm());
+					if ( cbReceiptInfoVO.getCusSendTelnum() != null && !"".equals(cbReceiptInfoVO.getCusSendTelnum()) ) infVo.setCusSendTelnum(cbReceiptInfoVO.getCusSendTelnum());
+					if ( cbReceiptInfoVO.getCusReNm() != null && !"".equals(cbReceiptInfoVO.getCusReNm()) ) infVo.setCusReNm(cbReceiptInfoVO.getCusReNm());
+					if ( cbReceiptInfoVO.getCusReTelNum() != null && !"".equals(cbReceiptInfoVO.getCusReTelNum()) ) infVo.setCusReTelnum2(cbReceiptInfoVO.getCusReTelNum());
+					if ( cbReceiptInfoVO.getPdMemo() != null && !"".equals(cbReceiptInfoVO.getPdMemo()) ) infVo.setPdMemo(cbReceiptInfoVO.getPdMemo());
+
+					// [골프전산 결제완료 상태] 아이콘택배 → 골프전산 결제 상태 수정
+					String payStat = ""; // IconPayStatus 의 payStat 참조
+					if (cbReceiptInfoVO.getPayStatus() != null && !cbReceiptInfoVO.getPayStatus().isEmpty()) {
+						if (IconPayStatus.isPaidOrTerminated(iconPayStatus)) {
+							payStat = iconPayStatus.getPayStat();
+							final String rcpInfStat = iconPayStatus.getRcpInfStat();
+							infVo.setRcpInfStat(rcpInfStat);
+
+							// 아이콘에서 취소 or 입금기한만료시 골프전산에서 취소로 처리
+							if ((IconPayStatus.CANCELLED.equals(iconPayStatus) || IconPayStatus.EXPIRED.equals(iconPayStatus))
+									&& cbReceiptInfoVO.getCanReason() != null) {
+								infVo.setCanReason(cbReceiptInfoVO.getCanReason());
+							}
+						}
+					}
+					// 상태만 변경시 할인계산 x
+
+					// 접수상태, 물품메모, 픽업예정일, 취소사유만 수정
+					_gDao.update("golfReceiptInf.updateRcpInfStat", infVo);
+
+					if (!"".equals(payStat)) { // cbReceiptInfoVO.getPayStatus() 가 없으면 비어있음
+						if (IconPayStatus.CANCELLED.equals(iconPayStatus) || IconPayStatus.EXPIRED.equals(iconPayStatus)) {
+							// 기존 편도 데이터 payAmt 변경
+							GolfReceiptPayVO payVO = new GolfReceiptPayVO();
+							payVO.setPayAmt(infVo.getPayAmt());
+							payVO.setRcpInfSeq(infVo.getRcpInfSeq());
+							payVO.setPayStat(payStat);
+							_gDao.update("golfReceiptPay.updateSelectiveByRcpInfSeq", payVO);
+						}
+					}
+
+					String company = RcpKind.KAKAO.getDescription();
+					if (RcpKind.SMARTSCORE.getValue().equals(cbReceiptInfoVO.getRcpKind())) {
+						company = RcpKind.SMARTSCORE.getDescription();
+					} else if (RcpKind.ICON.getValue().equals(cbReceiptInfoVO.getRcpKind())) {
+						company = RcpKind.ICON.getDescription();
+					} else if (RcpKind.KORCHAM.getValue().equals(cbReceiptInfoVO.getRcpKind())) {
+						company = RcpKind.KORCHAM.getDescription();
+					}
+					//히스토리 등록
+					String historyMemo = company + " 골프 수정";
+					insertGolfHistory(String.valueOf(infVo.getRcpNumber()), historyMemo);
+					result.add( (GolfReceiptInfVO)_gDao.selectByKey("golfReceiptInf.selectDetailByRcpSeq", infVo) );
+				} else if (IconPayStatus.UNPAID.getPayStat().equals(infVo.getPayStat()) || IconPayStatus.WAIT.getPayStat().equals(infVo.getPayStat())) {
+					/** 미결제 or 결제대기 상태 **/
+					String historyMemo = "스마트 스코어 골프 수정";
+
+					if(RcpKind.KAKAO.getValue().equals(infVo.getRcpKind())) { //카카오
+						historyMemo = "카카오 골프 수정";
+					}
+
+					logger.info("receive 수정정보 ", new Gson().toJson(cbReceiptInfoVO));
+					logger.info("결제 대기 카카오 골프 수정 ");
+					if ( cbReceiptInfoVO.getSendGolfSeq() != 0 ) infVo.setSendGolfSeq(cbReceiptInfoVO.getSendGolfSeq());
+					if ( cbReceiptInfoVO.getCusSendNm() != null && !"".equals(cbReceiptInfoVO.getCusSendNm()) ) infVo.setCusSendNm(cbReceiptInfoVO.getCusSendNm());
+					if ( cbReceiptInfoVO.getCusSendTelnum() != null && !"".equals(cbReceiptInfoVO.getCusSendTelnum()) ) infVo.setCusSendTelnum(cbReceiptInfoVO.getCusSendTelnum());
+					if ( cbReceiptInfoVO.getCusSendZip() != null && !"".equals(cbReceiptInfoVO.getCusSendZip()) ) infVo.setCusSendZip(cbReceiptInfoVO.getCusSendZip());
+					if ( cbReceiptInfoVO.getCusSendAddr1() != null && !"".equals(cbReceiptInfoVO.getCusSendAddr1()) ) infVo.setCusSendAddr1(cbReceiptInfoVO.getCusSendAddr1());
+					if ( cbReceiptInfoVO.getCusSendAddr2() != null && !"".equals(cbReceiptInfoVO.getCusSendAddr2()) ) infVo.setCusSendAddr2(cbReceiptInfoVO.getCusSendAddr2());
+
+					if ( cbReceiptInfoVO.getCusReNm() != null && !"".equals(cbReceiptInfoVO.getCusReNm()) ) infVo.setCusReNm(cbReceiptInfoVO.getCusReNm());
+					if ( cbReceiptInfoVO.getCusReTelNum() != null && !"".equals(cbReceiptInfoVO.getCusReTelNum()) ) infVo.setCusReTelnum2(cbReceiptInfoVO.getCusReTelNum());
+					if ( cbReceiptInfoVO.getCusReZip() != null && !"".equals(cbReceiptInfoVO.getCusReZip()) ) infVo.setCusReZip(cbReceiptInfoVO.getCusReZip());
+					if ( cbReceiptInfoVO.getCusReAddr1() != null && !"".equals(cbReceiptInfoVO.getCusReAddr1()) ) infVo.setCusReAddr1(cbReceiptInfoVO.getCusReAddr1());
+					if ( cbReceiptInfoVO.getCusReAddr2() != null && !"".equals(cbReceiptInfoVO.getCusReAddr2()) ) infVo.setCusReAddr2(cbReceiptInfoVO.getCusReAddr2());
+
+					if ( cbReceiptInfoVO.getPdCnt() != 0 ) infVo.setPdCnt(cbReceiptInfoVO.getPdCnt()); // 골프백 수량
+					//if ( cbReceiptInfoVO.getBostonCnt() != 0 ) infVo.setBostonCnt(cbReceiptInfoVO.getBostonCnt()); // 보스턴백 수량
+					if ( cbReceiptInfoVO.getPdIndivPrice() != null && !"".equals(cbReceiptInfoVO.getPdIndivPrice()) ) infVo.setPdIndivPrice(cbReceiptInfoVO.getPdIndivPrice()); // 개별단가
+					if ( cbReceiptInfoVO.getPdGolfCnt() != null && !"".equals(cbReceiptInfoVO.getPdGolfCnt()) ) infVo.setPdGolfCnt(cbReceiptInfoVO.getPdGolfCnt()); // 골프채 수량
+
+					if ( cbReceiptInfoVO.getPdMemo() != null && !"".equals(cbReceiptInfoVO.getPdMemo()) ) infVo.setPdMemo(cbReceiptInfoVO.getPdMemo());
+					if ( cbReceiptInfoVO.getPicReqDt() != null && !"".equals(cbReceiptInfoVO.getPicReqDt()) ) infVo.setPicReqDt(cbReceiptInfoVO.getPicReqDt()); // 픽업희망일
+
+					// 접수자이름
+					if ( cbReceiptInfoVO.getCusReceiptNm() != null && !"".equals(cbReceiptInfoVO.getCusReceiptNm()) ) infVo.setCusReceiptNm(cbReceiptInfoVO.getCusReceiptNm());
+					// 접수자전화번호
+					if ( cbReceiptInfoVO.getCusReceiptTelNum() != null && !"".equals(cbReceiptInfoVO.getCusReceiptTelNum()) ) infVo.setCusReceiptTelNum(cbReceiptInfoVO.getCusReceiptTelNum());
+					preInsertReceiptInfo(infVo, cbReceiptInfoVO);
+
+					// 상태만 변경시 할인계산 x
+
+					// [골프전산 미결제 or 결제대기 상태] 아이콘택배 → 골프전산 결제 상태 수정
+					String payStat = ""; // IconPayStatus 의 payStat 참조
+					if (cbReceiptInfoVO.getPayStatus() != null && !cbReceiptInfoVO.getPayStatus().isEmpty()) {
+						iconPayStatus = IconPayStatus.valueOf(cbReceiptInfoVO.getPayStatus());
+						if (IconPayStatus.isPaidOrTerminated(iconPayStatus)) {
+							payStat = iconPayStatus.getPayStat();
+							final String rcpInfStat = iconPayStatus.getRcpInfStat();
+							infVo.setRcpInfStat(rcpInfStat);
+
+							// 아이콘에서 취소 or 입금기한만료시 골프전산에서 취소로 처리
+							if ((IconPayStatus.CANCELLED.equals(iconPayStatus) || IconPayStatus.EXPIRED.equals(iconPayStatus))
+									&& cbReceiptInfoVO.getCanReason() != null) {
+								infVo.setCanReason(cbReceiptInfoVO.getCanReason());
+							}
+						}
+					}
+					_gDao.update("golfReceiptInf.updateRcpInfStat", infVo);
+
+					// 기존 편도 데이터 payAmt 변경
+					GolfReceiptPayVO payVO = new GolfReceiptPayVO();
+					payVO.setPayAmt(infVo.getPdPay());
+					payVO.setRcpInfSeq(infVo.getRcpInfSeq());
+					if (!"".equals(payStat)) {
+						payVO.setPayStat(payStat);
+					}
+					_gDao.update("golfReceiptPay.updateSelectiveByRcpInfSeq", payVO);
+
+					//히스토리 등록
+					insertGolfHistory(String.valueOf(infVo.getRcpNumber()), historyMemo);
+					// 상태 변경 메서드에서는 편도→왕복, 왕복→편도 변경 불가
+					result.add( (GolfReceiptInfVO)_gDao.selectByKey("golfReceiptInf.selectDetailByRcpSeq", infVo) );
+				} else {
+					logger.info("결제 완료 건중 수정할 수 없는 데이터가 포함되어 있거나 결제 취소건이라 수정이 불가능합니다. ");
+					logger.info("또는 골프 접수 상태에서 편도/왕복은 수정이 불가능합니다. ");
+				}
+			} else {
+				logger.info("기타 사유로 수정 처리 불가");
+			}
+		}
+
+		return result;
+	}
+
 	@SuppressWarnings("unchecked")
 	private List<GolfReceiptInfVO> changeRoundReceipt(List<CbReceiptInfoVO> list, GolfReceiptInfVO infVo) throws Exception {
 		// TODO Auto-generated method stub
