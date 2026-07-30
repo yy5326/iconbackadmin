@@ -229,7 +229,13 @@
 			 A.BR_END_NM,
 			 </if>
 		 </if>
-		A.RCP_SEQ DESC, A.RCP_INF_SEQ DESC
+		A.RCP_SEQ DESC,
+		CASE /* 2차, 1차 순으로 정렬 */
+			WHEN SR_TYPE = 'R'
+			THEN 1
+			ELSE 2
+		END,
+		A.RCP_INF_SEQ DESC
 		<include refid="paging.bottom" />
 	</select>
 
