@@ -87,8 +87,7 @@ public class GolfReceiptController extends PrtController {
 		
 		//logger.info("파트너 리다이렉트 정보 : {} ", session.getAttribute("partner"));
 
-//		if(!(_globalProperty.getWebMode().equals("op"))) {
-		if((_globalProperty.getWebMode().equals("op"))) {
+		if(!(_globalProperty.getWebMode().equals("op"))) {
 			return "redirect:/receipt/" + session.getAttribute("partner") +"/receiptList.do";
 		} else {
 			if (session.getAttribute("partner") == null) {
