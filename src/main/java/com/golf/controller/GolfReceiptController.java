@@ -86,10 +86,16 @@ public class GolfReceiptController extends PrtController {
 		//발송 및 토큰갱신, 토큰값얻기, 위탁장소 지정관련 페이지가 아닌경우
 		
 		//logger.info("파트너 리다이렉트 정보 : {} ", session.getAttribute("partner"));
-		
-		if(!(_globalProperty.getWebMode().equals("op"))) {
+
+//		if(!(_globalProperty.getWebMode().equals("op"))) {
+		if((_globalProperty.getWebMode().equals("op"))) {
 			return "redirect:/receipt/" + session.getAttribute("partner") +"/receiptList.do";
 		} else {
+			if (session.getAttribute("partner") == null) {
+				session.removeAttribute("partner");
+				session.setAttribute("partner", "superUser_092_02");
+			}
+
 			if(!"superUser_092_02".equals(session.getAttribute("partner"))) {
                 return "redirect:/receipt/" + session.getAttribute("partner") +"/receiptList.do";
             }
