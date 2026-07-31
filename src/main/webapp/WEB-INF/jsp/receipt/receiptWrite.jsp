@@ -3,7 +3,7 @@
 <%@ include file="/WEB-INF/include/admin_start_html.jsp"%>
 
 <div class="contents">
-    <form action="receiptProcConfirm.do" method="post">
+    <form action="/receipt/receiptProcConfirm.do" method="post">
         <div id="original">
             <div class="receiver">
                 <p class="type">보내는 분 <span class="red">*</span><span>표시는 필수 입력사항입니다</span></p>
