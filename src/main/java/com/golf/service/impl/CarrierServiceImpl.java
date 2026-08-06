@@ -1165,7 +1165,7 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 		// 인천공항 캐리어 추가 수수료
 		String rcpType = info.getRcpType() != null ? info.getRcpType() : vo.getRcpType();
 		//if (GoodsType.A.getValue().equals(info.getRcpType())) {
-		if (GoodsType.A.getValue().equals(rcpType)) {
+		if (GoodsType.A.getValue().equals(rcpType) && !"1".equals(vo.getPayStat())) {
 			int addPay = 5000;
 			int crAddPay = addPay * info.getCrCnt();
 			int iconPay = vo.getIconFee();
