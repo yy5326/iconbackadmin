@@ -2010,7 +2010,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		// 인천공항 추가 수수료
 		String rcpType = info.getRcpType() != null ? info.getRcpType() : vo.getRcpType();
 		//if (GoodsType.A.getValue().equals(info.getRcpType())) {
-		if (GoodsType.A.getValue().equals(rcpType)) {
+		if (GoodsType.A.getValue().equals(rcpType) && "0".equals(vo.getPayStat())) {
 			int addPay = 5000;
 			int golfAddPay = addPay * info.getPdCnt();
 			int iconPay = vo.getIconFee();
