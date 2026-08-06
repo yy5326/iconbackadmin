@@ -1968,7 +1968,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		}
 
 		// 제휴 골프장 할인 비교
-		/*int partnerDiscountValue = vo.getPartnerDiscountValue();
+		int partnerDiscountValue = vo.getPartnerDiscountValue();
 		boolean isPartnerDiscountApplied = partnerDiscountValue < calculatedDiscount;
 
 		if ((RcpKind.ICON.getValue().equals(info.getRcpKind()) || RcpKind.KORCHAM.getValue().equals(info.getRcpKind()) || RcpKind.PANSTAR.getValue().equals(info.getRcpKind()))
@@ -1991,7 +1991,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				logger.info("### [보스턴백 할인] 자동 적용: {}원", discount);
 				logger.info("### [보스턴백 할인] 할인 전 pdPay: {}원, 할인 후 pdPay: {}원 (적용 할인액: {}원)", beforePdPay, vo.getPdPay(), discount);
 			}
-		}*/
+		}
 
 		// 팬스타크루즈 할인
 		// 보스턴백 세트 할인 > 팬스타 할인
@@ -2025,7 +2025,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		}
 
 		// 현대카드 할인
-		/*if (RcpKind.HDCARD.getValue().equals(info.getRcpKind())) {
+		if (RcpKind.HDCARD.getValue().equals(info.getRcpKind())) {
 			int hdCardDiscount_OneWay = 4000;
 			int hdCardDiscount_Round = 1000;
 			int pdCnt = info.getPdCnt() > 0 ? info.getPdCnt() : 1;
@@ -2040,15 +2040,15 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 
 			logger.info("### [현대카드 할인] 할인 전 pdPay: {}원, 할인 후 pdPay: {}원 (현대카드 할인액: {}원)",
 					beforePdPay, vo.getPdPay(), hdDiscount);
-		}*/
+		}
 
 		// 쿠폰 할인
-		/*int couponVal = info.getCouponDiscount();
+		int couponVal = info.getCouponDiscount();
 		if (couponVal > 0 && !"1".equals(vo.getPayStat())) {
 			long beforePdPay = vo.getPdPay(); // 할인 전 총금액
 			vo.setPdPay(Math.max(0, vo.getPdPay() - couponVal));
 			vo.setDiscountTotal(couponVal);
 			logger.info("### [쿠폰 할인] 할인 전 pdPay: {}원, 할인 후 pdPay: {}원 (쿠폰 할인액: {}원, 총 할인액: {}원)",
-					beforePdPay, vo.getPdPay(), couponVal, vo.getDiscountTotal());		}*/
+					beforePdPay, vo.getPdPay(), couponVal, vo.getDiscountTotal());		}
 	}
 }
