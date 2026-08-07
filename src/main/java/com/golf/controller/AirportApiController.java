@@ -361,8 +361,19 @@ public class AirportApiController extends PrtController  {
 		JSONObject obj = new JSONObject();
 
 		try {
-			List<GolfReceiptInfVO> carrierResult = _carrierReceiptService.updateCarrierReceipt(list);
-			List<GolfReceiptInfVO> golfResult = _receiptService.updateGolfReceipt(list);
+
+			List<CbReceiptInfoVO> carrierList = new ArrayList<>();
+			List<CbReceiptInfoVO> golfList = new ArrayList<>();
+			for (CbReceiptInfoVO vo : list) {
+
+				String jsonStr = new Gson().toJson(vo);
+				carrierList.add(new Gson().fromJson(jsonStr, CbReceiptInfoVO.class));
+				CbReceiptInfoVO golfVo = new Gson().fromJson(jsonStr, CbReceiptInfoVO.class);
+				golfList.add(golfVo);
+			}
+
+			List<GolfReceiptInfVO> golfResult = _receiptService.updateGolfReceipt(golfList);
+			List<GolfReceiptInfVO> carrierResult = _carrierReceiptService.updateCarrierReceipt(carrierList);
 
 
 			logger.debug("업데이트 골프백 결과 {}", new Gson().toJson(golfResult));

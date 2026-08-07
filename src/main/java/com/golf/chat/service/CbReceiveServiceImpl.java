@@ -1264,6 +1264,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					result.add( (GolfReceiptInfVO)_gDao.selectByKey("golfReceiptInf.selectDetailByRcpSeq", infVo) );
 				} else if (IconPayStatus.UNPAID.getPayStat().equals(infVo.getPayStat()) || IconPayStatus.WAIT.getPayStat().equals(infVo.getPayStat())) {
 					String historyMemo = "스마트 스코어 골프 수정";
+					// 가상계좌 결제 요청 : 기존 DB 데이터 (infVo.payStat): "0" , 입력된 데이터 (cbReceiptInfoVO.payStatus): PAID
 
 					if(RcpKind.KAKAO.getValue().equals(infVo.getRcpKind())) { //카카오
 						historyMemo = "카카오 골프 수정";

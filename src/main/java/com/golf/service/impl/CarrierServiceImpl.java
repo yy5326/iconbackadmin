@@ -345,7 +345,12 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 				if (cbReceiptInfoVO.getPayStatus() != null && !cbReceiptInfoVO.getPayStatus().isEmpty()) {
 					iconPayStatus = IconPayStatus.valueOf(cbReceiptInfoVO.getPayStatus());
 				}
-				if (IconPayStatus.PAID.getPayStat().equals(infVo.getPayStat()) && infVo.getDelKind().equals(list.get(0).getDelKind())) {
+
+				// 요청된 payStatus가 PAID인지 여부를 미리 판단
+				boolean isPaidRequest = "PAID".equals(cbReceiptInfoVO.getPayStatus());
+
+				if ((IconPayStatus.PAID.getPayStat().equals(infVo.getPayStat()) || isPaidRequest)
+						&& infVo.getDelKind().equals(list.get(0).getDelKind())) {
 					// 골프접수 이고 결제 상태가 결제
 					if ( cbReceiptInfoVO.getCusReceiptNm() != null && !"".equals(cbReceiptInfoVO.getCusReceiptNm()) ) infVo.setCusReceiptNm(cbReceiptInfoVO.getCusReceiptNm());
 					if ( cbReceiptInfoVO.getCusSendNm() != null && !"".equals(cbReceiptInfoVO.getCusSendNm()) ) infVo.setCusSendNm(cbReceiptInfoVO.getCusSendNm());
@@ -397,8 +402,9 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 					String historyMemo = company + " 골프 수정";
 					insertGolfHistory(String.valueOf(infVo.getRcpNumber()), historyMemo);
 					result.add( (GolfReceiptInfVO)_gDao.selectByKey("golfReceiptInf.selectDetailByRcpSeq", infVo) );
-				} else if (IconPayStatus.UNPAID.getPayStat().equals(infVo.getPayStat()) || IconPayStatus.WAIT.getPayStat().equals(infVo.getPayStat())) {
+				} else if (!isPaidRequest && (IconPayStatus.UNPAID.getPayStat().equals(infVo.getPayStat()) || IconPayStatus.WAIT.getPayStat().equals(infVo.getPayStat()))) {
 					String historyMemo = "스마트 스코어 골프 수정";
+					// 가상계좌 결제 요청 : 기존 DB 데이터 (infVo.payStat): "0" , 입력된 데이터 (cbReceiptInfoVO.payStatus): PAID
 
 					if(RcpKind.KAKAO.getValue().equals(infVo.getRcpKind())) { //카카오
 						historyMemo = "카카오 골프 수정";
