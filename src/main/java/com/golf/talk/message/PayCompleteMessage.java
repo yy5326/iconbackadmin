@@ -72,13 +72,10 @@ public class PayCompleteMessage {
 
 		switch (prdType) {
 			case GOLF:
-				// #{추가할증금액}
-				String etcPayAmt = startRequestVO.getEtcPayAmt();
 				// #{골프백수량}
 				final Integer golfCnt = startRequestVO.getPdCnt();
 				// #{보스턴백수량}
 				final Integer bostonCnt = startRequestVO.getBostonCnt();
-				replaceTemplate = replaceTemplate.replace("#{추가할증금액}", etcPayAmt);
 				replaceTemplate = replaceTemplate.replace("#{골프백수량}", golfCnt.toString());
 				replaceTemplate = replaceTemplate.replace("#{보스턴백수량}", bostonCnt.toString());
 				break;
@@ -118,8 +115,7 @@ public class PayCompleteMessage {
 					"골프백수량 : #{골프백수량}\n" +
 					"보스턴백수량 : #{보스턴백수량}\n" +
 					"\n" +
-					"총합계 : #{총결제금액}원\n" +
-					"(추가할증 : #{추가할증금액}원)";
+					"총합계 : #{총결제금액}원";
 		} else { // TripType.ONE_WAY
 			template =
 					"[아이콘] 골프택배 결제 완료\n" +
@@ -138,8 +134,7 @@ public class PayCompleteMessage {
 					"골프백수량 : #{골프백수량}\n" +
 					"보스턴백수량 : #{보스턴백수량}\n" +
 					"\n" +
-					"총합계 : #{총결제금액}원\n" +
-					"(추가할증 : #{추가할증금액}원)";
+					"총합계 : #{총결제금액}원";
 		}
 		return template;
 	}
