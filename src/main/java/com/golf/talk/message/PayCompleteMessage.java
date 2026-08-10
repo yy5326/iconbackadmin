@@ -90,8 +90,8 @@ public class PayCompleteMessage {
 	}
 
 	/**
-	 * [골프택배] 편도 결제 완료 알림 (v1)
-	 * [골프택배] 왕복 결제 완료 알림 (v1)
+	 * [골프택배] 편도 결제 완료 알림 (v2)
+	 * [골프택배] 왕복 결제 완료 알림 (v2)
 	 */
 	private static String getGolfTemplate(TripType tripType) {
 		String template;
@@ -184,7 +184,7 @@ public class PayCompleteMessage {
 	}
 
 	/**
-	 * [인천공항배송] 편도 결제 완료 알림 (v1)
+	 * [인천공항배송] 편도 결제 완료 알림 (v2)
 	 */
 	private static String getAirportTemplate(TripType tripType) {
 		String template;
@@ -193,7 +193,7 @@ public class PayCompleteMessage {
 //					""; // 왕복 템플릿 없음
 //		} else { // TripType.ONE_WAY
 			template =
-					"[아이콘] 아이콘 트래블 결제 완료\n" +
+					"[아이콘] 인천공항 결제 완료\n" +
 					"\n" +
 					"[접수정보]\n" +
 					"성함 : #{예약자명}\n" +
@@ -205,7 +205,10 @@ public class PayCompleteMessage {
 					"픽업지 : #{픽업지주소}\n" +
 					"도착지 : #{도착지주소}\n" +
 					"\n" +
+					"[수량]\n" +
+					"골프백수량 : #{골프백수량}\n" +
 					"캐리어수량 : #{캐리어수량}\n" +
+					"\n" +
 					"총합계 : #{총결제금액}원";
 //		}
 		return template;
