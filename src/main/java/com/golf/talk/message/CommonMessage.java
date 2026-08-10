@@ -31,7 +31,7 @@ public class CommonMessage {
 	}
 
 	/**
-	 * [골프택배] 접수 안내 (v1)
+	 * [골프택배] 가상계좌 안내 (v2)
 	 */
 	private static String getVBankTemplate() {
 		String template =
