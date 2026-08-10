@@ -1264,6 +1264,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 					result.add( (GolfReceiptInfVO)_gDao.selectByKey("golfReceiptInf.selectDetailByRcpSeq", infVo) );
 				} else if (IconPayStatus.UNPAID.getPayStat().equals(infVo.getPayStat()) || IconPayStatus.WAIT.getPayStat().equals(infVo.getPayStat())) {
 					String historyMemo = "스마트 스코어 골프 수정";
+					// 가상계좌 결제 요청 : 기존 DB 데이터 (infVo.payStat): "0" , 입력된 데이터 (cbReceiptInfoVO.payStatus): PAID
 
 					if(RcpKind.KAKAO.getValue().equals(infVo.getRcpKind())) { //카카오
 						historyMemo = "카카오 골프 수정";
@@ -2008,7 +2009,9 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		}*/
 
 		// 인천공항 추가 수수료
-		if (GoodsType.A.getValue().equals(info.getRcpType())) {
+		String rcpType = info.getRcpType() != null ? info.getRcpType() : vo.getRcpType();
+		//if (GoodsType.A.getValue().equals(info.getRcpType())) {
+		if (GoodsType.A.getValue().equals(rcpType) && !"1".equals(vo.getPayStat())) {
 			int addPay = 5000;
 			int golfAddPay = addPay * info.getPdCnt();
 			int iconPay = vo.getIconFee();
