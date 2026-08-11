@@ -692,7 +692,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			if (TripType.ONE_WAY.equals(TripType.fromCode(cbReceiptInfoVo.getDelKind()))) {
 				standardBaseFee = (8000 * cbReceiptInfoVo.getPdCnt()) + (bostonAmt * bostonCnt);
 			} else {
-				standardBaseFee = (4500 * cbReceiptInfoVo.getPdCnt()) + (3000 * bostonCnt);
+				standardBaseFee = (9000 * cbReceiptInfoVo.getPdCnt()) + (3000 * bostonCnt);
 			}
 			// 제휴사가 지정되어 있고(출발 또는 도착이 0 초과), 제휴 수수료가 기본 수수료보다 저렴할 경우 그 차액을 제휴사 할인액으로 설정
 			int partnerDiscount = 0;
