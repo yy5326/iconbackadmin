@@ -687,38 +687,59 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		// 골프장 제휴사 수수료 보정 로직
 		if (isPartnerGolf(cbReceiptInfoVo.getSendGolfSeq()) || isPartnerGolf(cbReceiptInfoVo.getRecvGolfSeq())) {
 
-			// 제휴사 할인액 계산 로직
-			int standardBaseFee = 0;
-			if (TripType.ONE_WAY.equals(TripType.fromCode(cbReceiptInfoVo.getDelKind()))) {
-				standardBaseFee = (8000 * cbReceiptInfoVo.getPdCnt()) + (bostonAmt * bostonCnt);
-			} else {
-				standardBaseFee = (4500 * cbReceiptInfoVo.getPdCnt()) + (3000 * bostonCnt);
+			// 공식 정책 기준값
+			final int ONE_WAY_GOLF_STANDARD = 8000;    // 편도 골프백 아이콘 수수료 기준값
+			final int ROUND_GOLF_STANDARD = 4500;      // 왕복 골프백 아이콘 수수료 기준값 (1차당)
+			final int ONE_WAY_BOSTON_STANDARD = 6000;  // 편도 보스턴백 아이콘 수수료 기준값
+			final int ROUND_BOSTON_STANDARD = 3000;    // 왕복 보스턴백 아이콘 수수료 기준값 (1차당)
+
+			// 1차(S) / 2차(R) 골프장 위치 방어 로직
+			GolfInfVO targetGolfInf = (recvGolfInfVo != null && recvGolfInfVo.getGolfSeq() > 0) ? recvGolfInfVo : sendGolfInfVo;
+			if (targetGolfInf == null) {
+				targetGolfInf = new GolfInfVO(); // Null 방어
 			}
-			// 제휴사가 지정되어 있고(출발 또는 도착이 0 초과), 제휴 수수료가 기본 수수료보다 저렴할 경우 그 차액을 제휴사 할인액으로 설정
+
+			boolean isOneWay = TripType.ONE_WAY.equals(TripType.fromCode(cbReceiptInfoVo.getDelKind()));
+
+			int standardBaseFee = 0;
+			int contractGolfFee = 0;   // DB 골프백 계약가 (Fee1 또는 Fee4)
+			int contractBostonFee = 0; // DB 보스턴백 계약가 (Fee7 또는 Fee10)
+
+			// 편도 vs 왕복에 따라 기준값 및 DB 계약가 매칭
+			if (isOneWay) {
+				standardBaseFee = (ONE_WAY_GOLF_STANDARD * cbReceiptInfoVo.getPdCnt()) + (ONE_WAY_BOSTON_STANDARD * bostonCnt);
+				contractGolfFee = targetGolfInf.getFee1();     // 편도 골프백 계약가
+				contractBostonFee = targetGolfInf.getFee7();   // 편도 보스턴백 계약가
+			} else {
+				// 왕복은 1차당 기준값이므로 수량 계산 시 반영
+				standardBaseFee = (ROUND_GOLF_STANDARD * cbReceiptInfoVo.getPdCnt()) + (ROUND_BOSTON_STANDARD * bostonCnt);
+				contractGolfFee = targetGolfInf.getFee4();     // 왕복 골프백 계약가 (1차당)
+				contractBostonFee = targetGolfInf.getFee10();  // 왕복 보스턴백 계약가 (1차당)
+			}
+
+			// 제휴사 할인액 계산
 			int partnerDiscount = 0;
 			if ((cbReceiptInfoVo.getSendGolfSeq() > 0 || cbReceiptInfoVo.getRecvGolfSeq() > 0) && standardBaseFee > iconPay) {
 				partnerDiscount = standardBaseFee - iconPay;
 			}
-			receiptInfVO.setPartnerDiscountValue(partnerDiscount); // 제휴사 할인액 저장
-			receiptInfVO.setDiscountTotal(partnerDiscount); // 쿠폰적용일 경우 영수증에 할인액을 세팅해도 되는지 확인 필요. setDiscountTotal(쿠폰할인액)
-			pdDeliPay += partnerDiscount;					// 쿠폰 적용을 하든 안하든 배송비는 제휴할인 전 값으로 표기해야함.
 
-			// 쿠폰 적용 시 수수료 정책: 골프백 8,000원 + 보스턴백 4,000원 = 12,000원
-			// 이지만 26.07.29 : 해당 하는 값을 쿠폰에서 적용하기 위해 아래 값 기본으로 설정
+			receiptInfVO.setPartnerDiscountValue(partnerDiscount);
+			receiptInfVO.setDiscountTotal(partnerDiscount);
+			pdDeliPay += partnerDiscount; // 29000 - 4000 표기를 위한 핵심 흐름 유지!
+
+			// 쿠폰 적용 시 수수료 정책 (DB 계약가 활용)
 			if (isCouponApplied) {
-				// 개별 단위 수수료 정의 (수량에 맞춰 계산)
-
-				// 타겟 값이 왕복일 경우 고려해야함. 왕복에 쿠폰 적용 시 위쪽에 왕복(4500) 분기 필요.
-				int targetGolfBagFee = 8000 * cbReceiptInfoVo.getPdCnt();
-				int targetBostonFee = 6000 * cbReceiptInfoVo.getBostonCnt();
+				// 정책에 맞춘 DB 계약가 기반 수수료 산정
+				int targetGolfBagFee = contractGolfFee * cbReceiptInfoVo.getPdCnt();
+				int targetBostonFee = contractBostonFee * cbReceiptInfoVo.getBostonCnt();
 				int newTotalIconPay = targetGolfBagFee + targetBostonFee;
-				// pdPay에서 기존 iconPay를 빼고, 새 수수료를 더함
+
 				pdPay = pdPay - iconPay + newTotalIconPay;
-				// iconPay 갱신
 				iconPay = newTotalIconPay;
 				golfPay = targetGolfBagFee;
 				pdDeliPay -= partnerDiscount;
-				logger.info("### 제휴사 쿠폰 적용(12,000원 정책): 골프백={}, 보스턴백={}, 최종 pdPay={}", targetGolfBagFee, targetBostonFee, pdPay);
+
+				logger.info("### 제휴사 쿠폰 적용(공식 정책 반영): 골프백={}, 보스턴백={}, 최종 pdPay={}", targetGolfBagFee, targetBostonFee, pdPay);
 			}
 		}
 
