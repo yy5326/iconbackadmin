@@ -347,6 +347,14 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			receiptInfVO.setBrEndCode(recvGolfInfVo.getPicOfficeCode1());
 			receiptInfVO.setBrEndNm(recvGolfInfVo.getPicOffice1());
 		} else {
+			// 인천공항 접수 건(rcpType == "A")일 때 김포고촌토탈로 강제 세팅
+			if ("A".equals(cbReceiptInfoVo.getRcpType())) {
+				receiptInfVO.setCusReZip("10136");
+				receiptInfVO.setCusReAddr1("경기도 김포시 고촌읍 전호리 745"); // 또는 공항 터미널 주소 원하시는 대로 지정
+				receiptInfVO.setBrEndCode("311151");
+				receiptInfVO.setBrEndNm("김포고촌토탈운송서비스");
+				logger.info("### 인천공항 접수: 김포고촌토탈운송서비스 강제 세팅 완료");
+			}
 			GolfInfVO infVO = new GolfInfVO();
 			infVO.setType1("zipcode");
 			//infVO.setType1("A");
