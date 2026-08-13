@@ -9,7 +9,7 @@
     </appender>
 
     <appender name="rollingFile" class="org.apache.log4j.DailyRollingFileAppender">
-        <param name="File" value="/var/lib/tomcat7/webapps/logs/golf/log.log"/>
+        <param name="File" value="/srv/was/tomcat_backadmin/logs/log.log"/>
         <param name="Append" value="true"/>
         <param name="DatePattern" value="'.'yyyy-MM-dd"/>
         <layout class="org.apache.log4j.PatternLayout">
