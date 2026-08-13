@@ -185,6 +185,17 @@ public @Data class CbReceiptInfoVO {
 	@ApiModelProperty(position = 38, notes = "배송 건 별 결제 금액")
 	private Integer diTotalPay;
 
+	// 취소·만료 건에 한해서만 전달됨(0 고정). 정상 유지 건은 접수 시점에 골프장 요금표 기준으로
+	// 이미 계산되어 있는 값을 ICON이 알지 못하므로 필드 자체를 보내지 않음(null) → 기존 값 유지
+	@ApiParam(value="배송운임")
+	@ApiModelProperty(position = 44, notes = "배송운임 - 취소/만료 건에서만 0으로 전달, 정상 유지 건은 미전달(null)")
+	private Integer deliPay;
+
+	// 취소·만료 건에 한해서만 전달됨(위약금 등 잔여금액 전액). 정상 유지 건은 미전달(null) → 기존 값 유지
+	@ApiParam(value="아이콘수수료")
+	@ApiModelProperty(position = 45, notes = "아이콘수수료 - 취소/만료 건에서 위약금 등 잔여금액 전액, 정상 유지 건은 미전달(null)")
+	private Integer iconFee;
+
 	// 취소 사유
 	@ApiParam(value="취소 사유")
 	@ApiModelProperty(position = 39, notes = "취소 사유")
