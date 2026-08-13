@@ -2144,10 +2144,10 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			}
 		}*/
 
-		// 인천공항 추가 수수료
+		// 인천공항 추가 수수료 (결제수단/상태와 무관하게 인천공항 접수는 항상 부과 — 캐리어 쪽(CarrierServiceImpl)과 동일 조건)
 		String rcpType = info.getRcpType() != null ? info.getRcpType() : vo.getRcpType();
 		//if (GoodsType.A.getValue().equals(info.getRcpType())) {
-		if (GoodsType.A.getValue().equals(rcpType) && PayStat.STAY.getValue().equals(vo.getPayStat())) {
+		if (GoodsType.A.getValue().equals(rcpType)) {
 			int addPay = 5000;
 			int golfAddPay = addPay * info.getPdCnt();
 			int iconPay = vo.getIconFee();
