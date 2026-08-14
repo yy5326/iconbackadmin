@@ -326,6 +326,14 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			receiptInfVO.setCusSendAddr1(sendGolfInfVo.getGolfAddr1());
 			receiptInfVO.setBrStrCode(sendGolfInfVo.getPicOfficeCode1());
 			receiptInfVO.setBrStrNm(sendGolfInfVo.getPicOffice1());
+		} else if ("A".equals(cbReceiptInfoVo.getRcpType()) && "22382".equals(cbReceiptInfoVo.getCusSendZip())) {
+			// 인천공항 출발 접수 건(보내는 분이 공항 고정주소, 우편번호 22382)일 때 김포고촌토탈로 강제 세팅
+			// (sendGolfSeq==0은 골프장이 아니라는 뜻일 뿐이라 일반주소 픽업 건과 구분하려면 공항 고정 우편번호까지 확인해야 함)
+			receiptInfVO.setCusSendZip("10136");
+			receiptInfVO.setCusSendAddr1("경기도 김포시 고촌읍 전호리 745");
+			receiptInfVO.setBrStrCode("311151");
+			receiptInfVO.setBrStrNm("김포고촌토탈운송서비스");
+			logger.info("### 인천공항 출발 접수: 김포고촌토탈운송서비스 강제 세팅 완료");
 		} else {
 			GolfInfVO infVO = new GolfInfVO();
 			infVO.setType1("zipcode");
@@ -346,15 +354,14 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			receiptInfVO.setCusReAddr1(recvGolfInfVo.getGolfAddr1());
 			receiptInfVO.setBrEndCode(recvGolfInfVo.getPicOfficeCode1());
 			receiptInfVO.setBrEndNm(recvGolfInfVo.getPicOffice1());
+		} else if ("A".equals(cbReceiptInfoVo.getRcpType()) && "22382".equals(cbReceiptInfoVo.getCusReZip())) {
+			// 인천공항 도착 접수 건(받는 분이 공항 고정주소, 우편번호 22382)일 때 김포고촌토탈로 강제 세팅
+			receiptInfVO.setCusReZip("10136");
+			receiptInfVO.setCusReAddr1("경기도 김포시 고촌읍 전호리 745");
+			receiptInfVO.setBrEndCode("311151");
+			receiptInfVO.setBrEndNm("김포고촌토탈운송서비스");
+			logger.info("### 인천공항 도착 접수: 김포고촌토탈운송서비스 강제 세팅 완료");
 		} else {
-			// 인천공항 접수 건(rcpType == "A")일 때 김포고촌토탈로 강제 세팅
-			if ("A".equals(cbReceiptInfoVo.getRcpType())) {
-				receiptInfVO.setCusReZip("10136");
-				receiptInfVO.setCusReAddr1("경기도 김포시 고촌읍 전호리 745"); // 또는 공항 터미널 주소 원하시는 대로 지정
-				receiptInfVO.setBrEndCode("311151");
-				receiptInfVO.setBrEndNm("김포고촌토탈운송서비스");
-				logger.info("### 인천공항 접수: 김포고촌토탈운송서비스 강제 세팅 완료");
-			}
 			GolfInfVO infVO = new GolfInfVO();
 			infVO.setType1("zipcode");
 			//infVO.setType1("A");
