@@ -182,8 +182,8 @@ public class CarrierApiController extends PrtController  {
 			
 			logger.debug("log... {}", receiptInfVO);
 			_carrierReceiptService.preInsertReceiptInfo(receiptInfVO, cbReceiptInfoVO);
-			
-			data.put("status", "200");	
+
+			data.put("status", "200");
 			data.put("discount", receiptInfVO.getDiscount());
 			data.put("discount",receiptInfVO.getDiscount());
 			data.put("discountTotal",receiptInfVO.getDiscountTotal());
@@ -259,15 +259,74 @@ public class CarrierApiController extends PrtController  {
 		}
 		
 		obj.put("httpStatus","OK");
-		
+
 		return obj;
-		
+
 	}
-	
-	
+
+	/**
+	 * 캐리어접수 부분취소 금액 및 상태 수정
+	 * /icon/carrier/updateReceiptPayInfo
+	 *
+	 * @param list
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	@PostMapping("/carrier/updateReceiptPayInfo")
+	@ApiOperation(value = "캐리어 접수 상태 수정 및 금액 동기화", notes = "부분 취소 및 금액 변경 반영")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "확인 성공"),
+			@ApiResponse(code = 311, message = "접수번호 오류"),
+			@ApiResponse(code = 312, message = "접수상태 오류")
+	})
+	public JSONObject carrierUpdateReceiptPayInfo(@RequestBody List<CbReceiptInfoVO> list) throws Exception {
+
+		logger.debug(">>>>>>>>>> 캐리어 부분취소 금액/상태 수정 요청" );
+
+		JSONObject obj = new JSONObject();
+
+		try {
+			List<GolfReceiptInfVO> result = _carrierReceiptService.updateCarrierReceiptPayInfo(list);
+
+			obj.put("httpStatus", "OK");
+
+			JSONObject data = new JSONObject();
+			String rcpNumber = "";
+			int cbPay = 0;
+
+			if (result != null && !result.isEmpty()) {
+				for (GolfReceiptInfVO vo : result) {
+					rcpNumber += vo.getRcpNumber() + "|";
+					data.put("cbReceiptStatus", vo.getRcpInfStat());
+					cbPay += vo.getPdPay();
+					data.put("resultStatus", "Y");
+				}
+				rcpNumber = rcpNumber.substring(0, rcpNumber.length() - 1);
+				data.put("rcpNumber", rcpNumber);
+				data.put("orderId", result.get(0).getOrderId());
+			} else {
+				data.put("resultStatus", "Y");
+			}
+
+			data.put("cbPay", cbPay);
+			obj.put("result", data);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			JSONObject data = new JSONObject();
+			data.put("resultStatus", "N");
+			obj.put("result", data);
+		}
+
+		obj.put("httpStatus", "OK");
+
+		return obj;
+	}
+
+
 	/**
 	 * 캐리어 취소
-	 * 
+	 *
 	 * */
 	@SuppressWarnings("unchecked")
 	@PostMapping("/carrier/cancelReceipt")
