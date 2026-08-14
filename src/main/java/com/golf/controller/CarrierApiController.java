@@ -183,16 +183,21 @@ public class CarrierApiController extends PrtController  {
 			logger.debug("log... {}", receiptInfVO);
 			_carrierReceiptService.preInsertReceiptInfo(receiptInfVO, cbReceiptInfoVO);
 
+			// searchIsl()은 왕복일 경우 편도 1구간(왕복 2건 중 1건) 분량만 리턴하므로,
+			// 실제 접수 확정(receiptProcConfirm)에서 두 건(S/R)의 금액을 합산하는 것과 동일하게 견적에서도 왕복이면 금액을 2배로 맞춰준다.
+			// (이 처리가 빠지면 견적 금액과 실제 결제 요청 금액이 달라져 "결제 금액이 상이합니다" 오류가 발생함)
+			int tripMultiplier = TripType.ROUND_TRIP.equals(TripType.fromCode(receiptInfVO.getDelKind())) ? 2 : 1;
+
 			data.put("status", "200");
 			data.put("discount", receiptInfVO.getDiscount());
 			data.put("discount",receiptInfVO.getDiscount());
 			data.put("discountTotal",receiptInfVO.getDiscountTotal());
-			data.put("pdDosunPay", receiptInfVO.getPdDosunPay());
-			data.put("pdDeliPay", receiptInfVO.getPdDeliPay() + receiptInfVO.getIconFee());
+			data.put("pdDosunPay", receiptInfVO.getPdDosunPay() * tripMultiplier);
+			data.put("pdDeliPay", (receiptInfVO.getPdDeliPay() + receiptInfVO.getIconFee()) * tripMultiplier);
 			data.put("pdEtcPay", receiptInfVO.getPdEtcPay());
-			data.put("pdPay", receiptInfVO.getPdPay());
+			data.put("pdPay", receiptInfVO.getPdPay() * tripMultiplier);
 			data.put("roundTripDiscountAmt", receiptInfVO.getRoundTripDiscountAmt()); // 편도-왕복 차액
-			data.put("iconFee", receiptInfVO.getIconFee());
+			data.put("iconFee", receiptInfVO.getIconFee() * tripMultiplier);
 			
 		} catch ( Exception e ) {
 			data.put("status", "500");	
