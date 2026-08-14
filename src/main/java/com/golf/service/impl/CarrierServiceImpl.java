@@ -761,29 +761,34 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 
 
 
-		if( (receiptInfVO.getCusSendAddr1() != null && receiptInfVO.getCusSendAddr1().contains("제주"))
-				|| (receiptInfVO.getCusSendAddr2() != null && receiptInfVO.getCusSendAddr2().contains("제주")) ) {
+		boolean isSendJeju = (receiptInfVO.getCusSendAddr1() != null && receiptInfVO.getCusSendAddr1().contains("제주"))
+				|| (receiptInfVO.getCusSendAddr2() != null && receiptInfVO.getCusSendAddr2().contains("제주"));
+		boolean isRecvJeju = (receiptInfVO.getCusReAddr1() != null && receiptInfVO.getCusReAddr1().contains("제주"))
+				|| (receiptInfVO.getCusReAddr2() != null && receiptInfVO.getCusReAddr2().contains("제주"));
+		boolean isSendSpecial211 = receiptInfVO.getSendGolfSeq() == 211;
+		boolean isRecvSpecial211 = receiptInfVO.getRecvGolfSeq() == 211;
+
+		boolean isSendIsl = isSendJeju || isSendSpecial211;
+		boolean isRecvIsl = isRecvJeju || isRecvSpecial211;
+		if (isSendIsl) {
 			dosun1 += 1;
 			receiptInfVO.setSendIslYn("Y"); // 보내는분 출발지가 도서산간일 경우 도서산간구분
 		}
-
-		if ( (receiptInfVO.getCusReAddr1() != null && receiptInfVO.getCusReAddr1().contains("제주"))
-				|| (receiptInfVO.getCusReAddr2() != null && receiptInfVO.getCusReAddr2().contains("제주")) ) {
-			dosun1 += 1; // 보내는분 출발지, 도착지 모두 도서산간이면 도서운임 안받음, 둘중 하나가 도서산간일 경우 도서운임
+		if (isRecvIsl) {
+			dosun1 += 1;
 			receiptInfVO.setRecvIslYn("Y"); // 보내는분 도착지가 도서산간일 경우 도서산간구분
 		}
 
-
-		if(dosun1==0) {
-			if(receiptInfVO.getSendGolfSeq()==211) {
-				dosun1 += 1;
-				receiptInfVO.setSendIslYn("Y"); // 보내는분 출발지가 도서산간일 경우 도서산간구분
-			}else if(receiptInfVO.getRecvGolfSeq()==211) {
-				dosun1 += 1;
-				receiptInfVO.setSendIslYn("Y"); // 보내는분 도착지가 도서산간일 경우 도서산간구분
-			}
+		// 제주↔제주 등 같은 권역 내 이동은 편도 1회분만 반영하고,
+		// 제주 ↔ golfSeq 211(배편전용 특수 골프장)처럼 서로 다른 도서산간 구간을 오가는 경우에만 도선을 두 번 타야 하므로 2배로 반영
+		boolean isSpecialRoute = (isSendJeju && isRecvSpecial211) || (isRecvJeju && isSendSpecial211);
+		if (isSpecialRoute) {
+			pdDosunPay = receiptInfVO.getPdCnt() * amtArray[0] * 2;
+		} else if (dosun1 >= 1) {
+			pdDosunPay = receiptInfVO.getPdCnt() * amtArray[0];
+		} else {
+			pdDosunPay = 0;
 		}
-		pdDosunPay = dosun1 >= 1 ? (receiptInfVO.getPdCnt()*amtArray[0])  : 0;
 
 		// 아이콘 수수료
 		iconPay = calculateIconFee(cbReceiptInfoVO);
