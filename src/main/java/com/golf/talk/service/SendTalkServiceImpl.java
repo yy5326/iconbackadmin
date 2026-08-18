@@ -12,7 +12,6 @@ import javax.annotation.Resource;
 
 import com.golf.enums.*;
 import com.golf.talk.message.*;
-import com.nhncorp.lucy.security.xss.CommonUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
@@ -95,9 +94,9 @@ public class SendTalkServiceImpl {
 					duplicateRound = true;
 					//sendRequestList.get(i).setEtc1("hdexp_0002");
 					if (RcpKind.SMARTSCORE.getValue().equals(receiptList.get(i).getRcpKind())) {
-						KaKaoUtil.getTempleteForEtc("hdexp_0004", sendRequestList.get(i));
+						KaKaoUtil.getTemplateForEtc("hdexp_0004", sendRequestList.get(i));
 					}else {
-						KaKaoUtil.getTempleteForEtc("hdexp_0002", sendRequestList.get(i));
+						KaKaoUtil.getTemplateForEtc("hdexp_0002", sendRequestList.get(i));
 					}
 
 					try {
@@ -122,10 +121,10 @@ public class SendTalkServiceImpl {
 
 					try {
 						if("2".equals(receiptInfoVO.getRcpKind())) {
-							KaKaoUtil.getTempleteForEtc("hdexp_0004", sendVo);
+							KaKaoUtil.getTemplateForEtc("hdexp_0004", sendVo);
 							sendVo.setTalkMessage(ReceiptCompleteMessage.getForUserRound(sendVo, sendVo));
 						}else {
-							KaKaoUtil.getTempleteForEtc("hdexp_0001", sendVo);
+							KaKaoUtil.getTemplateForEtc("hdexp_0001", sendVo);
 							sendVo.setTalkMessage(PayRequestMessage.getOneWayMessage(sendVo));
 						}
 					} catch (Exception e) {
@@ -137,10 +136,10 @@ public class SendTalkServiceImpl {
 					//sendVo.setEtc1("hdexp_0002");
 					try {
 						if("2".equals(receiptInfoVO.getRcpKind())) {
-							KaKaoUtil.getTempleteForEtc("hdexp_0004", sendVo);
+							KaKaoUtil.getTemplateForEtc("hdexp_0004", sendVo);
 							sendVo.setTalkMessage(ReceiptCompleteMessage.getForUserRound(sendVo, sendVo));
 						}else {
-							KaKaoUtil.getTempleteForEtc("hdexp_0002", sendVo);
+							KaKaoUtil.getTemplateForEtc("hdexp_0002", sendVo);
 							sendVo.setTalkMessage(PayRequestMessage.getRoundMessage(sendVo, sendVo));
 						}
 					} catch (Exception e) {
@@ -184,11 +183,11 @@ public class SendTalkServiceImpl {
 				sendVo.setReceiver(KaKaoUtil.getReceiver(receiptInfoVO)); // 수신자명
 
 
-				KaKaoUtil.getTempleteForEtc(etc, sendVo);
+				KaKaoUtil.getTemplateForEtc(etc, sendVo);
 			} else {
 				sendVo.setReceiverNum(KakaoTalkRecipientType.MANAGER.getPhoneNumber());
 				sendVo.setReceiver(KakaoTalkRecipientType.MANAGER.getRecipentName());
-				KaKaoUtil.getIconTempleteForEtc(etc, sendVo);
+				KaKaoUtil.getIconTemplateForEtc(etc, sendVo);
 			}
 
 			for ( int i = 0 ; i < sendRequestList.size() ; i++ ) {
@@ -351,7 +350,7 @@ public class SendTalkServiceImpl {
 			// ICON 관리자 수신
 			sendVo.setReceiverNum(KakaoTalkRecipientType.MANAGER.getPhoneNumber());
 			sendVo.setReceiver(KakaoTalkRecipientType.MANAGER.getRecipentName());
-			KaKaoUtil.getIconTempleteForEtc("icon", sendVo);
+			KaKaoUtil.getIconTemplateForEtc("icon", sendVo);
 		}
 
 		return sendVo;
@@ -443,7 +442,7 @@ public class SendTalkServiceImpl {
 			sendVo.setBostonCnt(receiptInfoVO.getBostonCnt());
 
 			//sendVo.setEtc1("hdexp_0004");
-			KaKaoUtil.getTempleteForEtc("hdexp_0004", sendVo);
+			KaKaoUtil.getTemplateForEtc("hdexp_0004", sendVo);
 
 			userlist.add(sendVo);
 
@@ -461,7 +460,7 @@ public class SendTalkServiceImpl {
 			iconSendVo.setRcpKind(receiptInfoVO.getRcpKind());
 			iconSendVo.setPdDiscount(receiptInfoVO.getDiscount());
 			iconSendVo.setEtc1("hdexp_0005");
-			KaKaoUtil.getIconTempleteForEtc("hdexp_0005", iconSendVo);
+			KaKaoUtil.getIconTemplateForEtc("hdexp_0005", iconSendVo);
 
 			iconList.add(iconSendVo);
 		}
@@ -525,7 +524,7 @@ public class SendTalkServiceImpl {
 			sendVo.setPrdType(receiptInfoVO.getPrdType());
 			sendVo.setBostonCnt(receiptInfoVO.getBostonCnt());
 			//sendVo.setEtc1("hdexp_0006");
-			KaKaoUtil.getTempleteForEtc("hdexp_0006", sendVo);
+			KaKaoUtil.getTemplateForEtc("hdexp_0006", sendVo);
 			userlist.add(sendVo);
 
 			SendRequestVO iconSendVo = new SendRequestVO();
@@ -545,7 +544,7 @@ public class SendTalkServiceImpl {
 			iconSendVo.setPrdType(receiptInfoVO.getPrdType());
 			iconSendVo.setBostonCnt(receiptInfoVO.getBostonCnt());
 			//iconSendVo.setEtc1("hdexp_0007");
-			KaKaoUtil.getIconTempleteForEtc("hdexp_0007", iconSendVo);
+			KaKaoUtil.getIconTemplateForEtc("hdexp_0007", iconSendVo);
 			iconList.add(iconSendVo);
 		}
 		try {

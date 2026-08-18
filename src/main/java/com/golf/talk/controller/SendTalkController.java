@@ -8,6 +8,7 @@ import javax.annotation.Resource;
 
 import com.golf.enums.PrdType;
 import com.golf.talk.message.*;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -172,6 +173,29 @@ public class SendTalkController {
 			logger.info("[공통] 가상계좌안내");
 			for (SendRequestVO sendVO : list) {
 				String message = CommonMessage.makeVBankForUserByIcon(sendVO);
+				_sendTalkService.sendTalk(list, message);
+			}
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
+
+		return "jsonView";
+	}
+
+	/**
+	 * 결제요청안내
+	 * @param list
+	 * @return
+	 */
+	@PostMapping("/sendRequestPayMessageForUser")
+	public String sendRequestPayMessageForUser(@RequestBody List<SendRequestVO> list) {
+
+		try {
+			logger.info("[공통] 결제요청안내");
+			for (SendRequestVO sendVO : list) {
+				String message = CommonMessage.makeRequestPayForUserByIcon(sendVO);
+				final List<JSONObject> buttonList = CommonMessage.makeRequestPayBtnForUserByIcon(sendVO);
+				sendVO.setButtonList(buttonList);
 				_sendTalkService.sendTalk(list, message);
 			}
 		} catch ( Exception e ) {
