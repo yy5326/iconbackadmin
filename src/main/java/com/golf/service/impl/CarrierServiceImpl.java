@@ -354,6 +354,11 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 					if ( cbReceiptInfoVO.getCusReTelNum() != null && !"".equals(cbReceiptInfoVO.getCusReTelNum()) ) infVo.setCusReTelnum2(cbReceiptInfoVO.getCusReTelNum());
 					if ( cbReceiptInfoVO.getPdMemo() != null && !"".equals(cbReceiptInfoVO.getPdMemo()) ) infVo.setPdMemo(cbReceiptInfoVO.getPdMemo());
 
+
+					logger.info("### [할인 계산 호출 전] updateReceipt2 : applyDiscountAndFees");
+					// 캐리어 공통 할인 계산
+					applyDiscountAndFees(infVo, cbReceiptInfoVO);
+
 					// [골프전산 결제완료 상태] 아이콘택배 → 골프전산 결제 상태 수정
 					String payStat = ""; // IconPayStatus 의 payStat 참조
 					if (cbReceiptInfoVO.getPayStatus() != null && !cbReceiptInfoVO.getPayStatus().isEmpty()) {
@@ -428,6 +433,10 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 					// 접수자전화번호
 					if ( cbReceiptInfoVO.getCusReceiptTelNum() != null && !"".equals(cbReceiptInfoVO.getCusReceiptTelNum()) ) infVo.setCusReceiptTelNum(cbReceiptInfoVO.getCusReceiptTelNum());
 					preInsertReceiptInfo(infVo, cbReceiptInfoVO);
+
+					logger.info("### [할인 계산 호출 전] updateReceipt2 : applyDiscountAndFees");
+					// 캐리어 공통 할인 계산
+					applyDiscountAndFees(infVo, cbReceiptInfoVO);
 
 					// [골프전산 미결제 or 결제대기 상태] 아이콘택배 → 골프전산 결제 상태 수정
 					String payStat = ""; // IconPayStatus 의 payStat 참조
@@ -525,6 +534,114 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 		return result;
 	}
 
+	/**
+	 * 캐리어접수 부분취소 금액 및 상태 수정 전용 메서드
+	 * @param list
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<GolfReceiptInfVO> updateCarrierReceiptPayInfo(List<CbReceiptInfoVO> list) throws Exception {
+		IconPayStatus iconPayStatus = null;
+		List<GolfReceiptInfVO> result = new ArrayList<>();
+
+		// 리스트로 들어온 각각의 데이터에 관해 수정작업
+		for (CbReceiptInfoVO cbReceiptInfoVO : list) {
+			GolfReceiptInfVO infVo = new GolfReceiptInfVO();
+			infVo.setRcpNumber(cbReceiptInfoVO.getRcpNumber());
+			infVo = (GolfReceiptInfVO) _gDao.selectByKey("golfReceiptInf.selectDetailByRcpNumber", infVo);
+
+			if (infVo == null) {
+				logger.info("접수번호를 찾을 수 없습니다.");
+				continue;
+			}
+
+			// 1. diTotalPay(잔여 금액)가 넘어왔다면 접수 정보(pdPay)와 결제 정보(payAmt)에 모두 셋팅!
+			if (cbReceiptInfoVO.getDiTotalPay() != null) {
+				infVo.setPayAmt(cbReceiptInfoVO.getDiTotalPay());
+				infVo.setPdPay(cbReceiptInfoVO.getDiTotalPay()); // 화면(백어드민)에 반영될 핵심 컬럼!
+			}
+			// 배송운임/아이콘수수료 분리 반영 (취소 시 배송운임 0 + 위약금 등을 아이콘수수료로)
+			if (cbReceiptInfoVO.getDeliPay() != null) {
+				infVo.setPdDeliPay(cbReceiptInfoVO.getDeliPay());
+			}
+			if (cbReceiptInfoVO.getIconFee() != null) {
+				infVo.setIconFee(cbReceiptInfoVO.getIconFee());
+			}
+
+			if (RcpInfStat.RECEIPT_CANCEL.code().equals(infVo.getRcpInfStat()) || RcpInfStat.PICKUP_CANCEL.code().equals(infVo.getRcpInfStat()) || RcpInfStat.DELIVERY_CANCEL.code().equals(infVo.getRcpInfStat())) {
+				logger.info("이미 삭제된 접수번호 입니다. 확인 부탁드립니다.");
+			} else if (RcpInfStat.DELIVERY.code().equals(infVo.getRcpInfStat()) || RcpInfStat.COMPLETE.code().equals(infVo.getRcpInfStat()) || RcpInfStat.PICKUP.code().equals(infVo.getRcpInfStat())) {
+				logger.info("운송장번호가 발급되어 수정이 불가합니다. 영업소 프로그램으로 확인 부탁드립니다.");
+			} else if (RcpInfStat.RECEIPT.code().equals(infVo.getRcpInfStat()) || RcpInfStat.WAIT.code().equals(infVo.getRcpInfStat())) {
+
+				if (cbReceiptInfoVO.getPayStatus() != null && !cbReceiptInfoVO.getPayStatus().isEmpty()) {
+					iconPayStatus = IconPayStatus.valueOf(cbReceiptInfoVO.getPayStatus());
+				}
+
+				if (IconPayStatus.PAID.getPayStat().equals(infVo.getPayStat()) && infVo.getDelKind().equals(list.get(0).getDelKind())) {
+
+					// 텍스트 정보 매핑
+					if (cbReceiptInfoVO.getCusReceiptNm() != null && !"".equals(cbReceiptInfoVO.getCusReceiptNm())) infVo.setCusReceiptNm(cbReceiptInfoVO.getCusReceiptNm());
+					if (cbReceiptInfoVO.getCusSendNm() != null && !"".equals(cbReceiptInfoVO.getCusSendNm())) infVo.setCusSendNm(cbReceiptInfoVO.getCusSendNm());
+					if (cbReceiptInfoVO.getCusSendTelnum() != null && !"".equals(cbReceiptInfoVO.getCusSendTelnum())) infVo.setCusSendTelnum(cbReceiptInfoVO.getCusSendTelnum());
+					if (cbReceiptInfoVO.getCusReNm() != null && !"".equals(cbReceiptInfoVO.getCusReNm())) infVo.setCusReNm(cbReceiptInfoVO.getCusReNm());
+					if (cbReceiptInfoVO.getCusReTelNum() != null && !"".equals(cbReceiptInfoVO.getCusReTelNum())) infVo.setCusReTelnum2(cbReceiptInfoVO.getCusReTelNum());
+					if (cbReceiptInfoVO.getPdMemo() != null && !"".equals(cbReceiptInfoVO.getPdMemo())) infVo.setPdMemo(cbReceiptInfoVO.getPdMemo());
+
+					String payStat = "";
+					if (cbReceiptInfoVO.getPayStatus() != null && !cbReceiptInfoVO.getPayStatus().isEmpty()) {
+						if (IconPayStatus.isPaidOrTerminated(iconPayStatus)) {
+							payStat = iconPayStatus.getPayStat();
+							final String rcpInfStat = iconPayStatus.getRcpInfStat();
+							infVo.setRcpInfStat(rcpInfStat);
+
+							if ((IconPayStatus.CANCELLED.equals(iconPayStatus) || IconPayStatus.EXPIRED.equals(iconPayStatus))
+									&& cbReceiptInfoVO.getCanReason() != null) {
+								infVo.setCanReason(cbReceiptInfoVO.getCanReason());
+							}
+						}
+					}
+
+					// 2. 접수 정보 테이블 갱신 (여기서 PD_PAY와 상태가 함께 업데이트 됨)
+					_gDao.update("golfReceiptInf.updateReceiptPayAmount", infVo);
+
+					// 3. 결제 테이블(GOLF_RECEIPT_PAY) 금액 및 상태 갱신
+					GolfReceiptPayVO payVO = new GolfReceiptPayVO();
+					if (cbReceiptInfoVO.getDiTotalPay() != null) {
+						payVO.setPayAmt(cbReceiptInfoVO.getDiTotalPay());
+					} else {
+						payVO.setPayAmt(infVo.getPayAmt());
+					}
+					payVO.setRcpInfSeq(infVo.getRcpInfSeq());
+					if (!"".equals(payStat)) {
+						payVO.setPayStat(payStat);
+					}
+					_gDao.update("golfReceiptPay.updateSelectiveByRcpInfSeq", payVO);
+
+					// 히스토리 등록 및 결과 적재
+					String company = RcpKind.KAKAO.getDescription();
+					if (RcpKind.SMARTSCORE.getValue().equals(cbReceiptInfoVO.getRcpKind())) {
+						company = RcpKind.SMARTSCORE.getDescription();
+					} else if (RcpKind.ICON.getValue().equals(cbReceiptInfoVO.getRcpKind())) {
+						company = RcpKind.ICON.getDescription();
+					} else if (RcpKind.KORCHAM.getValue().equals(cbReceiptInfoVO.getRcpKind())) {
+						company = RcpKind.KORCHAM.getDescription();
+					}
+					String historyMemo = company + " 캐리어 수정";
+					insertGolfHistory(String.valueOf(infVo.getRcpNumber()), historyMemo);
+
+					result.add((GolfReceiptInfVO) _gDao.selectByKey("golfReceiptInf.selectDetailByRcpSeq", infVo));
+				} else {
+					logger.info("결제 완료 건중 수정할 수 없는 데이터가 포함되어 있거나 결제 취소건이라 수정이 불가능합니다.");
+				}
+			} else {
+				logger.info("기타 사유로 수정 처리 불가");
+			}
+		}
+
+		return result;
+	}
+
 
 
 	/**
@@ -552,6 +669,14 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 			receiptInfVO.setCusSendAddr1(sendGolfInfVo.getGolfAddr1());
 			receiptInfVO.setBrStrCode(sendGolfInfVo.getPicOfficeCode1());
 			receiptInfVO.setBrStrNm(sendGolfInfVo.getPicOffice1());
+		} else if ("A".equals(cbReceiptInfoVO.getRcpType()) && "22382".equals(cbReceiptInfoVO.getCusSendZip())) {
+			// 인천공항 출발 접수 건(보내는 분이 공항 고정주소, 우편번호 22382)일 때 김포고촌토탈로 강제 세팅
+			// (sendGolfSeq==0은 골프장이 아니라는 뜻일 뿐이라 일반주소 픽업 건과 구분하려면 공항 고정 우편번호까지 확인해야 함)
+			receiptInfVO.setCusSendZip("10136");
+			receiptInfVO.setCusSendAddr1("경기도 김포시 고촌읍 전호리 745");
+			receiptInfVO.setBrStrCode("311151");
+			receiptInfVO.setBrStrNm("김포고촌토탈운송서비스");
+			logger.info("### 인천공항 출발 접수: 김포고촌토탈운송서비스 강제 세팅 완료");
 		} else {
 			GolfInfVO infVO = new GolfInfVO();
 			infVO.setType1("A");
@@ -571,6 +696,13 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 			receiptInfVO.setCusReAddr1(recvGolfInfVo.getGolfAddr1());
 			receiptInfVO.setBrEndCode(recvGolfInfVo.getPicOfficeCode1());
 			receiptInfVO.setBrEndNm(recvGolfInfVo.getPicOffice1());
+		} else if ("A".equals(cbReceiptInfoVO.getRcpType()) && "22382".equals(cbReceiptInfoVO.getCusReZip())) {
+			// 인천공항 도착 접수 건(받는 분이 공항 고정주소, 우편번호 22382)일 때 김포고촌토탈로 강제 세팅
+			receiptInfVO.setCusReZip("10136");
+			receiptInfVO.setCusReAddr1("경기도 김포시 고촌읍 전호리 745");
+			receiptInfVO.setBrEndCode("311151");
+			receiptInfVO.setBrEndNm("김포고촌토탈운송서비스");
+			logger.info("### 인천공항 도착 접수: 김포고촌토탈운송서비스 강제 세팅 완료");
 		} else {
 			GolfInfVO infVO = new GolfInfVO();
 			infVO.setType1("A");
@@ -619,8 +751,13 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 
 		String str = cbReceiptInfoVO.getBoxSize();
 
-		long mCnt = str.chars().filter(a->a == 'M').count();
-		long sCnt = str.chars().filter(a->a == 'S').count();
+		long mCnt = 0;
+		long sCnt = 0;
+
+		if (str != null && !str.isEmpty()) {
+			mCnt = str.chars().filter(a -> a == 'M').count();
+			sCnt = str.chars().filter(a -> a == 'S').count();
+		}
 
 		pdDeliPay += (amtArray[1]*sCnt);
 		pdDeliPay += (amtArray[2]*mCnt);
@@ -633,29 +770,34 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 
 
 
-		if( (receiptInfVO.getCusSendAddr1() != null && receiptInfVO.getCusSendAddr1().contains("제주"))
-				|| (receiptInfVO.getCusSendAddr2() != null && receiptInfVO.getCusSendAddr2().contains("제주")) ) {
+		boolean isSendJeju = (receiptInfVO.getCusSendAddr1() != null && receiptInfVO.getCusSendAddr1().contains("제주"))
+				|| (receiptInfVO.getCusSendAddr2() != null && receiptInfVO.getCusSendAddr2().contains("제주"));
+		boolean isRecvJeju = (receiptInfVO.getCusReAddr1() != null && receiptInfVO.getCusReAddr1().contains("제주"))
+				|| (receiptInfVO.getCusReAddr2() != null && receiptInfVO.getCusReAddr2().contains("제주"));
+		boolean isSendSpecial211 = receiptInfVO.getSendGolfSeq() == 211;
+		boolean isRecvSpecial211 = receiptInfVO.getRecvGolfSeq() == 211;
+
+		boolean isSendIsl = isSendJeju || isSendSpecial211;
+		boolean isRecvIsl = isRecvJeju || isRecvSpecial211;
+		if (isSendIsl) {
 			dosun1 += 1;
 			receiptInfVO.setSendIslYn("Y"); // 보내는분 출발지가 도서산간일 경우 도서산간구분
 		}
-
-		if ( (receiptInfVO.getCusReAddr1() != null && receiptInfVO.getCusReAddr1().contains("제주"))
-				|| (receiptInfVO.getCusReAddr2() != null && receiptInfVO.getCusReAddr2().contains("제주")) ) {
-			dosun1 += 1; // 보내는분 출발지, 도착지 모두 도서산간이면 도서운임 안받음, 둘중 하나가 도서산간일 경우 도서운임
+		if (isRecvIsl) {
+			dosun1 += 1;
 			receiptInfVO.setRecvIslYn("Y"); // 보내는분 도착지가 도서산간일 경우 도서산간구분
 		}
 
-
-		if(dosun1==0) {
-			if(receiptInfVO.getSendGolfSeq()==211) {
-				dosun1 += 1;
-				receiptInfVO.setSendIslYn("Y"); // 보내는분 출발지가 도서산간일 경우 도서산간구분
-			}else if(receiptInfVO.getRecvGolfSeq()==211) {
-				dosun1 += 1;
-				receiptInfVO.setSendIslYn("Y"); // 보내는분 도착지가 도서산간일 경우 도서산간구분
-			}
+		// 제주↔제주 등 같은 권역 내 이동은 편도 1회분만 반영하고,
+		// 제주 ↔ golfSeq 211(배편전용 특수 골프장)처럼 서로 다른 도서산간 구간을 오가는 경우에만 도선을 두 번 타야 하므로 2배로 반영
+		boolean isSpecialRoute = (isSendJeju && isRecvSpecial211) || (isRecvJeju && isSendSpecial211);
+		if (isSpecialRoute) {
+			pdDosunPay = receiptInfVO.getPdCnt() * amtArray[0] * 2;
+		} else if (dosun1 >= 1) {
+			pdDosunPay = receiptInfVO.getPdCnt() * amtArray[0];
+		} else {
+			pdDosunPay = 0;
 		}
-		pdDosunPay = dosun1 >= 1 ? (receiptInfVO.getPdCnt()*amtArray[0])  : 0;
 
 		// 아이콘 수수료
 		iconPay = calculateIconFee(cbReceiptInfoVO);
@@ -704,8 +846,13 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 
 	  String str = cbReceiptInfoVO.getBoxSize();
 
-	  long sCnt = str.chars().filter(a->a == 'S').count();
-	  long mCnt = str.chars().filter(a->a == 'M').count();
+		long sCnt = 0;
+		long mCnt = 0;
+
+		if (str != null && !str.isEmpty()) {
+			sCnt = str.chars().filter(a->a == 'S').count();
+			mCnt = str.chars().filter(a->a == 'M').count();
+		}
 
 	  if (TripType.ONE_WAY.equals(TripType.fromCode(cbReceiptInfoVO.getDelKind()))) {
 		  sumIconFee += (sCnt*oneFee);
@@ -1090,5 +1237,101 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 
 		}
 		return list;
+	}
+
+	/**
+	 * 캐리어 할인 및 수수료 계산 공통 로직
+	 */
+	private void applyDiscountAndFees(GolfReceiptInfVO vo, CbReceiptInfoVO info) {
+		// 보스턴백 할인
+		/*int bostonDiscount = 3000;
+		int calculatedDiscount = bostonDiscount * info.getBostonCnt();
+		if (TripType.ROUND_TRIP.equals(TripType.fromCode(info.getDelKind()))) {
+			calculatedDiscount = calculatedDiscount / 2;
+		}*/
+
+		// 제휴 골프장 할인 비교
+		/*int partnerDiscountValue = vo.getPartnerDiscountValue();
+		boolean isPartnerDiscountApplied = partnerDiscountValue < calculatedDiscount;
+
+		if ((RcpKind.ICON.getValue().equals(info.getRcpKind()) || RcpKind.KORCHAM.getValue().equals(info.getRcpKind()) || RcpKind.PANSTAR.getValue().equals(info.getRcpKind()))
+				&& info.getPdCnt() > 0 && info.getBostonCnt() > 0 && isPartnerDiscountApplied) {
+
+			if (info.getCouponDiscount() <= 0) {
+				int discount = bostonDiscount * info.getBostonCnt();
+				int iconPay = vo.getIconFee();
+
+				if (TripType.ONE_WAY.equals(TripType.fromCode(info.getDelKind()))) {
+					iconPay = iconPay - discount;
+				} else if (TripType.ROUND_TRIP.equals(TripType.fromCode(info.getDelKind()))) {
+					discount = discount / 2;
+					iconPay = iconPay - discount;
+				}
+				long beforePdPay = vo.getPdPay(); // 할인 전 총금액
+				vo.setIconFee(Math.max(0, iconPay));
+				vo.setPdPay(vo.getPdPay() - discount);
+				vo.setDiscountTotal(vo.getDiscountTotal() + discount);
+				logger.info("### [보스턴백 할인] 자동 적용: {}원", discount);
+				logger.info("### [보스턴백 할인] 할인 전 pdPay: {}원, 할인 후 pdPay: {}원 (적용 할인액: {}원)", beforePdPay, vo.getPdPay(), discount);
+			}
+		}*/
+
+		// 팬스타크루즈 할인
+		// 보스턴백 세트 할인 > 팬스타 할인
+		/*if (RcpKind.PANSTAR.getValue().equals(info.getRcpKind())) {
+			int bostonDiscount = 2000 * info.getBostonCnt();
+			int golfBagDiscount = 3000 * info.getPdCnt();
+			int totalDiscount = (bostonDiscount + golfBagDiscount) / 2;
+			if (TripType.ROUND_TRIP.equals(TripType.fromCode(info.getDelKind()))) {
+				long beforePdPay = vo.getPdPay(); // 할인 전 총금액
+				vo.setPdPay(vo.getPdPay() - totalDiscount);
+
+				logger.info("### [팬스타크루즈 할인] 할인 전 pdPay: {}원, 할인 후 pdPay: {}원 (적용 할인액: {}원)", beforePdPay, vo.getPdPay(), totalDiscount);
+			}
+		}*/
+
+		// 인천공항 캐리어 추가 수수료
+		String rcpType = info.getRcpType() != null ? info.getRcpType() : vo.getRcpType();
+		//if (GoodsType.A.getValue().equals(info.getRcpType())) {
+		if (GoodsType.A.getValue().equals(rcpType)) {
+			int addPay = 5000;
+			int crAddPay = addPay * info.getCrCnt();
+			int iconPay = vo.getIconFee();
+			if (TripType.ONE_WAY.equals(TripType.fromCode(info.getDelKind()))) {
+				iconPay = iconPay + crAddPay;
+			}
+			long beforePdPay = vo.getPdPay();
+			vo.setIconFee(Math.max(0, iconPay));
+			vo.setPdPay(vo.getPdPay() + crAddPay);
+
+			logger.info("### [인천공항 추가수수료] 적용 전 pdPay: {}원, 적용 후 pdPay: {}원 (가산액: {}원)", beforePdPay, vo.getPdPay(), crAddPay);
+		}
+
+		// 현대카드 할인
+		/*if (RcpKind.HDCARD.getValue().equals(info.getRcpKind())) {
+			int hdCardDiscount_OneWay = 4000;
+			int hdCardDiscount_Round = 1000;
+			int pdCnt = info.getPdCnt() > 0 ? info.getPdCnt() : 1;
+
+			int hdDiscount = TripType.ROUND_TRIP.equals(TripType.fromCode(info.getDelKind()))
+					? (hdCardDiscount_Round * pdCnt)
+					: (hdCardDiscount_OneWay * pdCnt);
+
+			long beforePdPay = vo.getPdPay(); // 할인 전 총금액
+			vo.setPdPay(Math.max(0, vo.getPdPay() - hdDiscount));
+			vo.setDiscountTotal(vo.getDiscountTotal() + hdDiscount);
+
+			logger.info("### [현대카드 할인] 할인 전 pdPay: {}원, 할인 후 pdPay: {}원 (현대카드 할인액: {}원)",
+					beforePdPay, vo.getPdPay(), hdDiscount);
+		}*/
+
+		// 쿠폰 할인
+		/*int couponVal = info.getCouponDiscount();
+		if (couponVal > 0 && !"1".equals(vo.getPayStat())) {
+			long beforePdPay = vo.getPdPay(); // 할인 전 총금액
+			vo.setPdPay(Math.max(0, vo.getPdPay() - couponVal));
+			vo.setDiscountTotal(couponVal);
+			logger.info("### [쿠폰 할인] 할인 전 pdPay: {}원, 할인 후 pdPay: {}원 (쿠폰 할인액: {}원, 총 할인액: {}원)",
+					beforePdPay, vo.getPdPay(), couponVal, vo.getDiscountTotal());		}*/
 	}
 }

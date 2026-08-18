@@ -1421,4 +1421,34 @@
 		</set>
 		where RCP_INF_SEQ = #{rcpInfSeq,jdbcType=INTEGER}
 	</update>
+
+    <update id="updateReceiptPayAmount" parameterType="com.golf.service.model.GolfReceiptInfVO">
+        UPDATE GOLF_RECEIPT_INF
+        <set>
+            <if test="rcpInfStat != null">
+                RCP_INF_STAT = #{rcpInfStat,jdbcType=VARCHAR},
+            </if>
+            <if test="pdMemo != null">
+                PD_MEMO = #{pdMemo,jdbcType=VARCHAR},
+            </if>
+            <if test="picReqDt != null">
+                PIC_REQ_DT = #{picReqDt,jdbcType=VARCHAR},
+            </if>
+            <if test="canReason != null">
+                CAN_REASON = #{canReason,jdbcType=VARCHAR},
+            </if>
+            <!-- 금액 필드 업데이트 -->
+            <if test="pdPay != null">
+                PD_PAY = #{pdPay,jdbcType=INTEGER},
+            </if>
+            <if test="pdDeliPay != null">
+                PD_DELI_PAY = #{pdDeliPay,jdbcType=INTEGER},
+            </if>
+            <if test="iconFee != null">
+                ICON_FEE = #{iconFee,jdbcType=INTEGER},
+            </if>
+            MOD_DATE = NOW()
+        </set>
+        WHERE RCP_INF_SEQ = #{rcpInfSeq,jdbcType=INTEGER}
+    </update>
 </mapper>
