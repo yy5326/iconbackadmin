@@ -80,11 +80,14 @@ public class CommonMessage {
 	 */
 	@SuppressWarnings("unchecked")
 	public static List<JSONObject> makeRequestPayBtnForUserByIcon(SendRequestVO sendVO) {
+		final String orderSeq = sendVO.getOrderNumber().replace(GlobalConstant.ORDER_NUMBER_PREFIX, "");
+		final String btnUrl = "https://1con.co.kr/receipt/order_list.do?orderSeq=" + orderSeq;
 		List<JSONObject> buttonList = new ArrayList<>();
 		JSONObject requestSendMessage = new JSONObject();
 		requestSendMessage.put("name","결제하기");
 		requestSendMessage.put("type","WL");
-		requestSendMessage.put("orderSeq", sendVO.getOrderNumber().replace(GlobalConstant.ORDER_NUMBER_PREFIX, ""));
+		requestSendMessage.put("url_mobile", btnUrl);
+		requestSendMessage.put("url_pc", btnUrl);
 
 		buttonList.add(requestSendMessage);
 
