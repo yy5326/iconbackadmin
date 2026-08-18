@@ -400,6 +400,7 @@
 				rcpInfStat = $("input[name=rcpInfStatChk]").eq(index).val();
 				payStat = $("input[name=payStatChk]").eq(index).val();
 				rcpKind = $("input[name=rcpKind]").eq(index).val();
+
 				if(rcpKind=="2"){
 					alert("스마트스코어 접수건은 결제취소가 불가능 합니다.");
 					state=false;
@@ -408,6 +409,13 @@
 				rcpInfSeqArray.push($(this).val());
 				rcpNumberArray.push($("input[name=rcpNumber]").eq(index).val());
 			});
+
+			if (rcpKind == "0" || rcpKind == "1"
+					|| rcpKind == "3" || rcpKind == "5" || rcpKind == "9") {
+				alert("PG결제 접수 건은 아이콘골프 관리자에서만 결제 상태 변경이 가능합니다.");
+				state = false;
+				return false;
+			}
 
 			if(state==true){
 				//결제완료
@@ -587,6 +595,15 @@
 		//선택취소 상태체크
 		if (!getState(seq, "D")) {
 			return;
+		}
+
+		var seqNum = $("input[type=checkbox]:checked").closest("td").attr("id");
+		var rcpKind = $("input[name=rcpKind]:eq("+seqNum+")").val();
+		if (rcpKind == "0" || rcpKind == "1"
+				|| rcpKind == "3" || rcpKind == "5" || rcpKind == "9") {
+			alert("PG결제 접수 건은 상태 변경이 불가합니다.");
+			state = false;
+			return false;
 		}
 
 		if (confirm("취소처리 하시겠습니까?")) {
