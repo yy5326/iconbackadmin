@@ -1,8 +1,10 @@
 package com.golf.talk.vo;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import lombok.Data;
+import org.json.simple.JSONObject;
 
 
 public @Data class SendRequestVO {
@@ -47,7 +49,7 @@ public @Data class SendRequestVO {
 	private Integer pdDiscount;
 
 	//버튼
-	private ArrayList buttonList;
+	private List<JSONObject> buttonList;
 	//그룹번호
 	private Integer rcpSeq;
 	//메세지
@@ -78,4 +80,6 @@ public @Data class SendRequestVO {
 	private String vbankExpDtm;
 	// 추가할증금액
 	private String etcPayAmt;
+	// 주문번호
+	private String orderNumber;
 }

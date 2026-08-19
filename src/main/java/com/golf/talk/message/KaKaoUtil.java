@@ -51,7 +51,7 @@ public class KaKaoUtil {
 		return receiptInfoVO.getCusReceiptNm();
 	}
 
-	public static void getTempleteForEtc(String etc, SendRequestVO sendVo) {
+	public static void getTemplateForEtc(String etc, SendRequestVO sendVo) {
 		// 결제 완료, 알림톡 유저, 편도 + 코참
 		if ( "0".equals(sendVo.getRcpKind()) || "5".equals(sendVo.getRcpKind()) || "9".equals(sendVo.getRcpKind() )) {
 			// 아이콘 접수 템플릿
@@ -80,7 +80,7 @@ public class KaKaoUtil {
 		}
 	}
 
-	public static void getIconTempleteForEtc(String etc, SendRequestVO sendVo) {
+	public static void getIconTemplateForEtc(String etc, SendRequestVO sendVo) {
 		if(sendVo.getPrdType() == 3) {
 			sendVo.setEtc1(etc + "_Carrier");
 		}else if(sendVo.getPrdType() == 5) {
