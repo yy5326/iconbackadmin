@@ -56,7 +56,7 @@ public class CommonMessage {
 	}
 
 	/**
-	 * [공통] 결제요청안내 (v1)
+	 * [공통] 주문정보안내(v1)
 	 */
 	public static String makeRequestPayForUserByIcon(SendRequestVO sendVO) {
 		String template = getRequestPayTemplate();
@@ -76,7 +76,7 @@ public class CommonMessage {
 	}
 
 	/**
-	 * [공통] 결제요청안내 버튼 (v1)
+	 * [공통] 주문정보안내(v1) 버튼
 	 */
 	@SuppressWarnings("unchecked")
 	public static List<JSONObject> makeRequestPayBtnForUserByIcon(SendRequestVO sendVO) {
@@ -84,7 +84,7 @@ public class CommonMessage {
 		final String btnUrl = "https://1con.co.kr/receipt/order_list.do?orderSeq=" + orderSeq;
 		List<JSONObject> buttonList = new ArrayList<>();
 		JSONObject requestSendMessage = new JSONObject();
-		requestSendMessage.put("name","결제하기");
+		requestSendMessage.put("name","주문내역");
 		requestSendMessage.put("type","WL");
 		requestSendMessage.put("url_mobile", btnUrl);
 		requestSendMessage.put("url_pc", btnUrl);
@@ -95,21 +95,21 @@ public class CommonMessage {
 	}
 
 	/**
-	 * [공통] 결제요청안내 (v2)
+	 * [공통] 주문정보안내(v1)
 	 */
 	private static String getRequestPayTemplate() {
 		String template =
-				"[아이콘] 결제요청안내\n" +
+				"[아이콘] 주문정보안내\n" +
 				"\n" +
 				"안녕하세요. 아이콘 #{고객명} 고객님\n" +
-				"접수하신 상품의 결제 요청드립니다.\n" +
+				"상품 접수 완료 방법 안내드립니다.\n" +
 				"\n" +
 				"주문번호 : #{주문번호}\n" +
 				"총합계 : #{총결제금액}원\n" +
 				"\n" +
-				"아래 [결제하기] 버튼을 클릭하시어, \n" +
+				"아래 [주문내역] 버튼을 클릭하시어, \n" +
 				"로그인 후 [접수현황 > 주문내역] 에서\n" +
-				"결제 부탁 드립니다.";
+				"주문정보 확인 후 결제 부탁 드립니다.";
 		return template;
 	}
 }

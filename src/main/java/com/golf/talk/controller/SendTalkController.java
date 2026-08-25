@@ -191,7 +191,7 @@ public class SendTalkController {
 	public String sendRequestPayMessageForUser(@RequestBody List<SendRequestVO> list) {
 
 		try {
-			logger.info("[공통] 결제요청안내");
+			logger.info("[공통] 주문정보안내");
 			for (SendRequestVO sendVO : list) {
 				String message = CommonMessage.makeRequestPayForUserByIcon(sendVO);
 				final List<JSONObject> buttonList = CommonMessage.makeRequestPayBtnForUserByIcon(sendVO);
