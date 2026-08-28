@@ -66,7 +66,7 @@ public class CommonMessage {
 		// #{주문번호}
 		final String orderNumber = sendVO.getOrderNumber();
 		// #{총결제금액}
-		final String payAmt = sendVO.getVbankPayAmt();
+		final String payAmt = sendVO.getPayAmt();
 
 		final String replaceTemplate = template
 				.replace("#{고객명}", cusSendNm)
@@ -81,7 +81,8 @@ public class CommonMessage {
 	@SuppressWarnings("unchecked")
 	public static List<JSONObject> makeRequestPayBtnForUserByIcon(SendRequestVO sendVO) {
 		final String orderSeq = sendVO.getOrderNumber().replace(GlobalConstant.ORDER_NUMBER_PREFIX, "");
-		final String btnUrl = "https://1con.co.kr/receipt/order_list.do?orderSeq=" + orderSeq;
+		final String btnUrl = "http://dev.1con.co.kr:18081/receipt/order_list.do?orderSeq=" + orderSeq;
+//		final String btnUrl = "https://1con.co.kr/receipt/order_list.do?orderSeq=" + orderSeq;
 		List<JSONObject> buttonList = new ArrayList<>();
 		JSONObject requestSendMessage = new JSONObject();
 		requestSendMessage.put("name","주문내역");
