@@ -196,7 +196,10 @@ public class SendTalkController {
 				String message = CommonMessage.makeRequestPayForUserByIcon(sendVO);
 				final List<JSONObject> buttonList = CommonMessage.makeRequestPayBtnForUserByIcon(sendVO);
 				sendVO.setButtonList(buttonList);
-				_sendTalkService.sendTalk(list, message);
+				// 버튼 url 일치여부 확인으로 운영에서만 발송 가능
+				if (configBean.getWebMode().equals("op")) {
+					_sendTalkService.sendTalk(list, message);
+				}
 			}
 		} catch ( Exception e ) {
 			e.printStackTrace();

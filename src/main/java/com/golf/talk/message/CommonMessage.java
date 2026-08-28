@@ -66,7 +66,7 @@ public class CommonMessage {
 		// #{주문번호}
 		final String orderNumber = sendVO.getOrderNumber();
 		// #{총결제금액}
-		final String payAmt = sendVO.getVbankPayAmt();
+		final String payAmt = sendVO.getPayAmt();
 
 		final String replaceTemplate = template
 				.replace("#{고객명}", cusSendNm)
