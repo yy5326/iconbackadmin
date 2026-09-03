@@ -55,6 +55,9 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 	private int bostonDosunAmt = 6000;	//보스턴백 편도 도선
 	private int bostonDosunAmtR = 6000;	//보스턴백 왕복 도선
 
+	private static final int CARRIER_ICON_FEE_ONEWAY = 13000;    //캐리어 박스당 아이콘 수수료(편도)
+	private static final int CARRIER_ICON_FEE_ROUNDTRIP = 17000; //캐리어 박스당 아이콘 수수료(왕복)
+
 	@Autowired
 	private GeneralDAOImpl _gDao;
 
@@ -827,6 +830,12 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 			pdDeliPay = pdDeliPay/2;
 			iconPay = iconPay/2;
 			pdPay = pdPay / 2;
+
+			// 편도 정가 대비 왕복 할인액(아이콘 수수료 차액) - 취소 시 왕복→편도 환불 보정에 사용
+			// pdDosunPay/pdDeliPay는 왕복이어도 편도 기준과 동일(왕복분을 2배 후 다시 반으로 나눈 값)하므로
+			// 아이콘 수수료 차이만큼이 곧 편도-왕복 차액이 된다.
+			int oneWayIconFee = (int) ((sCnt + mCnt) * CARRIER_ICON_FEE_ONEWAY);
+			receiptInfVO.setRoundTripDiscountAmt(oneWayIconFee - iconPay);
 		}
 
 		receiptInfVO.setPdDosunPay(pdDosunPay);
@@ -841,8 +850,8 @@ public class CarrierServiceImpl extends BaseServiceImpl {
 	public int calculateIconFee(CbReceiptInfoVO cbReceiptInfoVO) {
 
 	  int sumIconFee = 0;
-	  int oneFee = 13000;
-	  int roundFee = 17000;
+	  int oneFee = CARRIER_ICON_FEE_ONEWAY;
+	  int roundFee = CARRIER_ICON_FEE_ROUNDTRIP;
 
 	  String str = cbReceiptInfoVO.getBoxSize();
 
