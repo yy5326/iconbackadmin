@@ -45,6 +45,11 @@ public class KdngeAPI extends BaseServiceImpl{
 	private final GolfReceiptServiceImpl _receiptService;
 	private final SendTalkServiceImpl _sendTalkService;
 
+	// 접수 화면(icongolf receipt.jsp)에서 보스턴백은 항상 이 고정 선언가로 pdIndivPrice에 추가된다.
+	// 골프백 선언가는 사용자가 100~1000(만원) 중 자유롭게 선택하므로 이 값과 겹칠 수 있어,
+	// 값 일치만으로는 판별할 수 없고 반드시 bostonCnt만큼만 골라내야 한다.
+	private static final String BOSTON_FIXED_INDIV_PRICE = "200";
+
 	// SetGolfDelivery
 	/**
 	 * 픽업요청 및 물품정보 전달
@@ -86,6 +91,24 @@ public class KdngeAPI extends BaseServiceImpl{
 				priceList.remove(0);
 			}
 
+			// 보스턴백 판별: 가격값(예: "100")이나 "골프백 개수부터 소진" 같은 순서 기반 추정은
+			// 보스턴백이 골프백들 사이에 섞여 들어오는 경우(예: 골프,보스턴,골프,보스턴 순서) 골프백을
+			// 보스턴백으로 잘못 분류해 할증운임이 엉뚱한 품목에 붙는 문제가 있었다.
+			// 보스턴백은 항상 BOSTON_FIXED_INDIV_PRICE로 전송되므로, 그 값을 bstnCount개만큼만
+			// 보스턴백으로 표시하고 나머지는 전부 골프백으로 취급한다.
+			boolean[] isBoston = new boolean[priceList.size()];
+			int remainingBoston = bstnCount;
+			for (int i = 0; i < priceList.size() && remainingBoston > 0; i++) {
+				if (BOSTON_FIXED_INDIV_PRICE.equals(priceList.get(i))) {
+					isBoston[i] = true;
+					remainingBoston--;
+				}
+			}
+			if (remainingBoston > 0) {
+				log.warn("보스턴백 수량({})만큼 고정 선언가({}) 항목을 찾지 못했습니다. rcpNumber={}, pdIndivPrice={}",
+						bstnCount, BOSTON_FIXED_INDIV_PRICE, vo.getRcpNumber(), totalIndivPrice);
+			}
+
 			for (int i = 0; i < priceList.size(); i++) {
 				paramMap = new JSONObject();
 
@@ -101,24 +124,15 @@ public class KdngeAPI extends BaseServiceImpl{
 				paramMap.put("height", 160);
 				paramMap.put("weight", 15);
 
-				if ("100".equals(priceList.get(i))) {
+				if (isBoston[i]) {
 					bstnCount--;
 					paramMap.put("prodName", "보스턴백");
 //					paramMap.put("otherPay", vo.getIconFee());
 					paramMap.put("height", 80);
 					paramMap.put("weight", 10);
-
 				} else {
-					if (pdCount == 0) {
-						bstnCount--;
-						paramMap.put("prodName", "보스턴백");
-//						paramMap.put("otherPay", vo.getIconFee());
-						paramMap.put("height", 80);
-						paramMap.put("weight", 10);
-					} else {
-						pdCount--;
-//						paramMap.put("otherPay", vo.getPdDeliPay());
-					}
+					pdCount--;
+//					paramMap.put("otherPay", vo.getPdDeliPay());
 				}
 
 				// 캐리어 관련 로직
