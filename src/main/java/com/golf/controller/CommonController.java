@@ -243,13 +243,7 @@ public class CommonController extends PrtController {
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/setGolfDeliveryArr.do")
 	public @ResponseBody String setGolfDeliveryArr(GolfReceiptInfVO infVO) throws Exception {
-		List<GolfReceiptInfVO> receiptList = (List<GolfReceiptInfVO>) _gDao.selectList("golfReceiptInf.selectDetailByKeyArr", infVO);
-		String returnVal = "success";
-
-			kdngeApi.setGolfDeliveryArr(infVO);
-
-
-		return toJson(returnVal);
+		return kdngeApi.setGolfDeliveryArr(infVO);
 	}
 
 	/**
