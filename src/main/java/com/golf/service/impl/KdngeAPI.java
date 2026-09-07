@@ -91,22 +91,43 @@ public class KdngeAPI extends BaseServiceImpl{
 				priceList.remove(0);
 			}
 
-			// 보스턴백 판별: 가격값(예: "100")이나 "골프백 개수부터 소진" 같은 순서 기반 추정은
-			// 보스턴백이 골프백들 사이에 섞여 들어오는 경우(예: 골프,보스턴,골프,보스턴 순서) 골프백을
-			// 보스턴백으로 잘못 분류해 할증운임이 엉뚱한 품목에 붙는 문제가 있었다.
-			// 보스턴백은 항상 BOSTON_FIXED_INDIV_PRICE로 전송되므로, 그 값을 bstnCount개만큼만
-			// 보스턴백으로 표시하고 나머지는 전부 골프백으로 취급한다.
+			// 보스턴백 판별: pdIndivType(신규 필드, pdIndivPrice와 동일한 파이프 순서의 G/B 타입 표기)이
+			// 있으면 그걸 그대로 신뢰한다 - 골프백 선언가가 보스턴 고정가(200)와 같은 값이어도 값만으로
+			// 타입을 추정할 필요가 없어 완전히 정확하다.
+			// pdIndivType이 없는 구건(엑셀 대량접수 등, 타입 정보를 아직 안 보내는 경로)은 예전 방식대로
+			// bstnCount개만큼 고정 선언가를 보스턴으로 간주하는 값 기반 추정으로 폴백한다. 이 폴백은
+			// 골프백 선언가가 보스턴 고정가와 같은 값일 때 오분류될 수 있다는 한계가 있다.
 			boolean[] isBoston = new boolean[priceList.size()];
-			int remainingBoston = bstnCount;
-			for (int i = 0; i < priceList.size() && remainingBoston > 0; i++) {
-				if (BOSTON_FIXED_INDIV_PRICE.equals(priceList.get(i))) {
-					isBoston[i] = true;
-					remainingBoston--;
+			String totalIndivType = vo.getPdIndivType();
+			List<String> typeList = null;
+			if (totalIndivType != null && !totalIndivType.isEmpty()) {
+				String[] typeArr = totalIndivType.split("[|]");
+				typeList = new ArrayList<>(Arrays.asList(typeArr));
+				if (!typeList.isEmpty() && "".equals(typeList.get(0))) {
+					typeList.remove(0);
 				}
 			}
-			if (remainingBoston > 0) {
-				log.warn("보스턴백 수량({})만큼 고정 선언가({}) 항목을 찾지 못했습니다. rcpNumber={}, pdIndivPrice={}",
-						bstnCount, BOSTON_FIXED_INDIV_PRICE, vo.getRcpNumber(), totalIndivPrice);
+
+			if (typeList != null && typeList.size() == priceList.size()) {
+				for (int i = 0; i < priceList.size(); i++) {
+					isBoston[i] = "B".equals(typeList.get(i));
+				}
+			} else {
+				if (totalIndivType != null && !totalIndivType.isEmpty()) {
+					log.warn("pdIndivType 파이프 개수({})가 pdIndivPrice 개수({})와 달라 값 기반 추정으로 폴백합니다. rcpNumber={}, pdIndivPrice={}, pdIndivType={}",
+							typeList.size(), priceList.size(), vo.getRcpNumber(), totalIndivPrice, totalIndivType);
+				}
+				int remainingBoston = bstnCount;
+				for (int i = 0; i < priceList.size() && remainingBoston > 0; i++) {
+					if (BOSTON_FIXED_INDIV_PRICE.equals(priceList.get(i))) {
+						isBoston[i] = true;
+						remainingBoston--;
+					}
+				}
+				if (remainingBoston > 0) {
+					log.warn("보스턴백 수량({})만큼 고정 선언가({}) 항목을 찾지 못했습니다. rcpNumber={}, pdIndivPrice={}",
+							bstnCount, BOSTON_FIXED_INDIV_PRICE, vo.getRcpNumber(), totalIndivPrice);
+				}
 			}
 
 			for (int i = 0; i < priceList.size(); i++) {
