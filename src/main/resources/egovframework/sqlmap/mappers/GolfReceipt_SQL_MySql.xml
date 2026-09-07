@@ -178,6 +178,9 @@
 			<if test="pdIndivPrice != null">
 				pd_indiv_price,
 			</if>
+			<if test="pdIndivType != null">
+				pd_indiv_type,
+			</if>
 			<if test="pdCnt != null and pdCnt > 0">
 				pd_cnt,
 			</if>
@@ -324,6 +327,9 @@
 			</if>
 			<if test="pdIndivPrice != null">
 				#{pdIndivPrice,jdbcType=VARCHAR},
+			</if>
+			<if test="pdIndivType != null">
+				#{pdIndivType,jdbcType=VARCHAR},
 			</if>
 			<if test="pdCnt != null and pdCnt > 0">
 				#{pdCnt,jdbcType=INTEGER},
@@ -584,6 +590,9 @@
 			<if test="pdIndivPrice != null">
 				pd_indiv_price,
 			</if>
+			<if test="pdIndivType != null">
+				pd_indiv_type,
+			</if>
 			<if test="pdCnt != null and pdCnt > 0">
 				pd_cnt,
 			</if>
@@ -733,6 +742,9 @@
 			</if>
 			<if test="pdIndivPrice != null">
 				#{pdIndivPrice,jdbcType=VARCHAR},
+			</if>
+			<if test="pdIndivType != null">
+				#{pdIndivType,jdbcType=VARCHAR},
 			</if>
 			<if test="pdCnt != null and pdCnt > 0">
 				#{pdCnt,jdbcType=INTEGER},

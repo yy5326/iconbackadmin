@@ -210,6 +210,7 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 				receiptInfVO.setPdCnt(cbReceiptInfoVo.getPdCnt()); // 골프백 수량
 				receiptInfVO.setBostonCnt(bostonCnt); // 보스턴백 수량
 				receiptInfVO.setPdIndivPrice(cbReceiptInfoVo.getPdIndivPrice()); // 개별단가
+				receiptInfVO.setPdIndivType(cbReceiptInfoVo.getPdIndivType()); // 개별단가 타입(G/B)
 				receiptInfVO.setPdGolfCnt(cbReceiptInfoVo.getPdGolfCnt()); // 골프채 수량
 
 				receiptInfVO.setPdMemo(cbReceiptInfoVo.getPdMemo());

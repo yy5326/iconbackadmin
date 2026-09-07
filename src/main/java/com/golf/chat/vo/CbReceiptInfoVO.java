@@ -102,6 +102,11 @@ public @Data class CbReceiptInfoVO {
 			+ "총 수량 10개인데 개별단가가 다르게 적용되는 경우 - 1|1|1|1|1|1000|1000|1000|1000|1000")
 	private String pdIndivPrice; // PD_INDIV_PRICE - 개별단가
 
+	@ApiParam(value="개별단가 타입")
+	@ApiModelProperty(position = 21, notes = "pdIndivPrice와 동일한 파이프 순서의 타입(G:골프백/B:보스턴백). "
+			+ "골프백 선언가가 보스턴백 고정 선언가와 같은 값이어도 값만으로 타입을 유추하지 않도록 함께 전달된다.")
+	private String pdIndivType; // PD_INDIV_TYPE - 개별단가 타입
+
 	@ApiParam(value="골프백수량")
 	@ApiModelProperty(position = 22, notes = "골프백수량")
 	private int pdCnt; // PD_CNT - 수량(카카오 골프백수량)

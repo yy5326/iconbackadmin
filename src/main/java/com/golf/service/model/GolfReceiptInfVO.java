@@ -94,6 +94,8 @@ public @Data class GolfReceiptInfVO implements GeneralModel {
 	private String pdGolfCnt;
 	//개별단가
 	private String pdIndivPrice;
+	//개별단가 타입(pdIndivPrice와 동일한 파이프 순서, G:골프백/B:보스턴백)
+	private String pdIndivType;
 	//보스턴백수량
 	private int bostonCnt = 0;
 	//골프백수량

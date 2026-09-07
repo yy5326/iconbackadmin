@@ -45,6 +45,11 @@ public class KdngeAPI extends BaseServiceImpl{
 	private final GolfReceiptServiceImpl _receiptService;
 	private final SendTalkServiceImpl _sendTalkService;
 
+	// 접수 화면(icongolf receipt.jsp)에서 보스턴백은 항상 이 고정 선언가로 pdIndivPrice에 추가된다.
+	// 골프백 선언가는 사용자가 100~1000(만원) 중 자유롭게 선택하므로 이 값과 겹칠 수 있어,
+	// 값 일치만으로는 판별할 수 없고 반드시 bostonCnt만큼만 골라내야 한다.
+	private static final String BOSTON_FIXED_INDIV_PRICE = "200";
+
 	// SetGolfDelivery
 	/**
 	 * 픽업요청 및 물품정보 전달
@@ -86,6 +91,45 @@ public class KdngeAPI extends BaseServiceImpl{
 				priceList.remove(0);
 			}
 
+			// 보스턴백 판별: pdIndivType(신규 필드, pdIndivPrice와 동일한 파이프 순서의 G/B 타입 표기)이
+			// 있으면 그걸 그대로 신뢰한다 - 골프백 선언가가 보스턴 고정가(200)와 같은 값이어도 값만으로
+			// 타입을 추정할 필요가 없어 완전히 정확하다.
+			// pdIndivType이 없는 구건(엑셀 대량접수 등, 타입 정보를 아직 안 보내는 경로)은 예전 방식대로
+			// bstnCount개만큼 고정 선언가를 보스턴으로 간주하는 값 기반 추정으로 폴백한다. 이 폴백은
+			// 골프백 선언가가 보스턴 고정가와 같은 값일 때 오분류될 수 있다는 한계가 있다.
+			boolean[] isBoston = new boolean[priceList.size()];
+			String totalIndivType = vo.getPdIndivType();
+			List<String> typeList = null;
+			if (totalIndivType != null && !totalIndivType.isEmpty()) {
+				String[] typeArr = totalIndivType.split("[|]");
+				typeList = new ArrayList<>(Arrays.asList(typeArr));
+				if (!typeList.isEmpty() && "".equals(typeList.get(0))) {
+					typeList.remove(0);
+				}
+			}
+
+			if (typeList != null && typeList.size() == priceList.size()) {
+				for (int i = 0; i < priceList.size(); i++) {
+					isBoston[i] = "B".equals(typeList.get(i));
+				}
+			} else {
+				if (totalIndivType != null && !totalIndivType.isEmpty()) {
+					log.warn("pdIndivType 파이프 개수({})가 pdIndivPrice 개수({})와 달라 값 기반 추정으로 폴백합니다. rcpNumber={}, pdIndivPrice={}, pdIndivType={}",
+							typeList.size(), priceList.size(), vo.getRcpNumber(), totalIndivPrice, totalIndivType);
+				}
+				int remainingBoston = bstnCount;
+				for (int i = 0; i < priceList.size() && remainingBoston > 0; i++) {
+					if (BOSTON_FIXED_INDIV_PRICE.equals(priceList.get(i))) {
+						isBoston[i] = true;
+						remainingBoston--;
+					}
+				}
+				if (remainingBoston > 0) {
+					log.warn("보스턴백 수량({})만큼 고정 선언가({}) 항목을 찾지 못했습니다. rcpNumber={}, pdIndivPrice={}",
+							bstnCount, BOSTON_FIXED_INDIV_PRICE, vo.getRcpNumber(), totalIndivPrice);
+				}
+			}
+
 			for (int i = 0; i < priceList.size(); i++) {
 				paramMap = new JSONObject();
 
@@ -101,24 +145,15 @@ public class KdngeAPI extends BaseServiceImpl{
 				paramMap.put("height", 160);
 				paramMap.put("weight", 15);
 
-				if ("100".equals(priceList.get(i))) {
+				if (isBoston[i]) {
 					bstnCount--;
 					paramMap.put("prodName", "보스턴백");
 //					paramMap.put("otherPay", vo.getIconFee());
 					paramMap.put("height", 80);
 					paramMap.put("weight", 10);
-
 				} else {
-					if (pdCount == 0) {
-						bstnCount--;
-						paramMap.put("prodName", "보스턴백");
-//						paramMap.put("otherPay", vo.getIconFee());
-						paramMap.put("height", 80);
-						paramMap.put("weight", 10);
-					} else {
-						pdCount--;
-//						paramMap.put("otherPay", vo.getPdDeliPay());
-					}
+					pdCount--;
+//					paramMap.put("otherPay", vo.getPdDeliPay());
 				}
 
 				// 캐리어 관련 로직

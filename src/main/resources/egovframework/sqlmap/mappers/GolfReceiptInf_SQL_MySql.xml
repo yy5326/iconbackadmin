@@ -41,6 +41,7 @@
 
 		<result column="PD_GOLF_CNT" jdbcType="VARCHAR" property="pdGolfCnt" />
 		<result column="PD_INDIV_PRICE" jdbcType="VARCHAR" property="pdIndivPrice" />
+		<result column="PD_INDIV_TYPE" jdbcType="VARCHAR" property="pdIndivType" />
 		<result column="PD_CNT" jdbcType="INTEGER" property="pdCnt" />
 		<result column="BOSTON_CNT" jdbcType="INTEGER" property="bostonCnt" />
 		<result column="PD_ETC_PAY" jdbcType="INTEGER" property="pdEtcPay" />
@@ -89,7 +90,7 @@
     CUS_SEND_NM, CUS_SEND_TELNUM, CUS_SEND_TELNUM2, CUS_SEND_ZIP, CUS_SEND_ADDR1, CUS_SEND_ADDR2,
     SEND_ISL_YN, BR_STR_NM, BR_STR_CODE, CUS_RE_NM, CUS_RE_TELNUM, CUS_RE_TELNUM2, CUS_RE_ZIP,
     CUS_RE_ADDR1, CUS_RE_ADDR2, RECV_GOLF_SEQ, RECV_ISL_YN, BR_END_NM, BR_END_CODE, PD_NM,
-    PD_PACK, PD_GOLF_CNT, PD_INDIV_PRICE, PD_CNT, BOSTON_CNT, PD_ETC_PAY, PD_DOSUN_PAY, PD_DELI_PAY, PD_PAY, PD_MEMO,
+    PD_PACK, PD_GOLF_CNT, PD_INDIV_PRICE, PD_INDIV_TYPE, PD_CNT, BOSTON_CNT, PD_ETC_PAY, PD_DOSUN_PAY, PD_DELI_PAY, PD_PAY, PD_MEMO,
     PIC_REQ_DT, SC_TIME, EXT_COMP, EXT_COMP_TELNUM, PD_BARCODE, PD_REC_DT, A.REG_DATE, MOD_DATE, A.REG_USER, A.USE_YN, A.ICON_FEE,
     CASE WHEN A.RCP_KIND ='0' THEN '아이콘'
    		 WHEN A.RCP_KIND ='1' THEN '카카오'
@@ -273,6 +274,7 @@
 			, C.PAY_STAT
 			, C.PAY_GUBUN
 			, A.PD_INDIV_PRICE
+			, A.PD_INDIV_TYPE
 			, A.PRD_TYPE
 		FROM GOLF_RECEIPT_INF A
 			LEFT JOIN GOLF_RECEIPT_MST B
@@ -440,7 +442,7 @@
       CUS_RE_TELNUM2, CUS_RE_ZIP, CUS_RE_ADDR1,
       CUS_RE_ADDR2, RECV_GOLF_SEQ, RECV_ISL_YN,
       BR_END_NM, BR_END_CODE, PD_NM,
-      PD_PACK, PD_GOLF_CNT, PD_INDIV_PRICE,
+      PD_PACK, PD_GOLF_CNT, PD_INDIV_PRICE, PD_INDIV_TYPE,
       PD_CNT, BOSTON_CNT, PD_ETC_PAY, PD_DOSUN_PAY,
       PD_PAY, PD_MEMO, PIC_REQ_DT,
       SC_TIME, EXT_COMP, EXT_COMP_TELNUM, PD_BARCODE,
@@ -455,7 +457,7 @@
       #{cusReTelnum2,jdbcType=VARCHAR}, #{cusReZip,jdbcType=VARCHAR}, #{cusReAddr1,jdbcType=VARCHAR},
       #{cusReAddr2,jdbcType=VARCHAR}, #{recvGolfSeq,jdbcType=INTEGER}, #{recvIslYn,jdbcType=VARCHAR},
       #{brEndNm,jdbcType=VARCHAR}, #{brEndCode,jdbcType=VARCHAR}, #{pdNm,jdbcType=VARCHAR},
-      #{pdPack,jdbcType=VARCHAR}, #{pdGolfCnt,jdbcType=VARCHAR}, #{pdIndivPrice,jdbcType=VARCHAR},
+      #{pdPack,jdbcType=VARCHAR}, #{pdGolfCnt,jdbcType=VARCHAR}, #{pdIndivPrice,jdbcType=VARCHAR}, #{pdIndivType,jdbcType=VARCHAR},
       #{pdCnt,jdbcType=INTEGER}, #{bostonCnt,jdbcType=INTEGER}, #{pdEtcPay,jdbcType=INTEGER}, #{pdDosunPay,jdbcType=INTEGER},
       #{pdPay,jdbcType=INTEGER}, #{pdMemo,jdbcType=VARCHAR}, #{picReqDt,jdbcType=VARCHAR},
       #{scTime,jdbcType=VARCHAR}, #{extComp,jdbcType=VARCHAR}, #{extCompTelnum,jdbcType=VARCHAR}, #{pdBarcode,jdbcType=VARCHAR},
@@ -555,6 +557,9 @@
       </if>
       <if test="pdIndivPrice != null">
         PD_INDIV_PRICE,
+      </if>
+      <if test="pdIndivType != null">
+        PD_INDIV_TYPE,
       </if>
       <if test="pdCnt != null">
         PD_CNT,
@@ -693,6 +698,9 @@
       <if test="pdIndivPrice != null">
         #{pdIndivPrice,jdbcType=VARCHAR},
       </if>
+      <if test="pdIndivType != null">
+        #{pdIndivType,jdbcType=VARCHAR},
+      </if>
       <if test="pdCnt != null">
         #{pdCnt,jdbcType=INTEGER},
       </if>
@@ -828,6 +836,9 @@
       <if test="pdIndivPrice != null">
         PD_INDIV_PRICE = #{pdIndivPrice,jdbcType=VARCHAR},
       </if>
+      <if test="pdIndivType != null">
+        PD_INDIV_TYPE = #{pdIndivType,jdbcType=VARCHAR},
+      </if>
       <if test="pdCnt != null and pdCnt > 0">
         PD_CNT = #{pdCnt,jdbcType=INTEGER},
       </if>
@@ -912,6 +923,7 @@
       PD_PACK = #{pdPack,jdbcType=VARCHAR},
       PD_GOLF_CNT = #{pdGolfCnt,jdbcType=VARCHAR},
       PD_INDIV_PRICE = #{pdIndivPrice,jdbcType=VARCHAR},
+      PD_INDIV_TYPE = #{pdIndivType,jdbcType=VARCHAR},
       BOSTON_CNT = #{bostonCnt,jdbcType=INTEGER},
       PD_CNT = #{pdCnt,jdbcType=INTEGER},
       PD_ETC_PAY = #{pdEtcPay,jdbcType=INTEGER},
@@ -1183,6 +1195,9 @@
 			<if test="pdIndivPrice != null">
 				pd_indiv_price,
 			</if>
+			<if test="pdIndivType != null">
+				pd_indiv_type,
+			</if>
 			<if test="bostonCnt != null and bostonCnt > 0">
 				boston_cnt,
 			</if>
@@ -1320,6 +1335,9 @@
 			</if>
 			<if test="pdIndivPrice != null">
 				#{pdIndivPrice,jdbcType=VARCHAR},
+			</if>
+			<if test="pdIndivType != null">
+				#{pdIndivType,jdbcType=VARCHAR},
 			</if>
 			<if test="boston_cnt != null and boston_cnt > 0">
 				#{boston_cnt,jdbcType=INTEGER},
