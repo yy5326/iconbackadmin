@@ -377,8 +377,10 @@ public class CbReceiveController {
 			receiptInfVO.setSendGolfSeq(cbReceiptInfoVo.getSendGolfSeq());
 			receiptInfVO.setRecvGolfSeq(cbReceiptInfoVo.getRecvGolfSeq());
 
+			receiptInfVO.setCusSendZip(cbReceiptInfoVo.getCusSendZip());
 			receiptInfVO.setCusSendAddr1(cbReceiptInfoVo.getCusSendAddr1());
 			receiptInfVO.setCusSendAddr2(cbReceiptInfoVo.getCusSendAddr2());
+			receiptInfVO.setCusReZip(cbReceiptInfoVo.getCusReZip());
 			receiptInfVO.setCusReAddr1(cbReceiptInfoVo.getCusReAddr1());
 			receiptInfVO.setCusReAddr2(cbReceiptInfoVo.getCusReAddr2());
 
