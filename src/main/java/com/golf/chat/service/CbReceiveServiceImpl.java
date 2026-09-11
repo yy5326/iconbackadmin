@@ -56,6 +56,19 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 	private int specialRouteGolfDosunAmt = 10000;  // 5000 + 5000
 	private int specialRouteBostonDosunAmt = 12000;  // 6000 + 6000
 
+	// 도서산간 우편번호 정책: 제주 63xxx, 여수경도 59766, 울릉도 402xx
+	private static final String JEJU_ZIP_PREFIX = "63";
+	private static final String YEOSU_GYEONGDO_ZIP = "59766";
+	private static final String ULLEUNGDO_ZIP_PREFIX = "402";
+
+	/**
+	 * 우편번호 기준 도서산간 여부 판별 (제주 63xxx / 여수경도 59766 / 울릉도 402xx)
+	 */
+	private boolean isIslandZip(String zip) {
+		if (zip == null) return false;
+		return zip.startsWith(JEJU_ZIP_PREFIX) || YEOSU_GYEONGDO_ZIP.equals(zip) || zip.startsWith(ULLEUNGDO_ZIP_PREFIX);
+	}
+
 	@Autowired
 	private GeneralDAOImpl _gDao;
 
@@ -431,14 +444,12 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		}
 
 		if ( TripType.ONE_WAY.getCode().equals(cbReceiptInfoVo.getDelKind()) ) {
-			if ( (receiptInfVO.getCusSendAddr1() != null && receiptInfVO.getCusSendAddr1().contains("제주"))
-					|| (receiptInfVO.getCusSendAddr2() != null && receiptInfVO.getCusSendAddr2().contains("제주")) ) {
+			if ( isIslandZip(receiptInfVO.getCusSendZip()) ) {
 				dosun1 += 1;
 				receiptInfVO.setSendIslYn("Y"); // 보내는분 출발지가 도서산간일 경우 도서산간구분
 			}
 
-			if ( (receiptInfVO.getCusReAddr1() != null && receiptInfVO.getCusReAddr1().contains("제주"))
-					|| (receiptInfVO.getCusReAddr2() != null && receiptInfVO.getCusReAddr2().contains("제주")) ) {
+			if ( isIslandZip(receiptInfVO.getCusReZip()) ) {
 				dosun1 += 1; // 보내는분 출발지, 도착지 모두 도서산간이면 도서운임 안받음, 둘중 하나가 도서산간일 경우 도서운임
 				receiptInfVO.setRecvIslYn("Y"); // 보내는분 도착지가 도서산간일 경우 도서산간구분
 			}
@@ -510,14 +521,12 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			if (SrType.S.equals(SrType.fromCode(cbReceiptInfoVo.getSrType()))){
 
 				// 왕복 1차
-				if ( (receiptInfVO.getCusSendAddr1() != null && receiptInfVO.getCusSendAddr1().contains("제주"))
-						|| (receiptInfVO.getCusSendAddr2() != null && receiptInfVO.getCusSendAddr2().contains("제주")) ) {
+				if ( isIslandZip(receiptInfVO.getCusSendZip()) ) {
 					dosun1 += 1;
 					receiptInfVO.setSendIslYn("Y"); // 보내는분 출발지가 도서산간일 경우 도서산간구분
 				}
 
-				if ( (receiptInfVO.getCusReAddr1() != null && receiptInfVO.getCusReAddr1().contains("제주"))
-						|| (receiptInfVO.getCusReAddr2() != null && receiptInfVO.getCusReAddr2().contains("제주")) ) {
+				if ( isIslandZip(receiptInfVO.getCusReZip()) ) {
 					dosun1 += 1; // 보내는분 출발지, 도착지 모두 도서산간이면 도서운임 안받음, 둘중 하나가 도서산간일 경우 도서운임
 					receiptInfVO.setRecvIslYn("Y"); // 보내는분 도착지가 도서산간일 경우 도서산간구분
 				}
@@ -595,14 +604,12 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 			} else {
 
 				// 왕복 2차
-				if ( (receiptInfVO.getCusSendAddr1() != null && receiptInfVO.getCusSendAddr1().contains("제주"))
-						|| (receiptInfVO.getCusSendAddr2() != null && receiptInfVO.getCusSendAddr2().contains("제주")) ) {
+				if ( isIslandZip(receiptInfVO.getCusSendZip()) ) {
 					dosun2 += 1;
 					receiptInfVO.setSendIslYn("Y"); // 보내는분 출발지가 도서산간일 경우 도서산간구분
 				}
 
-				if ( (receiptInfVO.getCusReAddr1() != null && receiptInfVO.getCusReAddr1().contains("제주"))
-						|| (receiptInfVO.getCusReAddr2() != null && receiptInfVO.getCusReAddr2().contains("제주")) ) {
+				if ( isIslandZip(receiptInfVO.getCusReZip()) ) {
 					dosun2 += 1; // 보내는분 출발지, 도착지 모두 도서산간이면 도서운임 안받음, 둘중 하나가 도서산간일 경우 도서운임
 					receiptInfVO.setRecvIslYn("Y"); // 보내는분 도착지가 도서산간일 경우 도서산간구분
 				}
@@ -2088,11 +2095,9 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		}
 		// 기본 계산 (제주↔제주 등 같은 도서산간 권역 내 이동은 편도 1회분만 반영)
 		int basePay = (pdCnt * 5000) + (cbVo.getBostonCnt() * bostonDosunAmt);
-		// 특수 구간 판별
-		boolean isSendJeju = (rcpVo.getCusSendAddr1() != null && rcpVo.getCusSendAddr1().contains("제주"))
-				|| (rcpVo.getCusSendAddr2() != null && rcpVo.getCusSendAddr2().contains("제주"));
-		boolean isRecvJeju = (rcpVo.getCusReAddr1() != null && rcpVo.getCusReAddr1().contains("제주"))
-				|| (rcpVo.getCusReAddr2() != null && rcpVo.getCusReAddr2().contains("제주"));
+		// 특수 구간 판별 (제주 우편번호 기준)
+		boolean isSendJeju = rcpVo.getCusSendZip() != null && rcpVo.getCusSendZip().startsWith(JEJU_ZIP_PREFIX);
+		boolean isRecvJeju = rcpVo.getCusReZip() != null && rcpVo.getCusReZip().startsWith(JEJU_ZIP_PREFIX);
 		boolean isSpecialRoute = (isSendJeju && rcpVo.getRecvGolfSeq() == 211)
 				|| (isRecvJeju && rcpVo.getSendGolfSeq() == 211);
 		// 특수 구간일 경우 재계산

@@ -1039,6 +1039,11 @@
 		return returnVal;
 	}
 
+	// 도서산간 우편번호 정책: 제주 63xxx, 여수경도 59766, 울릉도 402xx
+	function isIslandZip(zip) {
+		return !!zip && (zip.indexOf("63") === 0 || zip === "59766" || zip.indexOf("402") === 0);
+	}
+
 	//운임 계산 및 도서산간구분값 적용
 	function searchIsl(){
 		// 0 = 기본운임, 1 = 스코어운임, 2 = 특판가 (골프백 도선, 골프백편도, 골프백왕복, 보스턴 도선, 보스턴편도, 보스턴왕복)
@@ -1047,7 +1052,8 @@
 		var dosun1 = 0, dosun2 = 0;
 
 		$("input[role=zip1]:eq(1),input[role=zip2]:eq(1),input[role=zip3]:eq(1),input[role=zip4]:eq(1)").each(function(idx){
-			if($(this).val().indexOf("제주") > -1){
+			var zipVal = $('input[role="' + $(this).attr('role') + '"]:eq(0)').val();
+			if(isIslandZip(zipVal)){
 				(idx < 2) ? dosun1 += 1 : dosun2 += 1;
 				$(this).next().val("Y");
 			}else{
