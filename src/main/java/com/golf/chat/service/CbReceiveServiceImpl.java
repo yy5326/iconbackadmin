@@ -2097,11 +2097,13 @@ public class CbReceiveServiceImpl extends BaseServiceImpl {
 		}
 		// 기본 계산 (제주↔제주 등 같은 도서산간 권역 내 이동은 편도 1회분만 반영)
 		int basePay = (pdCnt * 5000) + (cbVo.getBostonCnt() * bostonDosunAmt);
-		// 특수 구간 판별 (제주 우편번호 기준)
-		boolean isSendJeju = rcpVo.getCusSendZip() != null && rcpVo.getCusSendZip().startsWith(JEJU_ZIP_PREFIX);
-		boolean isRecvJeju = rcpVo.getCusReZip() != null && rcpVo.getCusReZip().startsWith(JEJU_ZIP_PREFIX);
-		boolean isSpecialRoute = (isSendJeju && rcpVo.getRecvGolfSeq() == 211)
-				|| (isRecvJeju && rcpVo.getSendGolfSeq() == 211);
+		// 특수 구간 판별 (제주·울릉도 ↔ 여수경도(golfSeq 211) 우편번호 기준. 오지형 요청으로 울릉도도 제주와 동일 처리 2026-09-11)
+		boolean isSendSpecialZone = rcpVo.getCusSendZip() != null
+				&& (rcpVo.getCusSendZip().startsWith(JEJU_ZIP_PREFIX) || rcpVo.getCusSendZip().startsWith(ULLEUNGDO_ZIP_PREFIX));
+		boolean isRecvSpecialZone = rcpVo.getCusReZip() != null
+				&& (rcpVo.getCusReZip().startsWith(JEJU_ZIP_PREFIX) || rcpVo.getCusReZip().startsWith(ULLEUNGDO_ZIP_PREFIX));
+		boolean isSpecialRoute = (isSendSpecialZone && rcpVo.getRecvGolfSeq() == 211)
+				|| (isRecvSpecialZone && rcpVo.getSendGolfSeq() == 211);
 		// 특수 구간일 경우 재계산
 		if (isSpecialRoute) {
 			return (pdCnt * specialRouteGolfDosunAmt) + (cbVo.getBostonCnt() * specialRouteBostonDosunAmt);
