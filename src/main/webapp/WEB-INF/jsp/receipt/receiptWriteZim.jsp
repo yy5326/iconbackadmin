@@ -244,6 +244,11 @@
         $(window).on("beforeunload", function(){ return "페이지를 벗어나면 입력 내용이 사라집니다."; });
     });
 
+    // 도서산간 우편번호 정책: 제주 63xxx, 여수경도 59766, 울릉도 402xx
+    function isIslandZip(zip) {
+        return !!zip && (zip.indexOf("63") === 0 || zip === "59766" || zip.indexOf("402") === 0);
+    }
+
     function searchIslZimcarry(){
         // [1] 기본 정보 및 수량 파악
         var itemName = $("#zimcarry_pdNm").val();
@@ -253,20 +258,9 @@
         var c_cnt = parseInt($("#carrierCnt0").val() || 0);
         var total_cnt = p_cnt + b_cnt + c_cnt;
 
-        // [2] 도서산간 판별 로직 (일반 페이지 로직 이식)
-        var isIsl = false;
-        var addrVal = $("input[role=zip2]:eq(1)").val() || ""; // 기본 주소
-        var recvGolfName = $("input[role=golfSearch2]:eq(0)").val() || ""; // 골프장 상호
-
-        // 1) 주소에 '제주'가 포함된 경우
-        if(addrVal.indexOf("제주") > -1) {
-            isIsl = true;
-        }
-
-        // 2) 주소에 '제주'가 없더라도 특정 골프장(여수경도 등)인 경우 (일반페이지 참조)
-        if(!isIsl && recvGolfName.indexOf("여수경도") > -1) {
-            isIsl = true;
-        }
+        // [2] 도서산간 판별 로직 (우편번호 기준)
+        var recvZip = $("input[role=zip2]:eq(0)").val() || ""; // 우편번호
+        var isIsl = isIslandZip(recvZip);
 
         // [3] 운임 계산
         var totalDeliPay = unitPrice * total_cnt;
