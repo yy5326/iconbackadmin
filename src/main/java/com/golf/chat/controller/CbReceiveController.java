@@ -166,10 +166,20 @@ public class CbReceiveController {
 				String regDate = _receiptService.selectDetailByRcpSeq(receiptList.get(0).getRcpSeq(), "S").getRegDate();
 
 				long totalPay = 0;
+				long etcPay = 0;
+				long dosunPay = 0;
+				long deliPay = 0;
 				if (TripType.ROUND_TRIP.equals(TripType.fromCode(list.get(0).getDelKind()))) {
 					totalPay = receiptList.get(0).getPdPay() + receiptList.get(1).getPdPay();
+					// 왕복은 1차(S)/2차(R)가 방향별로 도선료·배송비·기타비를 각각 계산하므로 합계도 둘을 더해야 한다.
+					etcPay = receiptList.get(0).getPdEtcPay() + receiptList.get(1).getPdEtcPay();
+					dosunPay = receiptList.get(0).getPdDosunPay() + receiptList.get(1).getPdDosunPay();
+					deliPay = receiptList.get(0).getPdDeliPay() + receiptList.get(1).getPdDeliPay();
 				} else {
 					totalPay = receiptList.get(0).getPdPay();
+					etcPay = receiptList.get(0).getPdEtcPay();
+					dosunPay = receiptList.get(0).getPdDosunPay();
+					deliPay = receiptList.get(0).getPdDeliPay();
 				}
 
 				// 쿠폰 사용 여부 판단
@@ -191,9 +201,9 @@ public class CbReceiveController {
 					data.put("discountTotal", 0);
 				}*/
 				data.put("cbPay", totalPay);
-				data.put("etcPay", receiptList.get(0).getPdEtcPay());
-				data.put("dosunPay", receiptList.get(0).getPdDosunPay());
-				data.put("deliPay", receiptList.get(0).getPdDeliPay());
+				data.put("etcPay", etcPay);
+				data.put("dosunPay", dosunPay);
+				data.put("deliPay", deliPay);
 
 				int discountAmount = 0;
 				for (GolfReceiptInfVO vo : receiptList) {
