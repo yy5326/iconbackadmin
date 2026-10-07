@@ -160,6 +160,11 @@ public class KdngeAPI extends BaseServiceImpl{
 				if (vo.getPrdType() == 3) {
 					paramMap.put("price", "200");
 					paramMap.put("prodName", "아이콘캐리어(중형내륙)");
+					// KHDEXPRESS 거래품목(T_PROD_COMPANY_ITEM) 등록 규격과 일치시킴(골프백 치수가 아님)
+					paramMap.put("width", 50);
+					paramMap.put("vertical", 50);
+					paramMap.put("height", 100);
+					paramMap.put("weight", 20);
 				} else {
 					paramMap.put("price", priceList.get(i));
 				}
